@@ -1,15 +1,16 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
-console.log("API_URL:", API_URL);
+const API_URL = import.meta.env.VITE_API_URL|| 'http://localhost:5000/api';
 
-// Create axios instance for auth API
-const authApi = axios.create({
-  baseURL: `${API_URL}/auth`,
+const authAPI = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add auth interceptor to auth API
-authApi.interceptors.request.use(
+// Request interceptor to add token
+authAPI.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -22,44 +23,35 @@ authApi.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle token expiration
-authApi.interceptors.response.use(
+// Response interceptor for error handling
+authAPI.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('permissions');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-const authAPI = {
-  // Login user
-  login: async (credentials) => {
-    const response = await authApi.post('/login', credentials);
-    return response;
-  },
-
-  // Logout user
-  logout: async () => {
-    const response = await authApi.post('/logout');
-    return response;
-  },
-
-  // Get current user
-  getMe: async () => {
-    const response = await authApi.get('/me');
-    return response;
-  },
-
+const authService = {
+  // ✅ FIXED: Login with correct format
+  login: (credentials) => authAPI.post('/auth/login', credentials),
+  
+  // Get current user profile
+  getMe: () => authAPI.get('/auth/me'),
+  
   // Update user profile
-  updateProfile: async (userData) => {
-    const response = await authApi.put('/myprofile', userData);
-    return response;
-  }
+  updateProfile: (data) => authAPI.put('/auth/myprofile', data),
+  
+  // Logout
+  logout: () => authAPI.post('/auth/logout'),
+  
+  // Register (for merchant)
+  registerUser: (userData) => authAPI.post('/auth/register', userData),
 };
 
-export default authAPI;
+export default authService;

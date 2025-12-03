@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchMyPermissions } from '../store/slices/permissionSlice';
 import { FIXED_PERMISSIONS } from '../config/fixedPermissions';
@@ -6,7 +6,14 @@ import { FIXED_PERMISSIONS } from '../config/fixedPermissions';
 export const usePermissions = () => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.auth);
-  const { userPermissions, userRole, loading, error } = useSelector(state => state.permissions);
+  const { userPermissions, userRole, loading, error, permissionsLoaded } = useSelector(state => state.permissions);
+
+  // Memoize loadPermissions to prevent infinite loops
+  const loadPermissions = useCallback(() => {
+    if (user && user.role !== 'merchant' && !permissionsLoaded) {
+      dispatch(fetchMyPermissions());
+    }
+  }, [dispatch, user, permissionsLoaded]);
 
   // Check if user has specific permission
   const can = (permission) => {
@@ -24,13 +31,6 @@ export const usePermissions = () => {
   const canAll = (requiredPermissions) => {
     if (user?.role === 'merchant') return true;
     return requiredPermissions.every(permission => userPermissions.includes(permission));
-  };
-
-  // Load user permissions
-  const loadPermissions = () => {
-    if (user && user.role !== 'merchant') {
-      dispatch(fetchMyPermissions());
-    }
   };
 
   // Get available permissions for current user
@@ -54,5 +54,6 @@ export const usePermissions = () => {
     isManager: user?.role === 'manager',
     isSupervisor: user?.role === 'supervisor',
     isStaff: user?.role === 'staff',
+    permissionsLoaded
   };
 };

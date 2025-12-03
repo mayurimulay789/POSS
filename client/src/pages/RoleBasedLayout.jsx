@@ -6,30 +6,86 @@ import MerchantSidebar from '../components/Layout/MerchantSidebar';
 import ManagerSidebar from '../components/Layout/ManagerSidebar';
 import SupervisorSidebar from '../components/Layout/SupervisorSidebar';
 import StaffSidebar from '../components/Layout/StaffSidebar';
+import { getSidebarItemsForRole, SIDEBAR_ITEMS } from '../config/rolePermissions';
 
 const RoleBasedLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { user, isAuthenticated } = useSelector(state => state.auth);
-  const { loadPermissions } = usePermissions();
+  const { permissions, loadPermissions, permissionsLoaded } = usePermissions();
+  const [sidebarItems, setSidebarItems] = useState([]);
+  const [hasLoadedPermissions, setHasLoadedPermissions] = useState(false);
 
-  // Load permissions when component mounts
+  // Debug logging
   useEffect(() => {
-    if (isAuthenticated && user) {
+    console.log('RoleBasedLayout - User:', user);
+    console.log('RoleBasedLayout - Permissions:', permissions);
+    console.log('RoleBasedLayout - Permissions loaded:', permissionsLoaded);
+    console.log('RoleBasedLayout - hasLoadedPermissions:', hasLoadedPermissions);
+  }, [user, permissions, permissionsLoaded, hasLoadedPermissions]);
+
+  // Load permissions only once when component mounts
+  useEffect(() => {
+    if (isAuthenticated && user && !hasLoadedPermissions) {
+      console.log('Loading permissions...');
       loadPermissions();
+      setHasLoadedPermissions(true);
     }
-  }, [isAuthenticated, user, loadPermissions]);
+  }, [isAuthenticated, user, loadPermissions, hasLoadedPermissions]);
+
+  // Update sidebar items when permissions change
+  useEffect(() => {
+    console.log('Updating sidebar items with permissions:', permissions);
+    
+    if (permissions && permissions.length > 0) {
+      const items = getSidebarItemsForRole(permissions);
+      console.log('Filtered sidebar items:', items);
+      setSidebarItems(items);
+    } else if (user?.role === 'merchant') {
+      // Merchant gets all items
+      const items = Object.values(SIDEBAR_ITEMS);
+      console.log('Merchant sidebar items:', items);
+      setSidebarItems(items);
+    } else if (permissionsLoaded && (!permissions || permissions.length === 0)) {
+      // Fallback based on role if no permissions loaded
+      const defaultPermissions = getDefaultPermissionsForRole(user?.role);
+      const items = getSidebarItemsForRole(defaultPermissions);
+      console.log('Fallback sidebar items for role:', user?.role, items);
+      setSidebarItems(items);
+    }
+  }, [permissions, user, permissionsLoaded]);
+
+  // Helper function for default permissions per role
+  const getDefaultPermissionsForRole = (role) => {
+    switch (role) {
+      case 'manager':
+        return ['order_management', 'billing_management', 'space_management', 
+                'task_management', 'expense_management', 'reports_analytics', 
+                'employee_management'];
+      case 'supervisor':
+        return ['order_management', 'billing_management', 'space_management', 
+                'task_management'];
+      case 'staff':
+        return ['order_management', 'billing_management'];
+      default:
+        return [];
+    }
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
   const renderSidebar = () => {
+    console.log('Rendering sidebar for role:', user?.role);
+    console.log('Sidebar items to pass:', sidebarItems);
+    
     switch (user?.role) {
       case 'merchant':
         return (
           <MerchantSidebar 
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
+            sidebarItems={sidebarItems}
           />
         );
       case 'manager':
@@ -37,6 +93,7 @@ const RoleBasedLayout = () => {
           <ManagerSidebar 
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
+            sidebarItems={sidebarItems}
           />
         );
       case 'supervisor':
@@ -44,6 +101,7 @@ const RoleBasedLayout = () => {
           <SupervisorSidebar 
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
+            sidebarItems={sidebarItems}
           />
         );
       case 'staff':
@@ -51,13 +109,13 @@ const RoleBasedLayout = () => {
           <StaffSidebar 
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
+            sidebarItems={sidebarItems}
           />
         );
       default:
         return <Navigate to="/login" replace />;
     }
   };
-
 
   return (
     <div className="flex h-screen bg-gray-100">

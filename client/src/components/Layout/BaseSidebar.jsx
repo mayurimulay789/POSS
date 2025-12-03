@@ -6,7 +6,7 @@ import { logoutUser } from '../../store/slices/authSlice';
 const BaseSidebar = ({ 
   isSidebarOpen, 
   setIsSidebarOpen, 
-  sidebarItems,
+  sidebarItems = [],
   roleName,
   roleLabel 
 }) => {
@@ -62,21 +62,70 @@ const BaseSidebar = ({
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+  // Debug: Log sidebar items to see their structure
+  useEffect(() => {
+    console.log('BaseSidebar - sidebarItems:', sidebarItems);
+    console.log('BaseSidebar - sidebarItems length:', sidebarItems.length);
+  }, [sidebarItems]);
+
+  // Ensure sidebar items have the correct structure
+  const normalizeSidebarItems = (items) => {
+    return items.map(item => {
+      // If item is already in the correct format, return as is
+      if (item && typeof item === 'object' && item.path && item.label) {
+        return item;
+      }
+      
+      // If item is just a permission string, create a basic structure
+      if (typeof item === 'string') {
+        return {
+          path: `/${item.replace('_management', '').replace('_', '-')}`,
+          label: item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          icon: getIconForPermission(item),
+          permission: item
+        };
+      }
+      
+      return null;
+    }).filter(Boolean);
+  };
+
+  // Helper function to get icons for permissions
+  const getIconForPermission = (permission) => {
+    const iconMap = {
+      'order_management': '📝',
+      'menu_management': '📋',
+      'billing_management': '💰',
+      'space_management': '🪑',
+      'task_management': '✅',
+      'expense_management': '💸',
+      'reports_analytics': '📈',
+      'employee_management': '👥',
+      'permission_management': '🔐',
+      'dashboard': '📊'
+    };
+    
+    return iconMap[permission] || '📄';
+  };
+
+  // Normalize sidebar items
+  const normalizedSidebarItems = normalizeSidebarItems(sidebarItems);
+
   // Group sidebar items
   const groupedItems = {
-    main: sidebarItems.filter(item => 
+    main: normalizedSidebarItems.filter(item => 
       ['dashboard'].includes(item.path.replace('/', ''))
     ),
-    operations: sidebarItems.filter(item =>
+    operations: normalizedSidebarItems.filter(item =>
       ['orders', 'menu', 'billing'].includes(item.path.replace('/', ''))
     ),
-    management: sidebarItems.filter(item =>
+    management: normalizedSidebarItems.filter(item =>
       ['spaces', 'tasks', 'expenses'].includes(item.path.replace('/', ''))
     ),
-    analytics: sidebarItems.filter(item =>
+    analytics: normalizedSidebarItems.filter(item =>
       ['reports'].includes(item.path.replace('/', ''))
     ),
-    administration: sidebarItems.filter(item =>
+    administration: normalizedSidebarItems.filter(item =>
       ['employees', 'permission-management'].includes(item.path.replace('/', ''))
     )
   };
@@ -117,7 +166,7 @@ const BaseSidebar = ({
                     : 'text-gray-700 hover:bg-gray-50 hover:border-gray-200 border border-transparent'
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
+                <span className="text-lg">{item.icon || '📄'}</span>
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}
@@ -139,9 +188,12 @@ const BaseSidebar = ({
               </span>
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-gray-800 truncate">{user?.FullName}</h3>
+              <h3 className="font-bold text-gray-800 truncate">{user?.FullName || 'User'}</h3>
               <p className="text-gray-600 text-sm capitalize">{roleLabel}</p>
-              <p className="text-gray-500 text-xs truncate">{user?.email}</p>
+              <p className="text-gray-500 text-xs truncate">{user?.email || ''}</p>
+              <p className="text-gray-400 text-xs mt-1">
+                {normalizedSidebarItems.length} menu items
+              </p>
             </div>
           </div>
           
@@ -159,11 +211,20 @@ const BaseSidebar = ({
 
       {/* Navigation Menu */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {renderSidebarGroup('main', groupedItems.main)}
-        {renderSidebarGroup('operations', groupedItems.operations, 'Operations')}
-        {renderSidebarGroup('management', groupedItems.management, 'Management')}
-        {renderSidebarGroup('analytics', groupedItems.analytics, 'Analytics')}
-        {renderSidebarGroup('administration', groupedItems.administration, 'Administration')}
+        {normalizedSidebarItems.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400 mb-2">No menu items available</div>
+            <div className="text-xs text-gray-500">Loading permissions...</div>
+          </div>
+        ) : (
+          <>
+            {renderSidebarGroup('main', groupedItems.main)}
+            {renderSidebarGroup('operations', groupedItems.operations, 'Operations')}
+            {renderSidebarGroup('management', groupedItems.management, 'Management')}
+            {renderSidebarGroup('analytics', groupedItems.analytics, 'Analytics')}
+            {renderSidebarGroup('administration', groupedItems.administration, 'Administration')}
+          </>
+        )}
       </div>
 
       {/* Footer */}
