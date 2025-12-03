@@ -1,21 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
 import BaseSidebar from './BaseSidebar';
-import { getSidebarItemsForRole } from '../../config/rolePermissions';
-import { FIXED_PERMISSIONS } from '../../config/fixedPermissions';
+import { SIDEBAR_ITEMS } from '../../config/rolePermissions';
 
-const MerchantSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
-  const { user } = useSelector(state => state.auth);
+const MerchantSidebar = ({ isSidebarOpen, setIsSidebarOpen, sidebarItems = [] }) => {
+  // Debug: Log what we're receiving
+  console.log('MerchantSidebar - Received sidebarItems:', sidebarItems);
+  console.log('MerchantSidebar - sidebarItems length:', sidebarItems.length);
   
-  // Merchant has all permissions by default
-  const allPermissions = Object.values(FIXED_PERMISSIONS);
-  const sidebarItems = getSidebarItemsForRole(allPermissions);
+  // Merchant gets all sidebar items
+  const merchantSidebarItems = sidebarItems.length > 0 
+    ? sidebarItems 
+    : Object.values(SIDEBAR_ITEMS);
+
+  console.log('MerchantSidebar - Final sidebar items to render:', merchantSidebarItems);
 
   return (
     <BaseSidebar
       isSidebarOpen={isSidebarOpen}
       setIsSidebarOpen={setIsSidebarOpen}
-      sidebarItems={sidebarItems}
+      sidebarItems={merchantSidebarItems}
       roleName="merchant"
       roleLabel="Merchant"
     />

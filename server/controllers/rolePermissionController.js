@@ -26,6 +26,7 @@ const DEFAULT_ROLE_PERMISSIONS = {
 // @access  Private/Merchant
 const getRolePermissions = async (req, res) => {
   try {
+    console.log("rolePermissionController is calling");
     const { role } = req.params;
     const merchantId = req.user._id;
 
@@ -63,6 +64,7 @@ const getRolePermissions = async (req, res) => {
 // @access  Private/Merchant
 const updateRolePermissions = async (req, res) => {
   try {
+    console.log("updaterolepermission is calling");
     const { role } = req.params;
     const { permissions } = req.body;
     const merchantId = req.user._id;
@@ -112,6 +114,7 @@ const updateRolePermissions = async (req, res) => {
 // @access  Private/Merchant
 const getAllRolePermissions = async (req, res) => {
   try {
+    console.log("getAllRolePermissions is calling");
     const merchantId = req.user._id;
     
     const rolePermissions = await RolePermission.find({ merchantId });
@@ -141,6 +144,7 @@ const getAllRolePermissions = async (req, res) => {
 // @access  Private
 const getUserPermissions = async (req, res) => {
   try {
+    console.log("permissionslice is calling");
     const user = req.user;
     
     // If user is merchant, they have all permissions

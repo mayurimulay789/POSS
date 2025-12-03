@@ -1,22 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import React from 'react';
 import BaseSidebar from './BaseSidebar';
-import { getSidebarItemsForRole } from '../../config/rolePermissions';
-import { usePermissions } from '../../hooks/usePermissions';
 
-const ManagerSidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
-  const { user } = useSelector(state => state.auth);
-  const { permissions, loadPermissions } = usePermissions();
-  const [sidebarItems, setSidebarItems] = useState([]);
-
-  useEffect(() => {
-    loadPermissions();
-  }, [loadPermissions]);
-
-  useEffect(() => {
-    const items = getSidebarItemsForRole(permissions);
-    setSidebarItems(items);
-  }, [permissions]);
+const ManagerSidebar = ({ isSidebarOpen, setIsSidebarOpen, sidebarItems = [] }) => {
+  // Debug: Log what we're receiving
+  console.log('ManagerSidebar - Received sidebarItems:', sidebarItems);
+  console.log('ManagerSidebar - sidebarItems length:', sidebarItems.length);
 
   return (
     <BaseSidebar

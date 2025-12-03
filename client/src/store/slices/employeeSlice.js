@@ -6,6 +6,7 @@ export const createEmployee = createAsyncThunk(
   'employees/createEmployee',
   async (employeeData, { rejectWithValue }) => {
     try {
+      console.log("empsclice is calling");
       const response = await employeeAPI.createEmployee(employeeData);
       return response.data;
     } catch (error) {
@@ -20,6 +21,7 @@ export const getEmployees = createAsyncThunk(
   'employees/getEmployees',
   async (params = {}, { rejectWithValue }) => {
     try {
+       console.log("empsclice is calling");
       const response = await employeeAPI.getEmployees(params);
       return response.data;
     } catch (error) {
@@ -34,6 +36,7 @@ export const getEmployee = createAsyncThunk(
   'employees/getEmployee',
   async (id, { rejectWithValue }) => {
     try {
+       console.log("empsclice is calling");
       const response = await employeeAPI.getEmployee(id);
       return response.data;
     } catch (error) {
@@ -48,6 +51,7 @@ export const updateEmployee = createAsyncThunk(
   'employees/updateEmployee',
   async ({ id, employeeData }, { rejectWithValue }) => {
     try {
+       console.log("empsclice is calling");
       const response = await employeeAPI.updateEmployee(id, employeeData);
       return response.data;
     } catch (error) {
@@ -62,6 +66,7 @@ export const toggleEmployeeStatus = createAsyncThunk(
   'employees/toggleEmployeeStatus',
   async (id, { rejectWithValue }) => {
     try {
+       console.log("empsclice is calling");
       const response = await employeeAPI.toggleEmployeeStatus(id);
       return response.data;
     } catch (error) {
@@ -76,6 +81,7 @@ export const deleteEmployee = createAsyncThunk(
   'employees/deleteEmployee',
   async (id, { rejectWithValue }) => {
     try {
+       console.log("empsclice is calling");
       await employeeAPI.deleteEmployee(id);
       return id;
     } catch (error) {

@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL|| 'http://localhost:5000/api';
 
-// Create axios instance for permission API
-const permissionApi = axios.create({
-  baseURL: `${API_URL}/role-permissions`,
+// Create axios instance
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Add auth interceptor
-permissionApi.interceptors.request.use(
+// Request interceptor to add token
+api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -21,13 +24,13 @@ permissionApi.interceptors.request.use(
   }
 );
 
-// Response interceptor
-permissionApi.interceptors.response.use(
+// Response interceptor for error handling
+api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Clear token and redirect to login
       localStorage.removeItem('token');
-      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
@@ -36,28 +39,17 @@ permissionApi.interceptors.response.use(
 
 const permissionAPI = {
   // Get permissions for a specific role
-  getRolePermissions: async (role) => {
-    const response = await permissionApi.get(`/roles/${role}`);
-    return response;
-  },
+  getRolePermissions: (role) => api.get(`/role-permissions/roles/${role}`),
 
   // Update permissions for a specific role
-  updateRolePermissions: async (role, permissions) => {
-    const response = await permissionApi.put(`/roles/${role}`, { permissions });
-    return response;
-  },
+  updateRolePermissions: (role, permissions) => 
+    api.put(`/role-permissions/roles/${role}`, { permissions }),
 
   // Get all roles with their permissions
-  getAllRolePermissions: async () => {
-    const response = await permissionApi.get('/all');
-    return response;
-  },
+  getAllRolePermissions: () => api.get('/role-permissions/all'),
 
   // Get current user's permissions
-  getMyPermissions: async () => {
-    const response = await permissionApi.get('/my-permissions');
-    return response;
-  }
+  getMyPermissions: () => api.get('/role-permissions/my-permissions'),
 };
 
 export default permissionAPI;
