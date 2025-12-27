@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
+
+  useEffect(() => {
+    const onScroll = () => setIsAtTop(window.scrollY < 60);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navLinks = [
+    { label: 'Home', to: '/', type: 'route' },
+    { label: 'About Us', anchor: 'AboutUs' },
+    { label: 'Menu', anchor: 'menu' },
+    { label: 'Gallery', anchor: 'gallery' },
+    { label: 'Contact Us', anchor: 'contact' },
+  ];
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    navigate('/login');
+    navigate('/');
     setIsMobileMenuOpen(false);
   };
 
@@ -27,6 +44,35 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const goHome = (e) => {
+    // Prevent default if we're already on home to avoid re-render and just scroll
+    if (location.pathname === '/') {
+      e?.preventDefault?.();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+  const scrollToSection = (id) => {
+    const scrollNow = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(scrollNow, 120);
+    } else {
+      scrollNow();
+    }
+    setIsMobileMenuOpen(false);
   };
 
   // Role-based styling
@@ -60,26 +106,34 @@ const Navbar = () => {
     }
   };
 
+  const showTransparent = location.pathname === '/' && isAtTop && !isMobileMenuOpen;
+  const textClass = showTransparent ? 'text-white drop-shadow-sm' : 'text-gray-800';
+  const linkClass = `${textClass} hover:text-amber-200 transition font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
+  const navBg = showTransparent
+    ? 'bg-gradient-to-b from-black/50 via-black/30 to-transparent shadow-none'
+    : 'bg-white/95 shadow-md backdrop-blur';
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* MAIN NAV BAR */}
         <div className="flex justify-between items-center h-16">
 
           {/* LOGO */}
-          <Link 
-            to="/" 
-            className="text-2xl font-bold text-blue-600 hover:text-blue-700 transition flex items-center gap-2"
+          <Link
+            to="/"
+            onClick={goHome}
+            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-sm' : 'text-amber-600 hover:text-amber-700'}`}
           >
             <span className="text-3xl">🍽️</span>
-            Restaurant POS
+            India Restaurant
           </Link>
 
           {/* HAMBURGER (MOBILE ONLY) */}
           <button
             onClick={toggleMobileMenu}
-            className="md:hidden p-2 rounded focus:outline-none focus:ring-2 text-gray-700"
+            className={`md:hidden p-2 rounded focus:outline-none focus:ring-2 ${showTransparent ? 'text-white' : 'text-gray-800'}`}
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-between">
@@ -90,13 +144,13 @@ const Navbar = () => {
           </button>
 
           {/* DESKTOP MENU */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-6">
 
             {isAuthenticated ? (
               <>
                 {/* USER INFO */}
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-700 text-sm font-medium">
+                  <span className={`${textClass} text-sm font-medium`}>
                     Welcome, {user?.name}
                   </span>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize flex items-center gap-1 ${getRoleColor(user?.role)}`}>
@@ -107,7 +161,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleDashboardNavigation}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition flex items-center gap-2"
+                  className={`${showTransparent ? 'bg-white/90 text-gray-900 hover:bg-white' : 'bg-amber-600 text-white hover:bg-amber-700'} px-4 py-2 rounded-md transition flex items-center gap-2 shadow-sm`}
                 >
                   <span>📊</span>
                   Dashboard
@@ -115,7 +169,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="border border-gray-300 hover:border-red-500 text-gray-700 hover:text-red-600 px-4 py-2 rounded-md transition flex items-center gap-2"
+                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
                 >
                   <span>🚪</span>
                   Logout
@@ -123,9 +177,32 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <div className="flex items-center gap-4">
+                  {navLinks.map((link) => (
+                    link.type === 'route' ? (
+                      <Link
+                        key={link.label}
+                        to={link.to}
+                        onClick={goHome}
+                        className={linkClass}
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <button
+                        key={link.label}
+                        onClick={() => scrollToSection(link.anchor)}
+                        className={`${linkClass} border-b-2 border-transparent hover:border-amber-200`}
+                      >
+                        {link.label}
+                      </button>
+                    )
+                  ))}
+                </div>
+
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-blue-600 px-4 py-2 transition font-medium"
+                  className={`${showTransparent ? 'bg-white/90 text-gray-900 hover:bg-white' : 'bg-amber-600 text-white hover:bg-amber-700'} px-5 py-2 rounded-full transition-colors font-semibold shadow-md`}
                 >
                   Login
                 </Link>
@@ -172,10 +249,30 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                {navLinks.map((link) => (
+                  link.type === 'route' ? (
+                    <Link
+                      key={link.label}
+                      to={link.to}
+                      onClick={goHome}
+                      className="block px-4 py-3 text-gray-700 hover:text-amber-600 hover:bg-gray-50 border-b border-gray-100 font-medium"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <button
+                      key={link.label}
+                      onClick={() => scrollToSection(link.anchor)}
+                      className="block w-full text-left px-4 py-3 text-gray-700 hover:text-amber-600 hover:bg-gray-50 border-b border-gray-100 font-medium"
+                    >
+                      {link.label}
+                    </button>
+                  )
+                ))}
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-gray-50 border-b border-gray-100 font-medium"
+                  className="block mx-4 my-3 text-center bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-semibold shadow-md"
                 >
                   Login
                 </Link>

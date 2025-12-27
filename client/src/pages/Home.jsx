@@ -1,9 +1,22 @@
-import React from 'react'
+import React from 'react';
+import BannerCarousel from '../components/BannerCarousel';
+import WelcomeSection from '../components/WelcomeSection';
+import MenuSection from '../components/MenuSection';
+import CuisineGallery from '../components/CuisineGallery';
+import AboutUs from '../components/AboutUs';
+import ContactUs from './ContactUs';
 
 const Home = () => {
   return (
-    <div>This is home Component for pos system</div>
-  )
-}
+    <div className="min-h-screen bg-white">
+      <BannerCarousel />
+      <WelcomeSection />
+      <MenuSection />
+      <CuisineGallery />
+      <AboutUs />
+      <ContactUs/>
+    </div>
+  );
+};
 
-export default Home
+export default Home;

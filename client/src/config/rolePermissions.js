@@ -8,6 +8,13 @@ export const SIDEBAR_ITEMS = {
     icon: '📊',
     permission: FIXED_PERMISSIONS.ORDER_MANAGEMENT, // Basic permission for dashboard
   },
+  hotelImages: {
+    path: '/hotel-images',
+    label: 'Hotel Images',
+    icon: '🖼️',
+    // No permission required; visible to all roles
+    permission: null,
+  },
   orders: {
     path: '/orders',
     label: 'Order Management',
@@ -19,6 +26,20 @@ export const SIDEBAR_ITEMS = {
     label: 'Menu Management',
     icon: '📋',
     permission: FIXED_PERMISSIONS.MENU_MANAGEMENT,
+    subItems: [
+      {
+        path: '/menu/add',
+        label: 'Add Menu',
+        icon: '➕',
+        permission: FIXED_PERMISSIONS.MENU_MANAGEMENT,
+      },
+      {
+        path: '/menu/list',
+        label: 'Menu List',
+        icon: '📝',
+        permission: FIXED_PERMISSIONS.MENU_MANAGEMENT,
+      }
+    ]
   },
   billing: {
     path: '/billing',
@@ -66,8 +87,9 @@ export const SIDEBAR_ITEMS = {
 
 // Get sidebar items for a specific role based on their permissions
 export const getSidebarItemsForRole = (rolePermissions = []) => {
-  return Object.values(SIDEBAR_ITEMS).filter(item => 
-    rolePermissions.includes(item.permission)
+  return Object.values(SIDEBAR_ITEMS).filter(item =>
+    // Include if no permission required, else check role permissions
+    !item.permission || rolePermissions.includes(item.permission)
   );
 };
 
@@ -75,7 +97,7 @@ export const getSidebarItemsForRole = (rolePermissions = []) => {
 export const GROUPED_SIDEBAR_ITEMS = {
   main: ['dashboard'],
   operations: ['orders', 'menu', 'billing'],
-  management: ['spaces', 'tasks', 'expenses'],
+  management: ['hotelImages', 'spaces', 'tasks', 'expenses'],
   analytics: ['reports'],
   administration: ['employees', 'permissions']
 };
