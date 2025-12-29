@@ -205,6 +205,7 @@ const BillingManagement = () => {
 
   return (
     <div className="p-6">
+
         <button
           onClick={() => setActiveTab('completed')}
           className={`px-6 py-3 font-semibold transition-colors ${
@@ -217,7 +218,8 @@ const BillingManagement = () => {
         </button>
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Billing Management
-      </h1>
+
+     </h1>
       
       {/* Tabs */}
       <div className="flex border-b border-gray-200 mb-6">
@@ -245,6 +247,7 @@ const BillingManagement = () => {
 
       {/* Tab Content */}
       <div className="bg-white rounded-lg shadow p-6">
+
         {activeTab === 'kot' && (
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -465,6 +468,12 @@ const BillingManagement = () => {
             )}
           </div>
         )}
+
+        <p className="text-gray-600">
+          This is the BillingManagement component for merchant role.
+        </p>
+        {/* Add your BillingManagement content here */}
+
       </div>
     </div>
   );

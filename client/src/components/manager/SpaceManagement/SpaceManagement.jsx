@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MdTableRestaurant, MdEdit } from 'react-icons/md';
 import API_BASE_URL from '../../../config/apiConfig';
-
 const SpaceManagement = () => {
   const [activeTab, setActiveTab] = useState('Tables');
   const [tables, setTables] = useState([]);
@@ -348,6 +348,7 @@ const SpaceManagement = () => {
   };
 
   return (
+
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Space Management</h1>
@@ -709,5 +710,6 @@ const SpaceManagement = () => {
     </div>
   );
 };
+  
 
-export default SpaceManagement;
+export default SpaceManagement

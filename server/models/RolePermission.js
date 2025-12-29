@@ -9,7 +9,8 @@ const FIXED_PERMISSIONS = {
   TASK_MANAGEMENT: 'task_management',
   EXPENSE_MANAGEMENT: 'expense_management',
   REPORTS_ANALYTICS: 'reports_analytics',
-  EMPLOYEE_MANAGEMENT: 'employee_management'
+  EMPLOYEE_MANAGEMENT: 'employee_management',
+  CUSTOMER_MANAGEMENT: 'customer_management',
 };
 
 const rolePermissionSchema = new mongoose.Schema({

@@ -18,19 +18,21 @@ const BaseSidebar = ({
   const [openGroups, setOpenGroups] = useState({});
   const [openSubMenus, setOpenSubMenus] = useState({});
 
+  /* ---------------- EFFECTS ---------------- */
   useEffect(() => {
     const handleEscape = e => {
       if (e.key === 'Escape' && isSidebarOpen) setIsSidebarOpen(false);
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, setIsSidebarOpen]);
 
   useEffect(() => {
     document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
     return () => (document.body.style.overflow = 'unset');
   }, [isSidebarOpen]);
 
+  /* ---------------- HELPERS ---------------- */
   const handleNavigation = path => {
     navigate(path);
     if (window.innerWidth < 1024) setIsSidebarOpen(false);
@@ -61,6 +63,7 @@ const BaseSidebar = ({
       space_management: '🪑',
       task_management: '✅',
       expense_management: '💸',
+      customer_management: '🧑‍🤝‍🧑',
       reports_analytics: '📈',
       employee_management: '👥',
       permission_management: '🔐'
@@ -69,21 +72,18 @@ const BaseSidebar = ({
   };
 
   /* -------- NORMALIZE SIDEBAR ITEMS -------- */
-  const normalizeSidebarItems = items =>
-    items
-      .map(item => {
-        if (typeof item === 'string') {
-          return {
-            path: `/${item.replace('_management', '').replace(/_/g, '-')}`,
-            label: item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-            icon: getIconForPermission(item)
-          };
-        }
-        return item;
-      })
-      .filter(Boolean);
-
-  const normalizedSidebarItems = normalizeSidebarItems(sidebarItems);
+  const normalizedSidebarItems = sidebarItems
+    .map(item => {
+      if (typeof item === 'string') {
+        return {
+          path: `/${item.replace('_management', '').replace(/_/g, '-')}`,
+          label: item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          icon: getIconForPermission(item)
+        };
+      }
+      return item;
+    })
+    .filter(Boolean);
 
   /* ------------ MENU ITEM RENDER ------------ */
   const renderMenuItem = item => {
@@ -153,7 +153,7 @@ const BaseSidebar = ({
       ['/orders', '/menu', '/billing'].includes(i.path)
     ),
     management: normalizedSidebarItems.filter(i =>
-      ['/spaces', '/tasks', '/expenses'].includes(i.path)
+      ['/spaces', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
     administration: normalizedSidebarItems.filter(i =>
@@ -180,44 +180,34 @@ const BaseSidebar = ({
 
   /* ---------------- UI ---------------- */
   return (
-    <>
-      <aside className="hidden lg:flex w-64 bg-white border-r min-h-screen flex-col">
-        <SidebarContent />
-      </aside>
-    </>
+    <aside className="hidden lg:flex w-64 bg-white border-r min-h-screen flex-col">
+      <div className="p-5 border-b">
+        <h3 className="font-bold">{user?.FullName || roleName}</h3>
+        <p className="text-sm text-gray-500">{roleLabel}</p>
+      </div>
+
+      <div className="flex-1 p-4 overflow-y-auto">
+        {renderGroup('main', groupedItems.main)}
+        {renderGroup('operations', groupedItems.operations, 'Operations')}
+        {renderGroup('management', groupedItems.management, 'Management')}
+        {renderGroup('analytics', groupedItems.analytics, 'Analytics')}
+        {renderGroup(
+          'administration',
+          groupedItems.administration,
+          'Administration'
+        )}
+      </div>
+
+      <div className="p-4 border-t">
+        <button
+          onClick={handleLogout}
+          className="w-full py-2 border rounded-lg hover:bg-gray-50"
+        >
+          🚪 Logout
+        </button>
+      </div>
+    </aside>
   );
-
-  function SidebarContent() {
-    return (
-      <>
-        <div className="p-5 border-b">
-          <h3 className="font-bold">{user?.FullName || roleName}</h3>
-          <p className="text-sm text-gray-500">{roleLabel}</p>
-        </div>
-
-        <div className="flex-1 p-4 overflow-y-auto">
-          {renderGroup('main', groupedItems.main)}
-          {renderGroup('operations', groupedItems.operations, 'Operations')}
-          {renderGroup('management', groupedItems.management, 'Management')}
-          {renderGroup('analytics', groupedItems.analytics, 'Analytics')}
-          {renderGroup(
-            'administration',
-            groupedItems.administration,
-            'Administration'
-          )}
-        </div>
-
-        <div className="p-4 border-t">
-          <button
-            onClick={handleLogout}
-            className="w-full py-2 border rounded-lg hover:bg-gray-50"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      </>
-    );
-  }
 };
 
 export default BaseSidebar;

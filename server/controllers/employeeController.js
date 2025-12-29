@@ -70,17 +70,96 @@ const createUser = async (req, res) => {
 };
 
 // Get all users (created by this merchant)
+// const getUsers = async (req, res) => {
+//   try {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const skip = (page - 1) * limit;
+
+//     // Build filter - merchants can see users they created
+//     const filter = { createdBy: req.user._id };
+
+//     // Optional role filter
+//     if (req.query.role) {
+//       filter.role = req.query.role;
+//     }
+
+//     // Optional search by name or email
+//     if (req.query.search) {
+//       filter.$or = [
+//         { FullName: { $regex: req.query.search, $options: 'i' } },
+//         { email: { $regex: req.query.search, $options: 'i' } }
+//       ];
+//     }
+
+//     const users = await User.find(filter)
+//       .select('-password')
+//       .sort({ createdAt: -1 })
+//       .skip(skip)
+//       .limit(limit);
+
+//     const total = await User.countDocuments(filter);
+//     const totalPages = Math.ceil(total / limit);
+
+//     res.status(200).json({
+//       users,
+//       pagination: {
+//         current: page,
+//         pages: totalPages,
+//         total: total,
+//         hasNext: page < totalPages,
+//         hasPrev: page > 1
+//       }
+//     });
+
+//   } catch (error) {
+//     console.error("Get users error:", error);
+//     res.status(500).json({ message: 'Server error while fetching users' });
+//   }
+// };
+
+// Get all users (created by this merchant OR same hierarchy level)
 const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Build filter - merchants can see users they created
-    const filter = { createdBy: req.user._id };
+    // Build filter based on user role
+    let filter = {};
+    
+    if (req.user.role === 'merchant') {
+      // Merchant can see users they created
+      filter = { createdBy: req.user._id };
+    } else {
+      // Non-merchant users (manager, supervisor, staff) should see:
+      // 1. Themselves
+      // 2. Users in the same or lower hierarchy level
+      // 3. Users created by the same merchant
+      
+      // First, get the merchant who created this user
+      const currentUser = await User.findById(req.user._id).populate('createdBy');
+      const merchantId = currentUser.createdBy?._id || req.user._id;
+      
+      // Build filter to show users created by the same merchant
+      // and with appropriate roles based on hierarchy
+      filter = { createdBy: merchantId };
+      
+      // Filter by allowed roles based on current user's role
+      const roleHierarchy = {
+        'manager': ['manager', 'supervisor', 'staff'],
+        'supervisor': ['supervisor', 'staff'],
+        'staff': ['staff']
+      };
+      
+      if (roleHierarchy[req.user.role]) {
+        filter.role = { $in: roleHierarchy[req.user.role] };
+      }
+    }
 
     // Optional role filter
-    if (req.query.role) {
+    if (req.query.role && req.user.role === 'merchant') {
+      // Only merchant can filter by specific role
       filter.role = req.query.role;
     }
 
