@@ -65,6 +65,10 @@ app.get('/health', (req, res) => {
 const authRoutes = require("../routes/auth");
 const employeeRoute = require("../routes/EmployeeRoute");
 const permissionRoutes = require("../routes/rolePermissionRoutes");
+const menuRoutes = require("../routes/menuRoutes");
+const tableRoutes = require("../routes/tableRoutes");
+const orderRoutes = require("../routes/orderRoutes");
+const hotelImageRoutes = require("../routes/hotelImageRoutes");
 
 
 
@@ -72,6 +76,35 @@ const permissionRoutes = require("../routes/rolePermissionRoutes");
 app.use("/api/auth", authRoutes);
 app.use("/api/employee", employeeRoute);
 app.use("/api/role-permissions", permissionRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/tables', tableRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/hotel-images', hotelImageRoutes);
+
+// Note: All images are now stored in Cloudinary only (in-memory processing, no local disk storage)
+
+// Debug route to list registered routes (for diagnostics)
+app.get('/debug/routes', (req, res) => {
+  try {
+    const routes = [];
+    app._router.stack.forEach(mw => {
+      if (mw.route) {
+        const methods = Object.keys(mw.route.methods).join(',').toUpperCase();
+        routes.push({ path: mw.route.path, methods });
+      } else if (mw.name === 'router' && mw.handle && mw.handle.stack) {
+        mw.handle.stack.forEach(r => {
+          if (r.route) {
+            const methods = Object.keys(r.route.methods).join(',').toUpperCase();
+            routes.push({ path: r.route.path, methods });
+          }
+        });
+      }
+    });
+    res.json({ routes });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
 
 
 // 404 handler for undefined routes

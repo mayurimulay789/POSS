@@ -15,6 +15,7 @@ const BaseSidebar = ({
   const location = useLocation();
   const { user } = useSelector(state => state.auth);
   const [openGroups, setOpenGroups] = useState({});
+  const [openSubMenus, setOpenSubMenus] = useState({});
 
   // Close sidebar on escape key
   useEffect(() => {
@@ -58,10 +59,18 @@ const BaseSidebar = ({
     }));
   };
 
+  const toggleSubMenu = (itemPath) => {
+    setOpenSubMenus(prev => ({
+      ...prev,
+      [itemPath]: !prev[itemPath]
+    }));
+  };
+
   const isActive = (path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+<<<<<<< HEAD
   // Debug: Log sidebar items to see their structure
   useEffect(() => {
     console.log('BaseSidebar - sidebarItems:', sidebarItems);
@@ -111,6 +120,72 @@ const BaseSidebar = ({
   // Normalize sidebar items
   const normalizedSidebarItems = normalizeSidebarItems(sidebarItems);
 
+=======
+  const renderMenuItem = (item) => {
+    const hasSubItems = item.subItems && item.subItems.length > 0;
+    const isSubMenuOpen = openSubMenus[item.path];
+    const isItemActive = isActive(item.path);
+    const hasActiveSubItem = hasSubItems && item.subItems.some(sub => isActive(sub.path));
+
+    if (hasSubItems) {
+      return (
+        <div key={item.path} className="mb-1">
+          <button
+            onClick={() => toggleSubMenu(item.path)}
+            className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center justify-between ${
+              isItemActive || hasActiveSubItem
+                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                : 'text-gray-700 hover:bg-gray-50 hover:border-gray-200 border border-transparent'
+            }`}
+          >
+            <div className="flex items-center space-x-3">
+              <span className="text-lg">{item.icon}</span>
+              <span className="font-medium">{item.label}</span>
+            </div>
+            <span className={`transform transition-transform text-sm ${isSubMenuOpen ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
+          
+          {isSubMenuOpen && (
+            <div className="ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-2">
+              {item.subItems.map(subItem => (
+                <button
+                  key={subItem.path}
+                  onClick={() => handleNavigation(subItem.path)}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-3 text-sm ${
+                    isActive(subItem.path)
+                      ? 'bg-blue-50 text-blue-700 border-l-2 border-blue-500'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <span className="text-base">{subItem.icon}</span>
+                  <span className="font-medium">{subItem.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <button
+        key={item.path}
+        onClick={() => handleNavigation(item.path)}
+        className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 flex items-center space-x-3 ${
+          isItemActive
+            ? 'bg-blue-100 text-blue-700 border border-blue-200'
+            : 'text-gray-700 hover:bg-gray-50 hover:border-gray-200 border border-transparent'
+        }`}
+      >
+        <span className="text-lg">{item.icon}</span>
+        <span className="font-medium">{item.label}</span>
+      </button>
+    );
+  };
+
+>>>>>>> menu-billing
   // Group sidebar items
   const groupedItems = {
     main: normalizedSidebarItems.filter(item => 
@@ -119,8 +194,13 @@ const BaseSidebar = ({
     operations: normalizedSidebarItems.filter(item =>
       ['orders', 'menu', 'billing'].includes(item.path.replace('/', ''))
     ),
+<<<<<<< HEAD
     management: normalizedSidebarItems.filter(item =>
       ['spaces', 'tasks', 'expenses'].includes(item.path.replace('/', ''))
+=======
+    management: sidebarItems.filter(item =>
+      ['hotel-images', 'spaces', 'tasks', 'expenses'].includes(item.path.replace('/', ''))
+>>>>>>> menu-billing
     ),
     analytics: normalizedSidebarItems.filter(item =>
       ['reports'].includes(item.path.replace('/', ''))
@@ -134,7 +214,11 @@ const BaseSidebar = ({
     if (items.length === 0) return null;
 
     const isGroupOpen = openGroups[groupName];
-    const hasActiveItem = items.some(item => isActive(item.path));
+    const hasActiveItem = items.some(item => {
+      const directActive = isActive(item.path);
+      const subActive = item.subItems && item.subItems.some(sub => isActive(sub.path));
+      return directActive || subActive;
+    });
 
     return (
       <div className="mb-2">
@@ -156,6 +240,7 @@ const BaseSidebar = ({
         
         {(isGroupOpen || !groupLabel) && (
           <div className="space-y-1">
+<<<<<<< HEAD
             {items.map(item => (
               <button
                 key={item.path}
@@ -170,6 +255,9 @@ const BaseSidebar = ({
                 <span className="font-medium">{item.label}</span>
               </button>
             ))}
+=======
+            {items.map(item => renderMenuItem(item))}
+>>>>>>> menu-billing
           </div>
         )}
       </div>

@@ -72,7 +72,7 @@ const RoleBasedLayout = () => {
   };
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   const renderSidebar = () => {
@@ -113,7 +113,7 @@ const RoleBasedLayout = () => {
           />
         );
       default:
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/" replace />;
     }
   };
 

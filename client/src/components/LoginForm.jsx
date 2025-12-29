@@ -8,7 +8,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   
-  const { loading, error, success, isAuthenticated } = useSelector((state) => state.auth);
+  const { loading, error, success, isAuthenticated, user } = useSelector((state) => state.auth);
   
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
@@ -28,9 +28,9 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      navigate('/dashboard');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
 
   const onSubmit = async (e) => {
     e.preventDefault();

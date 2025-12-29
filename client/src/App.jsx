@@ -1,13 +1,17 @@
+
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
+import { Link, Outlet } from 'react-router-dom';
 
 // Lazy load components
 const RoleBasedLayout = lazy(() => import('./pages/RoleBasedLayout'));
 const Login = lazy(() => import('./components/LoginForm'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const MenuManagement = lazy(() => import('./pages/MenuManagement'));
+const AddMenu = lazy(() => import('./components/merchant/MenuManagement/AddMenu'));
+const MenuList = lazy(() => import('./components/merchant/MenuManagement/MenuList'));
 const OrderManagement = lazy(() => import('./pages/OrderManagement'));
 const BillingManagement = lazy(() => import('./pages/BillingManagement'));
 const SpaceManagement = lazy(() => import('./pages/SpaceManagement'));
@@ -16,9 +20,11 @@ const ExpenseManagement = lazy(() => import('./pages/ExpenseManagement'));
 const ReportsAnalytics = lazy(() => import('./pages/ReportsAnalytics'));
 const EmployeeManagement = lazy(() => import('./pages/EmployeeManagement'));
 const PermissionManagement = lazy(() => import('./pages/PermissionManagement'));
+const HotelImages = lazy(() => import('./pages/HotelImages'));
 
 // Public components
 const HomePage = lazy(() => import('./pages/Home'));
+const ContactUsPage = lazy(() => import('./pages/ContactUs'));
 const Navbar = lazy(() => import('./components/Navbar'));
 const Footer = lazy(() => import('./components/Footer'));
 
@@ -29,16 +35,21 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Public Layout
-const PublicLayout = () => (
-  <div className="min-h-screen flex flex-col">
-    <Navbar />
-    <main className="flex-1 pt-16">
-      <Outlet />
-    </main>
-    <Footer />
-  </div>
-);
+// Public Layout (remove top padding on home so banner sits at very top under overlay nav)
+const PublicLayout = () => {
+  const location = useLocation();
+  const topPad = location.pathname === '/' ? 'pt-0' : 'pt-16';
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className={`flex-1 ${topPad}`}>
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
 // 404 Page
 const NotFoundPage = () => (
@@ -90,7 +101,7 @@ function App() {
                 <Route index element={<HomePage />} />
                 <Route path="home" element={<HomePage />} />
                 <Route path="about" element={<div className="container mx-auto px-4 py-8"><h1>About Us</h1></div>} />
-                <Route path="contact" element={<div className="container mx-auto px-4 py-8"><h1>Contact Us</h1></div>} />
+                <Route path="contact" element={<ContactUsPage />} />
               </Route>
 
               {/* Login Route */}
@@ -101,8 +112,11 @@ function App() {
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="menu" element={<MenuManagement />} />
+                <Route path="menu/add" element={<AddMenu />} />
+                <Route path="menu/list" element={<MenuList />} />
                 <Route path="orders" element={<OrderManagement />} />
                 <Route path="billing" element={<BillingManagement />} />
+                <Route path="hotel-images" element={<HotelImages />} />
                 <Route path="spaces" element={<SpaceManagement />} />
                 <Route path="tasks" element={<TaskManagement />} />
                 <Route path="expenses" element={<ExpenseManagement />} />
@@ -121,6 +135,5 @@ function App() {
   );
 }
 
-import { Link, Outlet } from 'react-router-dom';
-export default App;
 
+export default App
