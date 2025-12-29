@@ -56,6 +56,12 @@ export const SIDEBAR_ITEMS = {
     icon: '👥',
     permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
   },
+  customers: {
+    path: '/customers',
+    label: 'Customer Management',
+    icon: '🧑‍🤝‍🧑',
+    permission: FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT,
+  },
   permissions: {
     path: '/permission-management',
     label: 'Permission Management',
@@ -75,7 +81,7 @@ export const getSidebarItemsForRole = (rolePermissions = []) => {
 export const GROUPED_SIDEBAR_ITEMS = {
   main: ['dashboard'],
   operations: ['orders', 'menu', 'billing'],
-  management: ['spaces', 'tasks', 'expenses'],
+  management: ['spaces', 'tasks', 'expenses','customers'],
   analytics: ['reports'],
   administration: ['employees', 'permissions']
 };

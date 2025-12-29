@@ -39,6 +39,7 @@ export const fetchAllRolePermissions = createAsyncThunk(
     try {
       console.log("permissionslice is calling");
       const response = await permissionAPI.getAllRolePermissions();
+      console.log("response data:all permissions ::", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(

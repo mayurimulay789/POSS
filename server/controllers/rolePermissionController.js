@@ -6,20 +6,21 @@ const DEFAULT_ROLE_PERMISSIONS = {
   merchant: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management'
+    'reports_analytics', 'employee_management', 'customer_management'
   ],
   manager: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics'
+    'reports_analytics', 'employee_management', 'customer_management'
   ],
   supervisor: [
-    'order_management', 'billing_management', 'space_management', 'task_management'
+    'order_management', 'billing_management', 'space_management', 'task_management','customer_management'
   ],
   staff: [
-    'order_management', 'billing_management'
+    'order_management', 'billing_management', 'space_management','customer_management'
   ]
 };
+
 
 // @desc    Get permissions for a specific role
 // @route   GET /api/role-permissions/roles/:role
@@ -66,17 +67,22 @@ const updateRolePermissions = async (req, res) => {
   try {
     console.log("updaterolepermission is calling");
     const { role } = req.params;
+    console.log("role:", role);
     const { permissions } = req.body;
+    console.log("permissions:", permissions);
     const merchantId = req.user._id;
+    console.log("merchantId:", merchantId);
 
     // Validate role
     const validRoles = ['manager', 'supervisor', 'staff']; // Merchant cannot edit their own permissions
     if (!validRoles.includes(role)) {
+      console.log("invalid role specified");
       return res.status(400).json({ message: 'Invalid role specified' });
     }
 
     // Validate permissions array
     if (!Array.isArray(permissions)) {
+      console.log("permissions must be an array");
       return res.status(400).json({ message: 'Permissions must be an array' });
     }
 
@@ -85,6 +91,7 @@ const updateRolePermissions = async (req, res) => {
     const invalidPermissions = permissions.filter(p => !validPermissions.includes(p));
     
     if (invalidPermissions.length > 0) {
+      console.log("invalid permissions provided");
       return res.status(400).json({ 
         message: 'Invalid permissions provided',
         invalidPermissions 

@@ -23,6 +23,9 @@ const PermissionManagement = () => {
   // Load permissions when component mounts
   useEffect(() => {
     dispatch(fetchAllRolePermissions());
+    setTimeout(() => {
+    console.log(" all permissions********************************************************************* ",rolePermissions);
+    },2000);
   }, [dispatch]);
 
   // Initialize local permissions when rolePermissions loads
@@ -83,7 +86,7 @@ const PermissionManagement = () => {
       manager: [
         'menu_management', 'order_management', 'billing_management',
         'space_management', 'task_management', 'expense_management',
-        'reports_analytics'
+        'reports_analytics', 'employee_management', 'customer_management'
       ],
       supervisor: [
         'order_management', 'billing_management', 'space_management', 'task_management'
@@ -128,7 +131,7 @@ const PermissionManagement = () => {
     },
     {
       category: 'Management', 
-      permissions: ['space_management', 'task_management', 'expense_management']
+      permissions: ['space_management', 'task_management', 'expense_management','customer_management']
     },
     {
       category: 'Analytics',
@@ -149,7 +152,7 @@ const PermissionManagement = () => {
             Role Permissions Management
           </h1>
           <p className="text-gray-600">
-            Configure what each role can access in the restaurant POS system
+            Configure what each role can access in the restaurant POS system 
           </p>
         </div>
 

@@ -1,7 +1,15 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Navigate,
+  Link,
+  Outlet 
+} from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
+
 
 // Lazy load components
 const RoleBasedLayout = lazy(() => import('./pages/RoleBasedLayout'));
@@ -15,7 +23,11 @@ const TaskManagement = lazy(() => import('./pages/TaskManagement'));
 const ExpenseManagement = lazy(() => import('./pages/ExpenseManagement'));
 const ReportsAnalytics = lazy(() => import('./pages/ReportsAnalytics'));
 const EmployeeManagement = lazy(() => import('./pages/EmployeeManagement'));
+const CustomerManagement = lazy(() => import('./pages/CustomerManagement'));
 const PermissionManagement = lazy(() => import('./pages/PermissionManagement'));
+const AttendanceManagement = lazy(() => import('./pages/AttendanceManagement'));
+const MerchantAttendanceDashboard = lazy(() => import('./pages/MerchantAttendanceDashboard'));
+
 
 // Public components
 const HomePage = lazy(() => import('./pages/Home'));
@@ -29,6 +41,7 @@ const LoadingSpinner = () => (
   </div>
 );
 
+
 // Public Layout
 const PublicLayout = () => (
   <div className="min-h-screen flex flex-col">
@@ -39,6 +52,8 @@ const PublicLayout = () => (
     <Footer />
   </div>
 );
+
+
 
 // 404 Page
 const NotFoundPage = () => (
@@ -57,6 +72,7 @@ const NotFoundPage = () => (
   </div>
 );
 
+
 function App() {
   return (
     <Provider store={store}>
@@ -69,6 +85,12 @@ function App() {
               <Route path="/merchant/employees" element={<Navigate to="/employees" replace />} />
               <Route path="/merchant/spaces" element={<Navigate to="/spaces" replace />} />
               <Route path="/merchant/tasks" element={<Navigate to="/tasks" replace />} />
+              <Route path="/merchant/expenses" element={<Navigate to="/expenses" replace />} />
+              <Route path="/merchant/reports" element={<Navigate to="/reports" replace />} />
+              <Route path="/merchant/menu" element={<Navigate to="/menu" replace />} />
+              <Route path="/merchant/orders" element={<Navigate to="/orders" replace />} />
+              <Route path="/merchant/billing" element={<Navigate to="/billing" replace />} />
+              <Route path="/merchant/customers" element={<Navigate to="/customers" replace />} />
               <Route path="/merchant" element={<Navigate to="/dashboard" replace />} />
               
               {/* Add redirects for other roles too */}
@@ -76,15 +98,37 @@ function App() {
               <Route path="/supervisor/orders" element={<Navigate to="/orders" replace />} />
               <Route path="/supervisor/billing" element={<Navigate to="/billing" replace />} />
               <Route path="/supervisor" element={<Navigate to="/dashboard" replace />} />
-              
+              <Route path="/supervisor/spaces" element={<Navigate to="/spaces" replace />} />
+              <Route path="/supervisor/tasks" element={<Navigate to="/tasks" replace />} />
+              <Route path="/supervisor/expenses" element={<Navigate to="/expenses" replace />} />
+              <Route path="/supervisor/reports" element={<Navigate to="/reports" replace />} />
+              <Route path="/supervisor/employees" element={<Navigate to="/employees" replace />} />
+              <Route path="/supervisor/customers" element={<Navigate to="/customers" replace />} />
+
+              <Route path="/manager/orders" element={<Navigate to="/orders" replace />} />
+              <Route path="/manager/menu" element={<Navigate to="/menu" replace />} />
+              <Route path="/manager/billing" element={<Navigate to="/billing" replace />} />
               <Route path="/manager/dashboard" element={<Navigate to="/dashboard" replace />} />
               <Route path="/manager/employees" element={<Navigate to="/employees" replace />} />
               <Route path="/manager" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/manager/spaces" element={<Navigate to="/spaces" replace />} />
+              <Route path="/manager/tasks" element={<Navigate to="/tasks" replace />} />
+              <Route path="/manager/expenses" element={<Navigate to="/expenses" replace />} />
+              <Route path="/manager/reports" element={<Navigate to="/reports" replace />} />
+              <Route path="/manager/customers" element={<Navigate to="/customers" replace />} />
               
               <Route path="/staff/dashboard" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/staff/menu" element={<Navigate to="/menu" replace />} />
+              <Route path="/staff/customers" element={<Navigate to="/customers" replace />} />
+              <Route path="/staff/tasks" element={<Navigate to="/tasks" replace />} />
+              <Route path="/staff/spaces" element={<Navigate to="/spaces" replace />} />
+              <Route path="/staff/expenses" element={<Navigate to="/expenses" replace />} />
+              <Route path="/staff/reports" element={<Navigate to="/reports" replace />} />
               <Route path="/staff/orders" element={<Navigate to="/orders" replace />} />
               <Route path="/staff" element={<Navigate to="/dashboard" replace />} />
-
+              <Route path="/staff/billing" element={<Navigate to="/billing" replace />} />
+              <Route path="/staff" element={<Navigate to="/dashboard" replace />} />
+              
               {/* Public Routes */}
               <Route path="/" element={<PublicLayout />}>
                 <Route index element={<HomePage />} />
@@ -108,7 +152,10 @@ function App() {
                 <Route path="expenses" element={<ExpenseManagement />} />
                 <Route path="reports" element={<ReportsAnalytics />} />
                 <Route path="employees" element={<EmployeeManagement />} />
+                <Route path="customers" element={<CustomerManagement />} />
                 <Route path="permission-management" element={<PermissionManagement />} />
+                <Route path="attendance" element={<AttendanceManagement />} />
+                <Route path="attendance-dashboard" element={<MerchantAttendanceDashboard />} />
               </Route>
 
               {/* Catch all route */}
@@ -121,6 +168,4 @@ function App() {
   );
 }
 
-import { Link, Outlet } from 'react-router-dom';
 export default App;
-

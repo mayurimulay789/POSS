@@ -99,6 +99,7 @@ const BaseSidebar = ({
       'space_management': '🪑',
       'task_management': '✅',
       'expense_management': '💸',
+      'customer_management': '🧑‍🤝‍🧑',
       'reports_analytics': '📈',
       'employee_management': '👥',
       'permission_management': '🔐',
@@ -120,7 +121,7 @@ const BaseSidebar = ({
       ['orders', 'menu', 'billing'].includes(item.path.replace('/', ''))
     ),
     management: normalizedSidebarItems.filter(item =>
-      ['spaces', 'tasks', 'expenses'].includes(item.path.replace('/', ''))
+      ['spaces', 'tasks', 'expenses','customers'].includes(item.path.replace('/', ''))
     ),
     analytics: normalizedSidebarItems.filter(item =>
       ['reports'].includes(item.path.replace('/', ''))
