@@ -103,7 +103,7 @@ export const getSidebarItemsForRole = (rolePermissions = []) => {
 export const GROUPED_SIDEBAR_ITEMS = {
   main: ['dashboard'],
   operations: ['orders', 'menu', 'billing'],
-  management: ['hotelImages', 'spaces', 'tasks', 'expenses',customers],
+  management: ['hotelImages', 'spaces', 'tasks', 'expenses','customers'],
   analytics: ['reports'],
   administration: ['employees', 'permissions']
 };

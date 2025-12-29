@@ -81,25 +81,22 @@ app.get('/health', (req, res) => {
 const authRoutes = require("../routes/auth");
 const employeeRoute = require("../routes/EmployeeRoute");
 const permissionRoutes = require("../routes/rolePermissionRoutes");
-<<<<<<< HEAD
 const menuRoutes = require("../routes/menuRoutes");
 const tableRoutes = require("../routes/tableRoutes");
 const orderRoutes = require("../routes/orderRoutes");
 const hotelImageRoutes = require("../routes/hotelImageRoutes");
-=======
 const expenseRoutes = require("../routes/expenseRoutes");
 const taskRoutes = require('../routes/taskRoutes');
 const customerRoutes = require('../routes/customerRoutes');
 const dashboardRoutes = require('../routes/dashboardRoutes');
 const attendanceRoutes = require('../routes/attendanceRoutes'); 
 const merchantAttendance=require('../routes/merchantAttendance');
->>>>>>> aniket-pos
 
 // ========== USE ROUTES ==========
 app.use("/api/auth", authRoutes);
 app.use("/api/employee", employeeRoute);
 app.use("/api/role-permissions", permissionRoutes);
-<<<<<<< HEAD
+
 app.use('/api/menu', menuRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
@@ -130,14 +127,14 @@ app.get('/debug/routes', (req, res) => {
   }
 });
 
-=======
+
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/attendance', attendanceRoutes); // NEW
 app.use('/api/merchant/attendance',merchantAttendance); // NEW
->>>>>>> aniket-pos
+
 
 // 404 handler for undefined routes
 app.use((req, res) => {
