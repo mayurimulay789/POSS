@@ -8,8 +8,10 @@ import {
   Route, 
   Navigate,
   Link,
-  Outlet 
+  Outlet,
+  useLocation
 } from 'react-router-dom';
+
 import { Provider } from 'react-redux';
 import store from './store/store';
 
