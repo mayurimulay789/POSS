@@ -3,7 +3,6 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store/store';
-import { Link, Outlet } from 'react-router-dom';
 
 // Lazy load components
 const RoleBasedLayout = lazy(() => import('./pages/RoleBasedLayout'));
