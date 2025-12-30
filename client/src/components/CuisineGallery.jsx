@@ -57,7 +57,7 @@ const CuisineGallery = () => {
       className="py-20 md:py-32 relative bg-cover bg-center bg-fixed"
       style={{
         backgroundImage: selectedCuisineImage 
-          ? `linear-gradient(rgba(180, 83, 9, 0.6), rgba(180, 83, 9, 0.6)), url(${selectedCuisineImage.url})`
+          ? `url(${selectedCuisineImage.url})`
           : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
       }}
     >
