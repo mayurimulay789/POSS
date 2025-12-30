@@ -1,71 +1,60 @@
 const Customer = require('../models/Customer');
 const mongoose = require('mongoose');
 
-/**
- * @desc    Create a new customer
- * @route   POST /api/customers
- * @access  Private
- */
+
 exports.createCustomer = async (req, res) => {
   try {
     const { 
       cust_name, 
       email, 
       phone, 
-      address,
-      membership_type = 'none',
-      status = 'active'
+      membership_id,
     } = req.body;
 
     console.log('Create customer request body:', req.body);
 
-    // Validation
-    if (!cust_name || !email || !phone) {
-      console.log('Validation failed: Missing required fields');
+    // Validation - according to schema, only cust_name is required
+    if (!cust_name) {
+      console.log('Validation failed: Missing required field');
       return res.status(400).json({
         success: false,
-        message: 'Customer name, email, and phone are required'
+        message: 'Customer name is required'
       });
     }
 
-    // Check if email already exists
-    const emailExists = await Customer.emailExists(email);
-    if (emailExists) {
-      console.log('Validation failed: Email already exists');
-      return res.status(400).json({
-        success: false,
-        message: 'Email already exists'
-      });
-    }
+    // Check for duplicates in a single query (email, phone, membership_id)
+    const existingCustomer = await Customer.findOne({
+      $or: [
+        ...(email ? [{ email }] : []),
+        ...(phone ? [{ phone }] : []),
+        ...(membership_id ? [{ membership_id }] : [])
+      ]
+    });
 
-    // Check if phone already exists
-    const phoneExists = await Customer.phoneExists(phone);
-    if (phoneExists) {
-      console.log('Validation failed: Phone number already exists');
+    if (existingCustomer) {
+      // Determine which field is duplicate
+      let duplicateField = '';
+      if (email && existingCustomer.email === email) {
+        duplicateField = 'Email';
+      } else if (phone && existingCustomer.phone === phone) {
+        duplicateField = 'Phone number';
+      } else if (membership_id && existingCustomer.membership_id === membership_id) {
+        duplicateField = 'Membership ID';
+      }
+      
+      console.log(`Validation failed: ${duplicateField} already exists`);
       return res.status(400).json({
         success: false,
-        message: 'Phone number already exists'
-      });
-    }
-
-    // Validate membership type
-    const validMembershipTypes = ['none', 'basic', 'premium', 'gold', 'platinum'];
-    if (!validMembershipTypes.includes(membership_type)) {
-      console.log('Validation failed: Invalid membership type');
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid membership type'
+        message: `${duplicateField} already exists`
       });
     }
 
     // Create customer
     const customer = await Customer.create({
       cust_name,
-      email,
-      phone,
-      address: address || {},
-      membership_type,
-      status,
+      ...(email && { email }),
+      ...(phone && { phone }),
+      ...(membership_id && { membership_id }),
       createdBy: req.user._id
     });
 
@@ -101,19 +90,11 @@ exports.createCustomer = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get all customers
- * @route   GET /api/customers
- * @access  Private
- */
 exports.getCustomers = async (req, res) => {
   try {
     const { 
       page = 1, 
       limit = 10, 
-      status, 
-      membership_type, 
-      city, 
       search,
       sortBy = 'createdAt',
       sortOrder = 'desc'
@@ -123,21 +104,6 @@ exports.getCustomers = async (req, res) => {
     
     // Build query
     let query = {};
-    
-    // Status filter
-    if (status) {
-      query.status = status;
-    }
-    
-    // Membership type filter
-    if (membership_type) {
-      query.membership_type = membership_type;
-    }
-    
-    // City filter
-    if (city) {
-      query['address.city'] = { $regex: city, $options: 'i' };
-    }
     
     // Search filter (name, email, phone, membership_id)
     if (search) {
@@ -158,48 +124,18 @@ exports.getCustomers = async (req, res) => {
       .populate('createdBy', 'FullName email role')
       .sort(sort)
       .skip(skip)
-      .limit(parseInt(limit))
-      .lean(); // Use lean() for better performance
-
-    // Add virtual fields manually for lean documents
-    customers.forEach(customer => {
-      customer.is_membership_valid = customer.membership_validity 
-        ? new Date(customer.membership_validity) > new Date() 
-        : false;
-    });
+      .limit(parseInt(limit));
 
     const total = await Customer.countDocuments(query);
     const totalPages = Math.ceil(total / limit);
 
-    // Get statistics for list view (simple version)
-    const listStats = await Customer.aggregate([
-      { $match: query },
-      {
-        $group: {
-          _id: null,
-          totalActive: { 
-            $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] } 
-          },
-          totalWithMembership: {
-            $sum: { $cond: [{ $ne: ['$membership_type', 'none'] }, 1, 0] }
-          },
-          totalExpiredMembership: {
-            $sum: {
-              $cond: [
-                {
-                  $and: [
-                    { $ne: ['$membership_type', 'none'] },
-                    { $lt: ['$membership_validity', new Date()] }
-                  ]
-                },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
+    // Get simple statistics
+    const listStats = {
+      totalCustomers: total,
+      totalWithEmail: await Customer.countDocuments({ email: { $exists: true, $ne: null } }),
+      totalWithPhone: await Customer.countDocuments({ phone: { $exists: true, $ne: null } }),
+      totalWithMembershipId: await Customer.countDocuments({ membership_id: { $exists: true, $ne: null } })
+    };
 
     res.status(200).json({
       success: true,
@@ -207,11 +143,7 @@ exports.getCustomers = async (req, res) => {
       total,
       totalPages,
       currentPage: parseInt(page),
-      listStats: listStats[0] || { // Changed from 'stats' to 'listStats'
-        totalActive: 0,
-        totalWithMembership: 0,
-        totalExpiredMembership: 0
-      },
+      listStats,
       data: customers
     });
 
@@ -224,11 +156,7 @@ exports.getCustomers = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get customers created by current user
- * @route   GET /api/customers/my-customers
- * @access  Private
- */
+
 exports.getMyCustomers = async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -262,59 +190,7 @@ exports.getMyCustomers = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get customers by membership type
- * @route   GET /api/customers/membership/:type
- * @access  Private
- */
-exports.getCustomersByMembershipType = async (req, res) => {
-  try {
-    const { type } = req.params;
-    const { page = 1, limit = 10 } = req.query;
-    const skip = (page - 1) * limit;
 
-    const validTypes = ['none', 'basic', 'premium', 'gold', 'platinum'];
-    if (!validTypes.includes(type)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid membership type'
-      });
-    }
-
-    const query = { membership_type: type };
-
-    const customers = await Customer.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await Customer.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
-
-    res.status(200).json({
-      success: true,
-      count: customers.length,
-      total,
-      totalPages,
-      currentPage: parseInt(page),
-      membership_type: type,
-      data: customers
-    });
-
-  } catch (error) {
-    console.error('Get customers by membership type error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while fetching customers by membership type'
-    });
-  }
-};
-
-/**
- * @desc    Search customers
- * @route   GET /api/customers/search
- * @access  Private
- */
 exports.searchCustomers = async (req, res) => {
   try {
     const { q, limit = 20 } = req.query;
@@ -336,7 +212,7 @@ exports.searchCustomers = async (req, res) => {
     };
 
     const customers = await Customer.find(query)
-      .select('cust_name email phone membership_id membership_type status')
+      .select('cust_name email phone membership_id')
       .limit(parseInt(limit))
       .sort({ createdAt: -1 });
 
@@ -355,11 +231,7 @@ exports.searchCustomers = async (req, res) => {
   }
 };
 
-/**
- * @desc    Get single customer
- * @route   GET /api/customers/:id
- * @access  Private
- */
+
 exports.getCustomer = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id)
@@ -394,11 +266,7 @@ exports.getCustomer = async (req, res) => {
   }
 };
 
-/**
- * @desc    Update customer
- * @route   PUT /api/customers/:id
- * @access  Private
- */
+
 exports.updateCustomer = async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
@@ -421,38 +289,49 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
-    // Check for duplicate email if email is being updated
-    if (req.body.email && req.body.email !== customer.email) {
-      const emailExists = await Customer.emailExists(req.body.email);
-      if (emailExists) {
-        return res.status(400).json({
-          success: false,
-          message: 'Email already exists'
-        });
-      }
+    const { email, phone, membership_id } = req.body;
+
+    // Check for duplicates in a single query (excluding current customer)
+    const duplicateConditions = [];
+    
+    if (email && email !== customer.email) {
+      duplicateConditions.push({ email });
+    }
+    
+    if (phone && phone !== customer.phone) {
+      duplicateConditions.push({ phone });
+    }
+    
+    if (membership_id && membership_id !== customer.membership_id) {
+      duplicateConditions.push({ membership_id });
     }
 
-    // Check for duplicate phone if phone is being updated
-    if (req.body.phone && req.body.phone !== customer.phone) {
-      const phoneExists = await Customer.phoneExists(req.body.phone);
-      if (phoneExists) {
+    if (duplicateConditions.length > 0) {
+      const existingCustomer = await Customer.findOne({
+        $or: duplicateConditions,
+        _id: { $ne: req.params.id }
+      });
+
+      if (existingCustomer) {
+        // Determine which field is duplicate
+        let duplicateField = '';
+        if (email && existingCustomer.email === email) {
+          duplicateField = 'Email';
+        } else if (phone && existingCustomer.phone === phone) {
+          duplicateField = 'Phone number';
+        } else if (membership_id && existingCustomer.membership_id === membership_id) {
+          duplicateField = 'Membership ID';
+        }
+        
         return res.status(400).json({
           success: false,
-          message: 'Phone number already exists'
+          message: `${duplicateField} already exists`
         });
       }
     }
 
     // Update customer
-    const updatedFields = req.body;
-    
-    // Handle address updates properly
-    if (updatedFields.address) {
-      customer.address = { ...customer.address.toObject(), ...updatedFields.address };
-      delete updatedFields.address;
-    }
-
-    Object.assign(customer, updatedFields);
+    Object.assign(customer, req.body);
     await customer.save();
 
     // Populate before returning
@@ -497,11 +376,7 @@ exports.updateCustomer = async (req, res) => {
   }
 };
 
-/**
- * @desc    Delete customer
- * @route   DELETE /api/customers/:id
- * @access  Private (merchant, manager, supervisor)
- */
+
 exports.deleteCustomer = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
@@ -537,263 +412,62 @@ exports.deleteCustomer = async (req, res) => {
   }
 };
 
-/**
- * @desc    Toggle customer status
- * @route   PATCH /api/customers/:id/status
- * @access  Private (merchant, manager, supervisor)
- */
-exports.toggleCustomerStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
 
-    if (!status || !['active', 'inactive', 'suspended', 'blocked'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid status is required: active, inactive, suspended, or blocked'
-      });
-    }
-
-    const customer = await Customer.findById(req.params.id);
-
-    if (!customer) {
-      return res.status(404).json({
-        success: false,
-        message: 'Customer not found'
-      });
-    }
-
-    customer.status = status;
-    await customer.save();
-
-    res.status(200).json({
-      success: true,
-      data: customer,
-      message: `Customer status updated to ${status}`
-    });
-
-  } catch (error) {
-    console.error('Toggle customer status error:', error);
-    
-    if (error.kind === 'ObjectId') {
-      return res.status(404).json({
-        success: false,
-        message: 'Customer not found'
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while updating customer status'
-    });
-  }
-};
-
-/**
- * @desc    Renew customer membership
- * @route   PATCH /api/customers/:id/renew-membership
- * @access  Private (merchant, manager)
- */
-exports.renewMembership = async (req, res) => {
-  try {
-    const { months = 12 } = req.body;
-
-    const customer = await Customer.findById(req.params.id);
-
-    if (!customer) {
-      return res.status(404).json({
-        success: false,
-        message: 'Customer not found'
-      });
-    }
-
-    if (customer.membership_type === 'none') {
-      return res.status(400).json({
-        success: false,
-        message: 'Customer does not have a membership'
-      });
-    }
-
-    await customer.renewMembership(months);
-
-    res.status(200).json({
-      success: true,
-      data: customer,
-      message: `Membership renewed for ${months} months`
-    });
-
-  } catch (error) {
-    console.error('Renew membership error:', error);
-    
-    if (error.kind === 'ObjectId') {
-      return res.status(404).json({
-        success: false,
-        message: 'Customer not found'
-      });
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Server error while renewing membership'
-    });
-  }
-};
-
-/**
- * @desc    Get customer statistics
- * @route   GET /api/customers/stats
- * @access  Private
- */
 exports.getCustomerStats = async (req, res) => {
   try {
     const stats = await Customer.aggregate([
       {
-        $facet: {
-          // Total counts
-          totals: [
-            {
-              $group: {
-                _id: null,
-                totalCustomers: { $sum: 1 },
-                totalActive: { 
-                  $sum: { 
-                    $cond: [
-                      { $eq: ['$status', 'active'] }, 
-                      1, 
-                      0
-                    ] 
-                  } 
-                },
-                totalInactive: {
-                  $sum: {
-                    $cond: [
-                      { $eq: ['$status', 'inactive'] },
-                      1,
-                      0
-                    ]
-                  }
-                },
-                totalSuspended: {
-                  $sum: {
-                    $cond: [
-                      { $eq: ['$status', 'suspended'] },
-                      1,
-                      0
-                    ]
-                  }
-                },
-                totalBlocked: {
-                  $sum: {
-                    $cond: [
-                      { $eq: ['$status', 'blocked'] },
-                      1,
-                      0
-                    ]
-                  }
-                }
-              }
+        $group: {
+          _id: null,
+          totalCustomers: { $sum: 1 },
+          totalWithEmail: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$email', null] }, { $ne: ['$email', ''] }] },
+                1,
+                0
+              ]
             }
-          ],
-          
-          // Membership breakdown
-          membershipStats: [
-            {
-              $group: {
-                _id: '$membership_type',
-                count: { $sum: 1 }
-              }
-            },
-            { $sort: { count: -1 } }
-          ],
-          
-          // Membership validity stats
-          membershipValidity: [
-            {
-              $match: {
-                membership_type: { $ne: 'none' }
-              }
-            },
-            {
-              $group: {
-                _id: null,
-                totalWithMembership: { $sum: 1 },
-                validMemberships: {
-                  $sum: {
-                    $cond: [
-                      {
-                        $and: [
-                          { $ne: ['$membership_validity', null] },
-                          { $gt: ['$membership_validity', new Date()] }
-                        ]
-                      },
-                      1,
-                      0
-                    ]
-                  }
-                },
-                expiredMemberships: {
-                  $sum: {
-                    $cond: [
-                      {
-                        $and: [
-                          { $ne: ['$membership_validity', null] },
-                          { $lt: ['$membership_validity', new Date()] }
-                        ]
-                      },
-                      1,
-                      0
-                    ]
-                  }
-                }
-              }
+          },
+          totalWithPhone: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$phone', null] }, { $ne: ['$phone', ''] }] },
+                1,
+                0
+              ]
             }
-          ]
+          },
+          totalWithMembershipId: {
+            $sum: {
+              $cond: [
+                { $and: [{ $ne: ['$membership_id', null] }, { $ne: ['$membership_id', ''] }] },
+                1,
+                0
+              ]
+            }
+          }
         }
       }
     ]);
 
-    // Process and format the stats
-    const result = stats[0] || {};
-    
     // Extract totals
-    const totals = result.totals?.[0] || {
+    const totals = stats[0] || {
       totalCustomers: 0,
-      totalActive: 0,
-      totalInactive: 0,
-      totalSuspended: 0,
-      totalBlocked: 0
-    };
-    
-    // Extract membership validity
-    const membershipValidity = result.membershipValidity?.[0] || {
-      totalWithMembership: 0,
-      validMemberships: 0,
-      expiredMemberships: 0
+      totalWithEmail: 0,
+      totalWithPhone: 0,
+      totalWithMembershipId: 0
     };
 
-    // Format membership stats
-    const membershipStats = result.membershipStats || [];
-    
-    // Calculate total customers with membership (excluding 'none')
-    const totalWithMembership = membershipStats
-      .filter(m => m._id !== 'none')
-      .reduce((sum, m) => sum + m.count, 0);
+    // Remove the _id field from response
+    delete totals._id;
 
-    const responseData = {
+    console.log('Customer statistics:', totals);
+
+    res.status(200).json({
       success: true,
-      data: {
-        totals,
-        membershipStats,
-        membershipValidity,
-        calculated: {
-          totalWithMembership,
-          membershipPercentage: totals.totalCustomers > 0 
-            ? ((totalWithMembership / totals.totalCustomers) * 100).toFixed(1)
-            : 0
-        }
-      }
-    };
-
-    res.status(200).json(responseData);
+      data: totals
+    });
 
   } catch (error) {
     console.error('Get customer stats error:', error);
@@ -804,14 +478,9 @@ exports.getCustomerStats = async (req, res) => {
   }
 };
 
-/**
- * @desc    Export customers
- * @route   POST /api/customers/export
- * @access  Private (merchant, manager)
- */
+
 exports.exportCustomers = async (req, res) => {
   try {
-    // For now, return JSON. You can implement CSV/Excel export later
     const customers = await Customer.find()
       .populate('createdBy', 'FullName email')
       .select('-__v');
@@ -828,76 +497,6 @@ exports.exportCustomers = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while exporting customers'
-    });
-  }
-};
-
-/**
- * @desc    Import customers
- * @route   POST /api/customers/import
- * @access  Private (merchant, manager)
- */
-exports.importCustomers = async (req, res) => {
-  try {
-    // For now, accept JSON data. You can implement CSV/Excel import later
-    const { customers } = req.body;
-
-    if (!customers || !Array.isArray(customers)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid customers array is required'
-      });
-    }
-
-    const results = {
-      success: 0,
-      failed: 0,
-      errors: []
-    };
-
-    // Process each customer
-    for (const customerData of customers) {
-      try {
-        // Validate required fields
-        if (!customerData.cust_name || !customerData.email || !customerData.phone) {
-          throw new Error('Missing required fields');
-        }
-
-        // Check for duplicates
-        const emailExists = await Customer.emailExists(customerData.email);
-        const phoneExists = await Customer.phoneExists(customerData.phone);
-
-        if (emailExists || phoneExists) {
-          throw new Error('Duplicate email or phone');
-        }
-
-        // Create customer
-        await Customer.create({
-          ...customerData,
-          createdBy: req.user._id
-        });
-
-        results.success++;
-      } catch (error) {
-        results.failed++;
-        results.errors.push({
-          customer: customerData,
-          error: error.message
-        });
-      }
-    }
-
-    res.status(200).json({
-      success: true,
-      results,
-      message: `Import completed: ${results.success} successful, ${results.failed} failed`
-    });
-
-  } catch (error) {
-    console.error('Import customers error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while importing customers'
     });
   }
 };

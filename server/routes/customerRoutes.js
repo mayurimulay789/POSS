@@ -7,14 +7,10 @@ const {
   getCustomer,
   updateCustomer,
   deleteCustomer,
-  toggleCustomerStatus,
-  renewMembership,
   getCustomerStats,
   searchCustomers,
   exportCustomers,
-  importCustomers,
   getMyCustomers,
-  getCustomersByMembershipType
 } = require('../controllers/customerController');
 
 // All routes are protected
@@ -26,8 +22,6 @@ router.get('/', getCustomers);
 
 router.get('/my-customers', getMyCustomers);
 
-router.get('/membership/:type', getCustomersByMembershipType);
-
 router.get('/search', searchCustomers);
 
 router.get('/stats', getCustomerStats);
@@ -38,12 +32,6 @@ router.put('/:id', updateCustomer);
 
 router.delete('/:id', authorize('merchant', 'manager', 'supervisor'), deleteCustomer);
 
-router.patch('/:id/status', authorize('merchant', 'manager', 'supervisor'), toggleCustomerStatus);
-
-router.patch('/:id/renew-membership', authorize('merchant', 'manager'), renewMembership);
-
 router.post('/export', authorize('merchant', 'manager'), exportCustomers);
-
-router.post('/import', authorize('merchant', 'manager'), importCustomers);
 
 module.exports = router;

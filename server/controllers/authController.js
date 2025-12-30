@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Attendance = require('../models/Attendance');
 const bcrypt = require('bcryptjs');
 const {generateToken} = require('../middleware/jwtToken');
 
@@ -55,6 +56,7 @@ const registerUser = async (req, res) => {
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        activeShift: false
       },
       message: 'User registered successfully'
     };
@@ -108,7 +110,17 @@ const loginUser = async (req, res) => {
     
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
+    } 
+
+    //check user has an active shift
+    const activeAttendance = await Attendance.findOne({ userId: user._id, status: 'active' });
+    if (activeAttendance) {
+      console.log(`User ${user._id} has an active shift.`);
+    } else {
+      console.log(`User ${user._id} does not have an active shift.`);
     }
+
+   
 
     // ✅ FIXED: Return consistent structure with nested user object
     res.status(200).json({
@@ -118,6 +130,7 @@ const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         lastLogin: user.lastLogin,
+        activeShift: activeAttendance ? true : false
       },
       token: generateToken(user._id),
       message: 'Login successful'
