@@ -53,12 +53,6 @@ const customerAPI = {
     return response;
   },
 
-  // Get customers by membership type
-  getCustomersByMembershipType: async (type, params = {}) => {
-    const response = await customerApi.get(`/membership/${type}`, { params });
-    return response;
-  },
-
   // Search customers
   searchCustomers: async (query) => {
     const response = await customerApi.get('/search', { params: { q: query } });
@@ -83,33 +77,15 @@ const customerAPI = {
     return response;
   },
 
-  // Toggle customer status
-  toggleCustomerStatus: async (id, status) => {
-    const response = await customerApi.patch(`/${id}/status`, { status });
-    return response;
-  },
-
-  // Renew membership
-  renewMembership: async (id, months) => {
-    const response = await customerApi.patch(`/${id}/renew-membership`, { months });
-    return response;
-  },
-
   // Get customer statistics
   getCustomerStats: async () => {
     const response = await customerApi.get('/stats');
     return response;
   },
 
-  // Export customers (JSON format for now)
+  // Export customers
   exportCustomers: async () => {
     const response = await customerApi.post('/export');
-    return response;
-  },
-
-  // Import customers (JSON format for now)
-  importCustomers: async (customers) => {
-    const response = await customerApi.post('/import', { customers });
     return response;
   }
 };

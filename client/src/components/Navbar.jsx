@@ -33,6 +33,14 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const handleAttendanceNavigation = () => {
+    if (user?.role) {
+      navigate(`/attendance`);
+    }
+    setIsMobileMenuOpen(false);
+  };
+
+
   const handleDashboardNavigation = () => {
     if (user?.role) {
       navigate(`/${user.role}/dashboard`);
@@ -161,10 +169,18 @@ const Navbar = () => {
 
                 <button
                   onClick={handleDashboardNavigation}
-                  className={`${showTransparent ? 'bg-white/90 text-gray-900 hover:bg-white' : 'bg-amber-600 text-white hover:bg-amber-700'} px-4 py-2 rounded-md transition flex items-center gap-2 shadow-sm`}
+                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
                 >
                   <span>📊</span>
                   Dashboard
+                </button>
+
+                <button
+                  onClick={handleAttendanceNavigation}
+                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
+                >
+                  <span>📅</span>
+                  Attendance
                 </button>
 
                 <button
@@ -174,6 +190,8 @@ const Navbar = () => {
                   <span>🚪</span>
                   Logout
                 </button>
+
+                
               </>
             ) : (
               <>
