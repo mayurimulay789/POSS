@@ -150,10 +150,14 @@ const BaseSidebar = ({
   const groupedItems = {
     main: normalizedSidebarItems.filter(i => i.path === '/dashboard'),
     operations: normalizedSidebarItems.filter(i =>
-      ['/orders', '/menu', '/billing'].includes(i.path)
-    ),
+      ['/spaces', '/menu', '/orders', '/billing'].includes(i.path)
+    ).sort((a, b) => {
+      // Define the order: spaces, menu, orders, billing
+      const order = ['/spaces', '/menu', '/orders', '/billing'];
+      return order.indexOf(a.path) - order.indexOf(b.path);
+    }),
     management: normalizedSidebarItems.filter(i =>
-      ['/spaces', '/tasks', '/expenses', '/customers'].includes(i.path)
+      ['/hotel-images', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
     administration: normalizedSidebarItems.filter(i =>

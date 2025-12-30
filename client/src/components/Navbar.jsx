@@ -107,11 +107,11 @@ const Navbar = () => {
   };
 
   const showTransparent = location.pathname === '/' && isAtTop && !isMobileMenuOpen;
-  const textClass = showTransparent ? 'text-white drop-shadow-sm' : 'text-gray-800';
-  const linkClass = `${textClass} hover:text-amber-200 transition font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
+  const textClass = showTransparent ? 'text-white drop-shadow-sm' : 'text-white';
+  const linkClass = `${textClass} hover:text-[#FF9800] transition font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
   const navBg = showTransparent
     ? 'bg-gradient-to-b from-black/50 via-black/30 to-transparent shadow-none'
-    : 'bg-white/95 shadow-md backdrop-blur';
+    : 'bg-gradient-to-r from-[#0A3D4D] to-[#134A5C] shadow-md backdrop-blur';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>
@@ -124,7 +124,7 @@ const Navbar = () => {
           <Link
             to="/"
             onClick={goHome}
-            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-sm' : 'text-amber-600 hover:text-amber-700'}`}
+            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-sm' : 'text-white hover:text-[#FF9800]'}`}
           >
             <span className="text-3xl">🍽️</span>
             India Restaurant
@@ -133,7 +133,7 @@ const Navbar = () => {
           {/* HAMBURGER (MOBILE ONLY) */}
           <button
             onClick={toggleMobileMenu}
-            className={`md:hidden p-2 rounded focus:outline-none focus:ring-2 ${showTransparent ? 'text-white' : 'text-gray-800'}`}
+            className={`md:hidden p-2 rounded focus:outline-none focus:ring-2 ${showTransparent ? 'text-white' : 'text-white'}`}
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-between">
@@ -202,7 +202,7 @@ const Navbar = () => {
 
                 <Link
                   to="/login"
-                  className={`${showTransparent ? 'bg-white/90 text-gray-900 hover:bg-white' : 'bg-amber-600 text-white hover:bg-amber-700'} px-5 py-2 rounded-full transition-colors font-semibold shadow-md`}
+                  className="bg-amber-400 hover:bg-amber-500 text-white px-6 py-2 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl"
                 >
                   Login
                 </Link>
@@ -272,7 +272,7 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block mx-4 my-3 text-center bg-amber-600 text-white px-6 py-2 rounded-full hover:bg-amber-700 transition-colors font-semibold shadow-md"
+                  className="block mx-4 my-3 text-center bg-amber-400 hover:bg-amber-500 text-white px-6 py-2 rounded-full transition-colors font-semibold shadow-lg hover:shadow-xl"
                 >
                   Login
                 </Link>

@@ -1,14 +1,128 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
+import API_BASE_URL from '../../../config/apiConfig';
 
 const MenuManagement = () => {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">MenuManagement - Staff View</h1>
-      <div className="bg-white rounded-lg shadow p-6">
-        <p className="text-gray-600">This is the MenuManagement component for staff role.</p>
-        {/* Replace with staff-specific menu management UI */}
-      </div>
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    // Get user role from localStorage or context
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    setUserRole(role);
+    
+    const loadMenu = async () => {
+      try {
+        setLoading(true);
+        const config = token ? { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          } 
+        } : {};
+        
+        console.log('Token available:', !!token);
+        console.log('Fetching from:', `${API_BASE_URL}/menu/items`);
+        
+        const res = await axios.get(`${API_BASE_URL}/menu/items`, config);
+        setItems(Array.isArray(res.data) ? res.data : []);
+        console.log('Menu items loaded:', res.data);
+      } catch (err) {
+        console.error('Error loading menu:', err);
+        console.error('Error response:', err.response?.data);
+        console.error('Error status:', err.response?.status);
+        setError('Unable to load menu.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadMenu();
+  }, []);
+
+  const categories = useMemo(() => {
+    const cats = ['All', ...new Set(items.map(item => item.category?.name || 'Menu'))];
+    return cats;
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    if (activeCategory === 'All') return items;
+    return items.filter(item => (item.category?.name || 'Menu') === activeCategory);
+  }, [items, activeCategory]);
+
+  if (loading) return (
+    <div className="flex justify-center py-20 bg-slate-50">
+      <div className="h-8 w-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin"></div>
     </div>
+  );
+
+  return (
+    <section className="bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-4 pb-0 md:py-4 px-4 font-sans text-slate-900 min-h-screen">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Permission Denied Message */}
+        {userRole && userRole !== 'merchant' && userRole !== 'manager' && (
+          <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-800 rounded-lg">
+            <p className="font-semibold">View Only Access</p>
+            <p className="text-sm mt-1">Only merchants and managers can add or modify food items and categories. You have view-only access.</p>
+          </div>
+        )}
+        
+        {/* Header */}
+        <div className="text-center mb-4">
+          <span className="uppercase tracking-[0.3em] text-sm text-teal-500 font-semibold">View</span>
+          <h2 className="text-5xl md:text-6xl font-serif mt-4 mb-6 italic text-slate-900">Menu List</h2>
+          <div className="w-24 h-[2px] bg-teal-400 mx-auto mb-8"></div>
+          
+          {/* Category Filter */}
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`text-sm md:text-base transition-all duration-200 rounded-full px-4 py-2 border ${
+                  activeCategory === cat
+                    ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-teal-200 hover:text-teal-700'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Menu Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-4 pb-20">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item) => (
+              <div key={item._id} className="group cursor-default">
+                <div className="flex justify-between items-baseline gap-4">
+                  <h3 className="text-lg font-serif font-medium text-slate-900 group-hover:text-teal-700 transition-colors">
+                    {item.name}
+                  </h3>
+                  {/* Price Leader Dots */}
+                  <div className="flex-1 border-b border-dotted border-slate-200 relative top-[-4px]"></div>
+                  <span className="text-lg font-serif text-slate-900">
+                    ₹{Number(item.price).toLocaleString()}
+                  </span>
+                </div>
+                {item.description && (
+                  <p className="text-slate-500 text-sm mt-2 italic max-w-[85%] leading-relaxed">
+                    {item.description}
+                  </p>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="col-span-full text-center text-stone-400 italic">No items found in this category.</p>
+          )}
+        </div>
+      </div>
+    </section>
   );
 };
 

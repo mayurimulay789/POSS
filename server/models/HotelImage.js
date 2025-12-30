@@ -16,6 +16,8 @@ const HotelImageSchema = new mongoose.Schema(
     isCuisineGallery: { type: Boolean, default: false },
     // Show in Cuisine Gallery cards
     isCuisineCard: { type: Boolean, default: false },
+    // Login page background image
+    isLoginImage: { type: Boolean, default: false },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }

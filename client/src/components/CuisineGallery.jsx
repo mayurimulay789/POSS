@@ -54,10 +54,10 @@ const CuisineGallery = () => {
   return (
     <section 
       id="gallery"
-      className="py-24 md:py-32 relative bg-cover bg-center bg-fixed"
+      className="py-20 md:py-32 relative bg-cover bg-center bg-fixed"
       style={{
         backgroundImage: selectedCuisineImage 
-          ? `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${selectedCuisineImage.url})`
+          ? `url(${selectedCuisineImage.url})`
           : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
       }}
     >
@@ -74,7 +74,7 @@ const CuisineGallery = () => {
             Our Cuisine Gallery
           </h2>
           <div className="flex justify-center mb-6">
-            <div className="w-24 h-1 bg-amber-500"></div>
+            <div className="w-24 h-1 bg-[#FF9800]"></div>
           </div>
           {/* <p className="text-gray-300 max-w-2xl mx-auto text-lg">
             Explore our exquisite collection of culinary masterpieces, crafted with passion and presented with elegance

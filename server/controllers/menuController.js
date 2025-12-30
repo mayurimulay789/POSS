@@ -4,14 +4,13 @@ const { uploadBufferToCloudinary } = require('../utils/cloudinary');
 const xlsx = require('xlsx');
 const axios = require('axios');
 
-// Escape regex characters so we can safely build case-insensitive exact-match queries
-const escapeRegex = (value = '') => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const normalizeName = (value = '') => value.trim().replace(/\s+/g, ' ').toLowerCase();
 
-// Find a category by name (case-insensitive), parent, and merchant
-const findCategoryByName = (name, parentId, merchantId) => {
-  const normalizedName = (name || '').trim();
+// Find a category by normalized name (case/space-insensitive), parent, and merchant
+const findCategoryByName = async (name, parentId, merchantId) => {
+  const normalizedName = normalizeName(name);
   const filter = {
-    name: { $regex: `^${escapeRegex(normalizedName)}$`, $options: 'i' },
+    normalizedName,
     parent: parentId || null
   };
 
@@ -21,7 +20,26 @@ const findCategoryByName = (name, parentId, merchantId) => {
     filter.$or = [{ merchant: { $exists: false } }, { merchant: null }];
   }
 
-  return MenuCategory.findOne(filter);
+  const found = await MenuCategory.findOne(filter);
+  if (found) return found;
+
+  // Fallback for legacy records that may not have normalizedName populated yet
+  const legacyFilter = {
+    name: { $regex: `^${(name || '').trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+    parent: parentId || null
+  };
+  if (merchantId) {
+    legacyFilter.merchant = merchantId;
+  } else {
+    legacyFilter.$or = [{ merchant: { $exists: false } }, { merchant: null }];
+  }
+
+  const legacy = await MenuCategory.findOne(legacyFilter);
+  if (legacy && !legacy.normalizedName) {
+    legacy.normalizedName = normalizedName;
+    try { await legacy.save(); } catch (e) { console.warn('Failed to backfill normalizedName for legacy category', e.message); }
+  }
+  return legacy;
 };
 
 // Create a category (optionally as a sub-category)
@@ -29,7 +47,7 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, parent } = req.body;
     const merchant = req.user?._id || req.body.merchant; // try to get from auth middleware or body
-    const normalizedName = (name || '').trim();
+    const normalizedName = normalizeName(name);
     const parentId = parent || null;
 
     if (!normalizedName) return res.status(400).json({ message: 'Category name required' });
@@ -49,10 +67,13 @@ exports.createCategory = async (req, res) => {
       return res.status(409).json({ message: 'Category already exists at this level' });
     }
 
-    const category = new MenuCategory({ name: normalizedName, parent: parentId, merchant });
+    const category = new MenuCategory({ name: (name || '').trim().replace(/\s+/g, ' '), normalizedName, parent: parentId, merchant });
     await category.save();
     res.json(category);
   } catch (err) {
+    if (err && err.code === 11000) {
+      return res.status(409).json({ message: 'Category already exists at this level' });
+    }
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
@@ -64,6 +85,40 @@ exports.getCategories = async (req, res) => {
     const merchant = req.query.merchant || (req.user && req.user._id);
     const categories = await MenuCategory.find(merchant ? { merchant } : {}).lean();
     res.json(categories);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete a category if it has no items or subcategories
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentUser = req.user;
+
+    const category = await MenuCategory.findById(id);
+    if (!category) return res.status(404).json({ message: 'Category not found' });
+    
+    // Allow merchants who own it OR any manager to delete
+    if (currentUser && category.merchant && category.merchant.toString() !== currentUser._id.toString()) {
+      if (currentUser.role !== 'manager') {
+        return res.status(403).json({ message: 'Not authorized to delete this category' });
+      }
+    }
+
+    const itemCount = await MenuItem.countDocuments({ category: id });
+    if (itemCount > 0) {
+      return res.status(400).json({ message: 'Cannot delete: remove or reassign items first' });
+    }
+
+    const childCount = await MenuCategory.countDocuments({ parent: id });
+    if (childCount > 0) {
+      return res.status(400).json({ message: 'Cannot delete: remove subcategories first' });
+    }
+
+    await MenuCategory.deleteOne({ _id: id });
+    return res.json({ message: 'Category deleted' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -146,9 +201,12 @@ exports.updateItem = async (req, res) => {
 
     const item = await MenuItem.findById(itemId);
     if (!item) return res.status(404).json({ message: 'Item not found' });
-    // If merchant is present on item and req.user, ensure ownership
+    
+    // Allow merchants who own it OR any manager to update
     if (item.merchant && req.user && item.merchant.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this item' });
+      if (req.user.role !== 'manager') {
+        return res.status(403).json({ message: 'Not authorized to update this item' });
+      }
     }
     if (name) item.name = name;
     if (typeof description !== 'undefined') item.description = description;
@@ -196,8 +254,11 @@ exports.deleteItem = async (req, res) => {
     const item = await MenuItem.findById(itemId);
     if (!item) return res.status(404).json({ message: 'Item not found' });
 
+    // Allow merchants who own it OR any manager to delete
     if (item.merchant && req.user && item.merchant.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this item' });
+      if (req.user.role !== 'manager') {
+        return res.status(403).json({ message: 'Not authorized to delete this item' });
+      }
     }
 
     await MenuItem.deleteOne({ _id: itemId });
@@ -222,10 +283,11 @@ exports.uploadExcel = async (req, res) => {
     let uploadErrors = [];
 
     const findOrCreateCategory = async (catName, parentId = null) => {
-      const normalizedName = (catName || '').toString().trim();
+      const displayName = (catName || '').toString().trim().replace(/\s+/g, ' ');
+      const normalizedName = normalizeName(displayName);
       const existing = await findCategoryByName(normalizedName, parentId, merchant);
       if (existing) return existing;
-      const newCat = new MenuCategory({ name: normalizedName, parent: parentId || null, merchant });
+      const newCat = new MenuCategory({ name: displayName, normalizedName, parent: parentId || null, merchant });
       return newCat.save();
     };
 
