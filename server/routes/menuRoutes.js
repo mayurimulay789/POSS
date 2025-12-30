@@ -2,20 +2,19 @@ const express = require('express');
 const router = express.Router();
 const menuController = require('../controllers/menuController');
 const upload = require('../middleware/uploadMiddleware');
-const { protect, merchant } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 console.log('🔔 menuRoutes module imported');
 
-// Note: Authentication middleware is not enforced here. If you have an auth middleware, add it.
-
-// Protected routes for merchants
-router.post('/categories', protect, merchant, menuController.createCategory);
+// Protected routes for merchants and managers
+router.post('/categories', protect, authorize('merchant', 'manager'), menuController.createCategory);
 router.get('/categories', menuController.getCategories);
+router.delete('/categories/:id', protect, authorize('merchant', 'manager'), menuController.deleteCategory);
 
-router.post('/items', protect, merchant, upload.uploadSingle('image'), menuController.createItem);
+router.post('/items', protect, authorize('merchant', 'manager'), upload.uploadSingle('image'), menuController.createItem);
 router.get('/items', menuController.getItems);
-router.put('/items/:id', protect, merchant, upload.uploadSingle('image'), menuController.updateItem);
-router.delete('/items/:id', protect, merchant, menuController.deleteItem);
+router.put('/items/:id', protect, authorize('merchant', 'manager'), upload.uploadSingle('image'), menuController.updateItem);
+router.delete('/items/:id', protect, authorize('merchant', 'manager'), menuController.deleteItem);
 
 // Excel upload: expects form-data with field 'file'
 router.post('/upload-excel', upload.uploadSingle('file'), menuController.uploadExcel);

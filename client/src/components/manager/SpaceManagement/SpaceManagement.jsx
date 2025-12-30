@@ -1,52 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MdTableRestaurant, MdEdit } from 'react-icons/md';
+import { MdTableRestaurant } from 'react-icons/md';
 import API_BASE_URL from '../../../config/apiConfig';
+
 const SpaceManagement = () => {
   const [activeTab, setActiveTab] = useState('Tables');
   const [tables, setTables] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showBookingModal, setShowBookingModal] = useState(false);
   const [editingTable, setEditingTable] = useState(null);
-  const [selectedTable, setSelectedTable] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [menuItems, setMenuItems] = useState([]);
-  const [selectedMenu, setSelectedMenu] = useState([]);
-  const [menuSearch, setMenuSearch] = useState('');
   const [formData, setFormData] = useState({
     tableName: '',
     capacity: ''
   });
 
-  const tabs = ['Tables' /*, 'Spa Room' */];
+  const tabs = ['Tables'];
 
   // Fetch tables when tab changes
   useEffect(() => {
-    const fetchTables = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${API_BASE_URL}/tables?spaceType=${activeTab}`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-        setTables(response.data.data || []);
-      } catch (err) {
-        console.error('Error fetching tables:', err.message || err);
-        // Only show alert for non-404 errors
-        if (err.response && err.response.status !== 404) {
-          alert('Failed to fetch tables. Please try again.');
-        }
-        setTables([]); // Set empty array on error
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchTables();
   }, [activeTab]);
 
@@ -63,11 +35,10 @@ const SpaceManagement = () => {
       setTables(response.data.data || []);
     } catch (err) {
       console.error('Error fetching tables:', err.message || err);
-      // Only show alert for non-404 errors
       if (err.response && err.response.status !== 404) {
         alert('Failed to fetch tables. Please try again.');
       }
-      setTables([]); // Set empty array on error
+      setTables([]);
     } finally {
       setLoading(false);
     }
@@ -81,71 +52,89 @@ const SpaceManagement = () => {
     }));
   };
 
-  const fetchMenuItems = async () => {
+  const validateTableName = (name) => {
+    if (!name || name.trim() === '') {
+      return 'Table name is required';
+    }
+    if (name.trim().length < 2) {
+      return 'Table name must be at least 2 characters';
+    }
+    if (name.trim().length > 50) {
+      return 'Table name must not exceed 50 characters';
+    }
+    return null;
+  };
+
+  const validateCapacity = (capacity) => {
+    const capacityNum = parseInt(capacity);
+    if (!capacity || capacity === '') {
+      return 'Capacity is required';
+    }
+    if (isNaN(capacityNum) || capacityNum <= 0) {
+      return 'Capacity must be a positive number';
+    }
+    if (capacityNum > 100) {
+      return 'Capacity cannot exceed 100 persons';
+    }
+    return null;
+  };
+
+  const getFormErrors = () => {
+    const errors = {};
+    const nameError = validateTableName(formData.tableName);
+    const capacityError = validateCapacity(formData.capacity);
+    
+    if (nameError) errors.tableName = nameError;
+    if (capacityError) errors.capacity = capacityError;
+    
+    return errors;
+  };
+
+  const handleReserveTable = async (table, e) => {
+    e.stopPropagation();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${API_BASE_URL}/menu/items`,
+      
+      const isReserving = !table.isReserved;
+      
+      await axios.put(
+        `${API_BASE_URL}/tables/${table._id}`,
+        {
+          tableName: table.tableName,
+          capacity: table.capacity,
+          spaceType: table.spaceType,
+          status: table.status || 'available',
+          orderedMenu: table.orderedMenu || [],
+          totalBill: table.totalBill || 0,
+          isReserved: isReserving
+        },
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
-      console.log('Menu items fetched:', response.data);
-      setMenuItems(response.data.data || response.data || []);
+
+      // Update local state immediately
+      setTables(prevTables =>
+        prevTables.map(t =>
+          t._id === table._id ? { ...t, isReserved: isReserving } : t
+        )
+      );
+
+      alert(isReserving ? 'Table reserved successfully!' : 'Reservation cancelled!');
+      
+      // Fetch fresh data from server
+      await fetchTables();
     } catch (err) {
-      console.error('Error fetching menu:', err.message || err);
-      setMenuItems([]);
+      console.error('Error updating table:', err.message || err);
+      alert('Failed to update table');
+      fetchTables();
     }
   };
 
-  const openBookingModal = (table) => {
-    setSelectedTable(table);
-    // Pre-fill existing menu items if table is already booked
-    if (table.orderedMenu && table.orderedMenu.length > 0) {
-      setSelectedMenu(table.orderedMenu);
-    } else {
-      setSelectedMenu([]);
-    }
-    setMenuSearch('');
-    fetchMenuItems();
-    setShowBookingModal(true);
-  };
-
-  const handleUpdateMenu = (table, e) => {
-    e.stopPropagation(); // Prevent card click
-    openBookingModal(table);
-  };
-
-  const handleMenuQuantityChange = (itemId, quantity) => {
-    if (quantity <= 0) {
-      setSelectedMenu(selectedMenu.filter(m => m.id !== itemId));
-    } else {
-      const existing = selectedMenu.find(m => m.id === itemId);
-      if (existing) {
-        setSelectedMenu(selectedMenu.map(m => 
-          m.id === itemId ? { ...m, quantity } : m
-        ));
-      } else {
-        const item = menuItems.find(m => m._id === itemId);
-        if (item) {
-          setSelectedMenu([...selectedMenu, { 
-            id: itemId, 
-            name: item.name || item.itemName, 
-            price: item.price,
-            quantity 
-          }]);
-        }
-      }
-    }
-  };
-
-  const calculateBill = () => {
-    return selectedMenu.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
-
-  const handleBookTable = async () => {
-    if (!selectedMenu.length) {
-      alert('Please select at least one menu item');
+  const handleClearTable = async (table, e) => {
+    e.stopPropagation();
+    
+    if (!window.confirm(`Clear ${table.tableName}? This will remove all orders.`)) {
       return;
     }
 
@@ -153,30 +142,27 @@ const SpaceManagement = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      // Update table status to booked
       await axios.put(
-        `${API_BASE_URL}/tables/${selectedTable._id}`,
+        `${API_BASE_URL}/tables/${table._id}`,
         {
-          tableName: selectedTable.tableName,
-          capacity: selectedTable.capacity,
-          spaceType: activeTab,
-          status: 'occupied',
-          orderedMenu: selectedMenu,
-          totalBill: calculateBill()
+          tableName: table.tableName,
+          capacity: table.capacity,
+          spaceType: table.spaceType,
+          status: 'available',
+          orderedMenu: [],
+          totalBill: 0,
+          isReserved: false
         },
         {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
 
-      alert('Table booked successfully!');
-      setShowBookingModal(false);
-      setSelectedTable(null);
-      setSelectedMenu([]);
+      alert('Table cleared successfully!');
       fetchTables();
     } catch (err) {
-      console.error('Error booking table:', err.message || err);
-      alert('Failed to book table');
+      console.error('Error clearing table:', err.message || err);
+      alert('Failed to clear table');
     } finally {
       setLoading(false);
     }
@@ -185,8 +171,9 @@ const SpaceManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.tableName || !formData.capacity) {
-      alert('Please fill in all required fields');
+    const errors = getFormErrors();
+    if (Object.keys(errors).length > 0) {
+      alert(Object.values(errors).join('\n'));
       return;
     }
 
@@ -223,8 +210,9 @@ const SpaceManagement = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     
-    if (!formData.tableName || !formData.capacity) {
-      alert('Please fill in all required fields');
+    const errors = getFormErrors();
+    if (Object.keys(errors).length > 0) {
+      alert(Object.values(errors).join('\n'));
       return;
     }
 
@@ -293,42 +281,6 @@ const SpaceManagement = () => {
     }
   };
 
-  const handleClearTable = async (table, e) => {
-    e.stopPropagation(); // Prevent opening booking modal
-    
-    if (!window.confirm(`Clear ${table.tableName}? This will mark it as available and remove all orders.`)) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      await axios.put(
-        `${API_BASE_URL}/tables/${table._id}`,
-        {
-          tableName: table.tableName,
-          capacity: table.capacity,
-          spaceType: table.spaceType,
-          status: 'available',
-          orderedMenu: [],
-          totalBill: 0
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      alert('Table cleared successfully!');
-      fetchTables();
-    } catch (err) {
-      console.error('Error clearing table:', err.message || err);
-      alert('Failed to clear table');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const resetForm = () => {
     setFormData({
       tableName: '',
@@ -347,8 +299,27 @@ const SpaceManagement = () => {
     resetForm();
   };
 
-  return (
+  const getTableCardColor = (table) => {
+    if (table.isReserved) {
+      return 'bg-yellow-50 border-yellow-300 border-2';
+    } else if (table.orderedMenu && table.orderedMenu.length > 0) {
+      return 'bg-green-50 border-green-300 border-2';
+    } else {
+      return 'bg-white border border-gray-300';
+    }
+  };
 
+  const getTableStatus = (table) => {
+    if (table.isReserved) {
+      return { text: 'Reserved', color: 'text-yellow-600 bg-yellow-100' };
+    } else if (table.orderedMenu && table.orderedMenu.length > 0) {
+      return { text: 'Booked', color: 'text-green-600 bg-green-200' };
+    } else {
+      return { text: 'Available', color: 'text-blue-600 bg-blue-100' };
+    }
+  };
+
+  return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Space Management</h1>
@@ -394,85 +365,107 @@ const SpaceManagement = () => {
           </div>
         ) : tables.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {tables.map((table) => (
-              <div
-                key={table._id}
-                onClick={() => table.status === 'available' && openBookingModal(table)}
-                className={`border rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer ${
-                  table.status === 'occupied' ? 'bg-green-50 border-green-200' : 'bg-white'
-                }`}
-              >
-                <div className="aspect-video mb-2 rounded-lg overflow-hidden bg-white border flex items-start justify-start p-2 relative">
-                  {table.orderedMenu && table.orderedMenu.length > 0 ? (
-                    <div className="w-full h-full overflow-y-auto">
-                      <button
-                        onClick={(e) => handleUpdateMenu(table, e)}
-                        className="absolute top-1 right-1 p-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 shadow-md z-10"
-                        title="Edit Menu"
-                      >
-                        <MdEdit className="w-3 h-3" />
-                      </button>
-                      <p className="text-xs font-bold text-green-700 mb-1">Menu Items:</p>
-                      <div className="space-y-1">
-                        {table.orderedMenu.map((item, idx) => (
-                          <div key={idx} className="text-xs flex justify-between items-center bg-green-50 rounded px-1.5 py-1 border border-green-200">
-                            <span className="font-medium text-gray-800 truncate">{item.name}</span>
-                            <span className="text-gray-700 font-semibold ml-1">x{item.quantity}</span>
-                          </div>
-                        ))}
-                      </div>
-                      {table.totalBill && (
-                        <div className="mt-2 pt-1 border-t border-green-300">
-                          <p className="text-xs font-bold text-green-800">Total: ₹{table.totalBill.toFixed(2)}</p>
+            {tables.map((table) => {
+              const status = getTableStatus(table);
+              const cardColor = getTableCardColor(table);
+              
+              return (
+                <div
+                  key={table._id}
+                  className={`rounded-lg p-3 transition-shadow hover:shadow-md ${cardColor}`}
+                >
+                  {/* Table Icon/Menu Section */}
+                  <div className="aspect-video mb-2 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex items-center justify-center">
+                    {table.orderedMenu && table.orderedMenu.length > 0 ? (
+                      <div className="w-full h-full overflow-y-auto p-2">
+                        <p className="text-xs font-bold text-gray-700 mb-1">Menu:</p>
+                        <div className="space-y-1">
+                          {table.orderedMenu.map((item, idx) => (
+                            <div key={idx} className="text-xs bg-white rounded px-1.5 py-1 border border-gray-200">
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-700 truncate">{item.name}</span>
+                                <span className="text-gray-600 font-semibold ml-1">x{item.quantity}</span>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <MdTableRestaurant className="w-12 h-12 text-indigo-600" />
-                    </div>
+                      </div>
+                    ) : (
+                      <MdTableRestaurant className="w-12 h-12 text-gray-400" />
+                    )}
+                  </div>
+
+                  {/* Table Info */}
+                  <h3 className="font-semibold text-gray-800 mb-1 text-sm">
+                    {table.tableName}
+                  </h3>
+                  <p className="text-xs text-gray-600 mb-2">
+                    Capacity: {table.capacity}
+                  </p>
+
+                  {/* Status Badge */}
+                  <p className="text-xs mb-2">
+                    <span className={`px-2 py-1 rounded-full font-medium inline-block ${status.color}`}>
+                      {status.text}
+                    </span>
+                  </p>
+
+                  {/* Bill if booked */}
+                  {table.totalBill && table.orderedMenu && table.orderedMenu.length > 0 && (
+                    <p className="text-xs font-bold text-gray-800 mb-2 bg-gray-100 rounded px-2 py-1">
+                      Bill: ₹{table.totalBill.toFixed(2)}
+                    </p>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-1 flex-wrap">
+                    {table.isReserved ? (
+                      <button
+                        onClick={(e) => handleReserveTable(table, e)}
+                        className="flex-1 px-2 py-1 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 transition-colors"
+                      >
+                        Unreserve
+                      </button>
+                    ) : table.orderedMenu && table.orderedMenu.length > 0 ? (
+                      <button
+                        onClick={(e) => handleClearTable(table, e)}
+                        className="flex-1 px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={(e) => handleEdit(table)}
+                          className="flex-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => handleDelete(table._id)}
+                          className="flex-1 px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Reserve Checkbox - Only for available tables (not reserved, not booked) */}
+                  {!table.isReserved && !(table.orderedMenu && table.orderedMenu.length > 0) && (
+                    <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={false}
+                        onChange={(e) => handleReserveTable(table, e)}
+                        className="w-4 h-4 rounded"
+                      />
+                      <span className="text-xs text-gray-700 font-medium">Reserve</span>
+                    </label>
                   )}
                 </div>
-                <h3 className="font-semibold text-gray-800 mb-1 text-sm">
-                  {table.tableName}
-                </h3>
-                <p className="text-xs text-gray-600 mb-1">
-                  Capacity: {table.capacity}
-                </p>
-                <p className="text-xs text-gray-600 mb-2">
-                  Status: <span className={`font-medium ${
-                    table.status === 'available' ? 'text-green-600' :
-                    table.status === 'occupied' ? 'text-red-600' :
-                    'text-yellow-600'
-                  }`}>{table.status === 'occupied' ? 'Booked' : table.status}</span>
-                </p>
-                <div className="flex gap-1">
-                  {table.status === 'occupied' ? (
-                    <button
-                      onClick={(e) => handleClearTable(table, e)}
-                      className="w-full px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                    >
-                      Clear Table
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleEdit(table); }}
-                        className="flex-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(table._id); }}
-                        className="flex-1 px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-8">
@@ -502,12 +495,14 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder={`Enter ${activeTab === 'Tables' ? 'table' : 'room'} name`}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  maxLength="50"
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.tableName.length}/50 characters</p>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity *
+                  Capacity (1-100) *
                 </label>
                 <input
                   type="number"
@@ -516,9 +511,13 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
+                  max="100"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
+                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                )}
               </div>
               <div className="flex gap-2 justify-end">
                 <button
@@ -561,12 +560,14 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder={`Enter ${activeTab === 'Tables' ? 'table' : 'room'} name`}
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  maxLength="50"
                   required
                 />
+                <p className="text-xs text-gray-500 mt-1">{formData.tableName.length}/50 characters</p>
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity *
+                  Capacity (1-100) *
                 </label>
                 <input
                   type="number"
@@ -575,9 +576,13 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
+                  max="100"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
+                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                )}
               </div>
               <div className="flex gap-2 justify-end">
                 <button
@@ -600,116 +605,8 @@ const SpaceManagement = () => {
           </div>
         </div>
       )}
-
-      {/* Booking Modal */}
-      {showBookingModal && selectedTable && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-semibold mb-4">
-              Book {selectedTable.tableName} (Capacity: {selectedTable.capacity})
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Menu Selection */}
-              <div className="md:col-span-2">
-                <div className="mb-3">
-                  <h3 className="font-semibold text-gray-700 mb-2">Select Menu Items</h3>
-                  <input
-                    type="text"
-                    placeholder="Search menu items..."
-                    value={menuSearch}
-                    onChange={(e) => setMenuSearch(e.target.value.toLowerCase())}
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                  />
-                </div>
-                <div className="space-y-2 max-h-64 overflow-y-auto border rounded p-3">
-                  {menuItems.length > 0 ? (
-                    menuItems
-                      .filter(item => item.name?.toLowerCase().includes(menuSearch) || item.itemName?.toLowerCase().includes(menuSearch))
-                      .map((item) => (
-                        <div key={item._id} className="flex gap-3 p-2 bg-gray-50 rounded hover:bg-gray-100">
-                          {item.imageUrl && (
-                            <img 
-                              src={item.imageUrl} 
-                              alt={item.name || item.itemName}
-                              className="w-16 h-16 rounded object-cover"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{item.name || item.itemName}</p>
-                            {item.description && (
-                              <p className="text-xs text-gray-500 line-clamp-1">{item.description}</p>
-                            )}
-                            <p className="text-sm font-semibold text-indigo-600">₹{item.price}</p>
-                          </div>
-                          <div className="flex items-center">
-                            <input
-                              type="number"
-                              min="0"
-                              max="10"
-                              value={selectedMenu.find(m => m.id === item._id)?.quantity || 0}
-                              onChange={(e) => handleMenuQuantityChange(item._id, parseInt(e.target.value) || 0)}
-                              className="w-14 p-1 border rounded text-center text-sm"
-                            />
-                          </div>
-                        </div>
-                      ))
-                  ) : (
-                    <p className="text-gray-600 text-sm">No menu items available</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Bill Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 h-fit">
-                <h3 className="font-semibold text-gray-700 mb-3">Bill Summary</h3>
-                <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
-                  {selectedMenu.length > 0 ? (
-                    selectedMenu.map((item) => (
-                      <div key={item.id} className="flex justify-between text-sm">
-                        <span className="truncate">{item.name} x {item.quantity}</span>
-                        <span className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-600 text-sm">No items selected</p>
-                  )}
-                </div>
-                <div className="border-t pt-2 mb-4">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>₹{calculateBill().toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 justify-end mt-4">
-              <button
-                onClick={() => {
-                  setShowBookingModal(false);
-                  setSelectedTable(null);
-                  setSelectedMenu([]);
-                  setMenuSearch('');
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleBookTable}
-                disabled={loading || selectedMenu.length === 0}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400"
-              >
-                {loading ? 'Booking...' : 'Book Table'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-  
 
-export default SpaceManagement
+export default SpaceManagement;

@@ -153,7 +153,7 @@ const BaseSidebar = ({
       ['/orders', '/menu', '/billing'].includes(i.path)
     ),
     management: normalizedSidebarItems.filter(i =>
-      ['/spaces', '/tasks', '/expenses', '/customers'].includes(i.path)
+      ['/hotel-images', '/spaces', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
     administration: normalizedSidebarItems.filter(i =>

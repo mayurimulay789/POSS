@@ -14,15 +14,18 @@ const SpaceManagement = () => {
 
   const fetchTables = async () => {
     try {
-      setLoading(true);
+      // Only show loading on initial fetch
+      if (tables.length === 0) {
+        setLoading(true);
+      }
       setError(null);
       const token = localStorage.getItem('token');
       if (!token) {
         setError('No authentication token found');
         setTables([]);
+        setLoading(false);
         return;
       }
-      // Add timestamp to bypass cache
       const url = `${API_BASE_URL}/tables?t=${Date.now()}`;
       const response = await axios.get(url, {
         headers: { 
@@ -32,7 +35,6 @@ const SpaceManagement = () => {
           'Expires': '0'
         }
       });
-      console.log('Tables response:', response.data);
       
       // Handle different response formats
       let tableData = [];
@@ -40,9 +42,14 @@ const SpaceManagement = () => {
         tableData = response.data.data;
       } else if (response.data && Array.isArray(response.data)) {
         tableData = response.data;
+      } else if (Array.isArray(response.data)) {
+        tableData = response.data;
       }
       
       setTables(tableData);
+      if (tableData.length === 0) {
+        setError('No tables available');
+      }
     } catch (err) {
       console.error('Error fetching tables:', err);
       setError(err.message || 'Failed to load tables');
@@ -75,7 +82,7 @@ const SpaceManagement = () => {
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Space Management — Supervisor View</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Space Management — Staff View</h1>
       </div>
 
       {/* Management Content */}
@@ -169,7 +176,7 @@ const SpaceManagement = () => {
       </div>
 
       <p className="text-xs text-gray-500 mt-4 text-center">
-        Note: As a supervisor, you have view-only access to space management. To edit tables, please contact management.
+        Note: As staff, you have view-only access to space management. To edit tables, please contact management.
       </p>
     </div>
   );

@@ -56,7 +56,13 @@ exports.createOrder = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const { status = 'completed', timeFrame } = req.query;
-    const filter = { createdBy: req.user.id };
+    const filter = {};
+
+    // Merchants, managers, supervisors, and staff should see all orders
+    // Only other roles are filtered by createdBy
+    if (req.user.role !== 'merchant' && req.user.role !== 'manager' && req.user.role !== 'supervisor' && req.user.role !== 'staff') {
+      filter.createdBy = req.user.id;
+    }
 
     if (status) {
       filter.status = status;

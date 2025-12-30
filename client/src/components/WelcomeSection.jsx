@@ -24,25 +24,25 @@ const WelcomeSection = () => {
   }, []);
 
   return (
-    <section className="py-16 md:py-20 bg-white">
+    <section className="py-16 md:py-20 bg-gradient-to-r from-[#0A3D4D] to-[#134A5C]">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
             {/* Left side - Text (Centered) */}
             <div className="text-center space-y-6">
-              <p className="text-amber-700 text-sm uppercase tracking-wider font-medium">
+              <p className="text-[#FF9800] text-sm uppercase tracking-wider font-medium">
                 Welcome To
               </p>
               
-              <h2 className="text-5xl md:text-6xl font-serif font-bold text-gray-900 leading-tight">
+              <h2 className="text-5xl md:text-6xl font-serif font-bold text-white leading-tight">
                 POS Restaurant
               </h2>
               
               {/* Decorative divider */}
               <div className="flex justify-center">
-                <div className="w-16 h-1 bg-amber-600"></div>
+                <div className="w-16 h-1 bg-[#FF9800]"></div>
               </div>
               
-              <div className="space-y-5 text-gray-600 text-sm leading-relaxed max-w-md mx-auto">
+              <div className="space-y-5 text-gray-200 text-sm leading-relaxed max-w-md mx-auto">
                 <p>
                   India Restaurant has been serving delightful experiences through the art of cooking for four decades. A cozy, relaxing space combined with flavourful dishes makes it a first choice for every foodie in town. It provides a wide range of items to choose from and lets everyone indulge in an experience of pleasing their taste buds.
                 </p>

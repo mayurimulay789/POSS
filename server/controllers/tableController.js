@@ -5,7 +5,11 @@ const { uploadToCloudinary, deleteFromCloudinary } = require('../utils/cloudinar
 exports.getTables = async (req, res) => {
   try {
     const { spaceType } = req.query;
-    const filter = { createdBy: req.user.id };
+    const filter = {};
+    
+    // All roles (merchant, manager, supervisor, staff) can see all tables
+    // Only non-staff/non-supervisor/non-manager/non-merchant roles are restricted
+    // This allows all authorized users to view table status
     
     if (spaceType) {
       filter.spaceType = spaceType;
@@ -81,10 +85,15 @@ exports.createTable = async (req, res) => {
 exports.updateTable = async (req, res) => {
   try {
     const { id } = req.params;
-    const { tableName, capacity, status, spaceType, orderedMenu, totalBill } = req.body;
+    const { tableName, capacity, status, spaceType, orderedMenu, totalBill, isReserved } = req.body;
 
-    // Find table and verify ownership
-    let table = await Table.findOne({ _id: id, createdBy: req.user.id });
+    // Find table - managers, merchants, supervisors, and staff can update any table
+    const filter = { _id: id };
+    if (req.user.role !== 'merchant' && req.user.role !== 'manager' && req.user.role !== 'supervisor' && req.user.role !== 'staff') {
+      filter.createdBy = req.user.id;
+    }
+    
+    let table = await Table.findOne(filter);
 
     if (!table) {
       return res.status(404).json({
@@ -118,6 +127,7 @@ exports.updateTable = async (req, res) => {
     if (spaceType) table.spaceType = spaceType;
     if (orderedMenu !== undefined) table.orderedMenu = orderedMenu;
     if (totalBill !== undefined) table.totalBill = totalBill;
+    if (isReserved !== undefined) table.isReserved = isReserved;
 
     await table.save();
 
@@ -141,8 +151,13 @@ exports.deleteTable = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Find table and verify ownership
-    const table = await Table.findOne({ _id: id, createdBy: req.user.id });
+    // Find table - managers, merchants, and supervisors can delete any table
+    const filter = { _id: id };
+    if (req.user.role !== 'merchant' && req.user.role !== 'manager' && req.user.role !== 'supervisor') {
+      filter.createdBy = req.user.id;
+    }
+    
+    const table = await Table.findOne(filter);
 
     if (!table) {
       return res.status(404).json({
@@ -183,7 +198,13 @@ exports.getTableById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const table = await Table.findOne({ _id: id, createdBy: req.user.id });
+    // Managers, merchants, and supervisors can view any table
+    const filter = { _id: id };
+    if (req.user.role !== 'merchant' && req.user.role !== 'manager' && req.user.role !== 'supervisor') {
+      filter.createdBy = req.user.id;
+    }
+    
+    const table = await Table.findOne(filter);
 
     if (!table) {
       return res.status(404).json({

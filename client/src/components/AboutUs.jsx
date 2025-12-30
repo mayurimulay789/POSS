@@ -35,18 +35,18 @@ const AboutUs = () => {
   ];
 
   return (
-    <section id="AboutUs" className="py-16 md:py-20 bg-gray-50">
+    <section id="AboutUs" className="py-16 md:py-20 bg-gradient-to-b from-[#0A3D4D] to-[#134A5C]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-10">
-          <p className="text-amber-600 text-sm uppercase tracking-widest font-semibold mb-4">
+          <p className="text-[#FF9800] text-sm uppercase tracking-widest font-semibold mb-4">
             Our Story
           </p>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
             About Our Restaurant
           </h2>
           <div className="flex justify-center mb-6">
-            <div className="w-24 h-1 bg-amber-600"></div>
+            <div className="w-24 h-1 bg-[#FF9800]"></div>
           </div>
         </div>
 
@@ -54,7 +54,7 @@ const AboutUs = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
           {/* Left Content */}
           <div className="space-y-6">
-            <p className="text-gray-700 text-lg leading-relaxed">
+            <p className="text-gray-200 text-lg leading-relaxed">
               Founded in 1985, India Restaurant has been serving authentic culinary experiences to food enthusiasts across the city. Our journey began with a simple mission: to bring the true flavors of India to your table.
             </p>
 
@@ -70,7 +70,7 @@ const AboutUs = () => {
             <div className="grid grid-cols-2 gap-4 mt-8">
               {values.map((value, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <CheckCircleIcon className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <CheckCircleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0" />
                   <span className="text-gray-700 font-medium">{value}</span>
                 </div>
               ))}
@@ -80,25 +80,25 @@ const AboutUs = () => {
           {/* Right Content - Stats or Image Placeholder */}
           <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
             <div className="space-y-8">
-              <div className="border-l-4 border-amber-600 pl-6">
+              <div className="border-l-4 border-yellow-500 pl-6">
                 <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Since</p>
                 <p className="text-4xl font-serif font-bold text-gray-900">1985</p>
                 <p className="text-gray-700 mt-2">39+ Years of Excellence</p>
               </div>
 
-              <div className="border-l-4 border-amber-600 pl-6">
+              <div className="border-l-4 border-yellow-500 pl-6">
                 <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Customers Served</p>
                 <p className="text-4xl font-serif font-bold text-gray-900">50K+</p>
                 <p className="text-gray-700 mt-2">Satisfied Food Lovers</p>
               </div>
 
-              <div className="border-l-4 border-amber-600 pl-6">
+              <div className="border-l-4 border-yellow-500 pl-6">
                 <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Awards</p>
                 <p className="text-4xl font-serif font-bold text-gray-900">15+</p>
                 <p className="text-gray-700 mt-2">Culinary Recognition</p>
               </div>
 
-              <div className="bg-amber-50 p-6 rounded-lg">
+              <div className="bg-yellow-100 p-6 rounded-lg border-l-4 border-yellow-500">
                 <p className="text-gray-900 font-semibold mb-2">Our Commitment</p>
                 <p className="text-gray-700 text-sm">
                   We are committed to providing exceptional dining experiences through authentic cuisine, impeccable service, and a welcoming atmosphere that makes every guest feel at home.
@@ -118,7 +118,7 @@ const AboutUs = () => {
             {highlights.map((highlight, index) => (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-8 text-center border border-gray-100"
+                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-8 text-center border-2 border-yellow-200 hover:border-yellow-400"
               >
                 <div className="text-5xl mb-4">{highlight.icon}</div>
                 <h4 className="text-xl font-serif font-bold text-gray-900 mb-3">

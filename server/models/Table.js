@@ -21,6 +21,10 @@ const tableSchema = new mongoose.Schema({
     enum: ['available', 'occupied', 'reserved', 'served', 'payment_pending'],
     default: 'available'
   },
+  isReserved: {
+    type: Boolean,
+    default: false
+  },
   tableImage: {
     type: String,
     default: 'https://res.cloudinary.com/demo/image/upload/v1/table-placeholder.png'

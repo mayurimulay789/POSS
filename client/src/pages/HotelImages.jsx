@@ -204,6 +204,29 @@ const HotelImages = () => {
                     {img.isCuisineCard && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Active</span>}
                   </div>
 
+                  <div className="flex items-center justify-between">
+                    <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 cursor-pointer"
+                        checked={!!img.isLoginImage}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          // Ensure only one login image at a time
+                          setImages(prev => prev.map(i => {
+                            if (i._id === img._id) {
+                              return { ...i, isLoginImage: val };
+                            }
+                            // When selecting this one, turn off others
+                            return val ? { ...i, isLoginImage: false } : i;
+                          }));
+                        }}
+                      />
+                      <span>Use as login page image</span>
+                    </label>
+                    {img.isLoginImage && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Selected</span>}
+                  </div>
+
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Banner heading</label>
                     <input
@@ -236,6 +259,7 @@ const HotelImages = () => {
                             isWelcome: !!img.isWelcome,
                             isCuisineGallery: !!img.isCuisineGallery,
                             isCuisineCard: !!img.isCuisineCard,
+                            isLoginImage: !!img.isLoginImage,
                           };
                           const res = await axios.put(`${API_BASE}/api/hotel-images/${img._id}`, payload, getAuthHeaders());
                           // Update the image with the server response to show saved state

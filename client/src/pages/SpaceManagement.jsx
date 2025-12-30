@@ -4,6 +4,8 @@ import { useSelector } from 'react-redux';
 // Import role-specific components
 import MerchantSpaceManagement from '../components/merchant/SpaceManagement/SpaceManagement';
 import ManagerSpaceManagement from '../components/manager/SpaceManagement/SpaceManagement';
+import SupervisorSpaceManagement from '../components/supervisor/SpaceManagement/SpaceManagement';
+import StaffSpaceManagement from '../components/staff/SpaceManagement/SpaceManagement';
 
 const SpaceManagement = () => {
   const { user } = useSelector((state) => state.auth);
@@ -16,24 +18,14 @@ const SpaceManagement = () => {
     case 'manager':
       return <ManagerSpaceManagement />;
     case 'supervisor':
-      return (
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Space Management</h1>
-          <p className="text-gray-600">Space management is not available for supervisor role.</p>
-        </div>
-      );
+      return <SupervisorSpaceManagement />;
     case 'staff':
-      return (
-        <div className="p-6">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Space Management</h1>
-          <p className="text-gray-600">Space management is not available for staff role.</p>
-        </div>
-      );
+      return <StaffSpaceManagement />;
     default:
       return (
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Space Management</h1>
-          <p className="text-gray-600">Please log in to access space management.</p>
+          <p className="text-gray-600">Unauthorized access.</p>
         </div>
       );
   }

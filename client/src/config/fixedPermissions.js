@@ -9,7 +9,8 @@ export const FIXED_PERMISSIONS = {
   EXPENSE_MANAGEMENT: 'expense_management',
   REPORTS_ANALYTICS: 'reports_analytics',
   EMPLOYEE_MANAGEMENT: 'employee_management',
-  CUSTOMER_MANAGEMENT: 'customer_management'
+  CUSTOMER_MANAGEMENT: 'customer_management',
+  HOTEL_IMAGES: 'hotel_images'
 };
 
 export const PERMISSION_LABELS = {
@@ -21,7 +22,8 @@ export const PERMISSION_LABELS = {
   [FIXED_PERMISSIONS.EXPENSE_MANAGEMENT]: 'Expense Management',
   [FIXED_PERMISSIONS.REPORTS_ANALYTICS]: 'Reports & Analytics',
   [FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT]: 'Employee Management',
-  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: 'Customer Management'
+  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: 'Customer Management',
+  [FIXED_PERMISSIONS.HOTEL_IMAGES]: 'Hotel Images'
 };
 
 export const PERMISSION_ICONS = {
@@ -33,7 +35,8 @@ export const PERMISSION_ICONS = {
   [FIXED_PERMISSIONS.EXPENSE_MANAGEMENT]: '💸',
   [FIXED_PERMISSIONS.REPORTS_ANALYTICS]: '📊',
   [FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT]: '👥',
-  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: '🧑‍🤝‍🧑'
+  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: '🧑‍🤝‍🧑',
+  [FIXED_PERMISSIONS.HOTEL_IMAGES]: '🖼️'
 };
 
 export const PERMISSION_PATHS = {
@@ -45,6 +48,7 @@ export const PERMISSION_PATHS = {
   [FIXED_PERMISSIONS.EXPENSE_MANAGEMENT]: '/expenses',
   [FIXED_PERMISSIONS.REPORTS_ANALYTICS]: '/reports',
   [FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT]: '/employees',
-  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: '/customers'
+  [FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT]: '/customers',
+  [FIXED_PERMISSIONS.HOTEL_IMAGES]: '/hotel-images'
 };
 
