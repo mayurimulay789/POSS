@@ -91,6 +91,8 @@ const customerRoutes = require('../routes/customerRoutes');
 const dashboardRoutes = require('../routes/dashboardRoutes');
 const attendanceRoutes = require('../routes/attendanceRoutes'); 
 const merchantAttendance=require('../routes/merchantAttendance');
+const chargeRoutes = require('../routes/chargeRoutes');
+
 
 // ========== USE ROUTES ==========
 app.use("/api/auth", authRoutes);
@@ -101,6 +103,8 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/hotel-images', hotelImageRoutes);
+app.use('/api/charges', chargeRoutes);
+
 
 // Note: All images are now stored in Cloudinary only (in-memory processing, no local disk storage)
 

@@ -7,7 +7,8 @@ import taskReducer from './slices/taskSlice';
 import custmoerReducer from './slices/customerSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import attendanceReducer from './slices/attendanceSlice';
-import merchantAttendanceReducer from './slices/merchantAttendanceSlice'
+import merchantAttendanceReducer from './slices/merchantAttendanceSlice';
+import chargeReducer from './slices/chargeSlice';
 
 export const store = configureStore({
   reducer: {
@@ -19,7 +20,8 @@ export const store = configureStore({
     customers: custmoerReducer,
      dashboard: dashboardReducer,
      attendance: attendanceReducer,
-     merchantAttendance: merchantAttendanceReducer
+     merchantAttendance: merchantAttendanceReducer,
+     charges: chargeReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

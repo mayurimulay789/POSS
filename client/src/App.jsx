@@ -35,6 +35,7 @@ const PermissionManagement = lazy(() => import('./pages/PermissionManagement'));
 const HotelImages = lazy(() => import('./pages/HotelImages'));
 const AttendanceManagement = lazy(() => import('./pages/AttendanceManagement'));
 const MerchantAttendanceDashboard = lazy(() => import('./pages/MerchantAttendanceDashboard'));
+const ChargesManagement = lazy(() => import('./pages/ChargeManagement'));
 
 // Public components
 const HomePage = lazy(() => import('./pages/Home'));
@@ -185,6 +186,7 @@ function App() {
                 <Route path="permission-management" element={<PermissionManagement />} />
                 <Route path="attendance" element={<AttendanceManagement />} />
                 <Route path="attendance-dashboard" element={<MerchantAttendanceDashboard />} />
+                <Route path="charges" element={<ChargesManagement />} />
               </Route>
 
               {/* Catch all route */}

@@ -6,12 +6,12 @@ const DEFAULT_ROLE_PERMISSIONS = {
   merchant: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management'
+    'reports_analytics', 'employee_management', 'customer_management', 'charges_management'
   ],
   manager: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management'
+    'reports_analytics', 'employee_management', 'customer_management', 'charges_management'
   ],
   supervisor: [
     'order_management', 'billing_management', 'space_management', 'task_management','customer_management'
@@ -48,6 +48,8 @@ const getRolePermissions = async (req, res) => {
         isDefault: true
       });
     }
+
+    console.log("rolePermission found:", rolePermission);
 
     res.json({ 
       role,
@@ -139,6 +141,8 @@ const getAllRolePermissions = async (req, res) => {
       };
     }
 
+    console.log("all role permissions:", result);
+
     res.json(result);
   } catch (error) {
     console.error('Get all role permissions error:', error);
@@ -172,6 +176,8 @@ const getUserPermissions = async (req, res) => {
     const permissions = rolePermission 
       ? rolePermission.permissions 
       : DEFAULT_ROLE_PERMISSIONS[user.role] || [];
+
+      console.log("user permissions:", permissions);
 
     res.json({
       role: user.role,

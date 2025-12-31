@@ -83,12 +83,25 @@ export const SIDEBAR_ITEMS = {
     icon: '🧑‍🤝‍🧑',
     permission: FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT,
   },
+  charges: {
+    path: '/charges',
+    label: 'Charges Management',
+    icon: '💲',
+    permission: FIXED_PERMISSIONS.CHARGES_MANAGEMENT,
+  },
+  attendance: {
+    path: '/attendance-dashboard',
+    label: 'Attendance Management',
+    icon: '🕒',
+    permission: FIXED_PERMISSIONS.ATTENDANCE_MANAGEMENT,
+  },
   permissions: {
     path: '/permission-management',
     label: 'Permission Management',
     icon: '🔐',
     permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT, // Only for merchant
-  }
+  },
+
 };
 
 // Get sidebar items for a specific role based on their permissions
@@ -105,5 +118,5 @@ export const GROUPED_SIDEBAR_ITEMS = {
   operations: ['orders', 'menu', 'billing'],
   management: ['hotelImages', 'spaces', 'tasks', 'expenses','customers'],
   analytics: ['reports'],
-  administration: ['employees', 'permissions']
+  administration: ['employees', 'permissions', 'charges','attendance'],
 };

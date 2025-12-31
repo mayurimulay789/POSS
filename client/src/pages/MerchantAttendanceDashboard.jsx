@@ -334,12 +334,9 @@ const MerchantAttendanceDashboard = () => {
 
   if (user?.role !== 'merchant') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md w-full">
-          <XCircle className="w-16 h-16 sm:w-20 sm:h-20 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 text-sm sm:text-base">Only merchants can access this dashboard</p>
-        </div>
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+        <p className="text-gray-600">Only merchants can access attendance management.</p>
       </div>
     );
   }

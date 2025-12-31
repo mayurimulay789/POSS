@@ -66,7 +66,9 @@ const BaseSidebar = ({
       customer_management: '🧑‍🤝‍🧑',
       reports_analytics: '📈',
       employee_management: '👥',
-      permission_management: '🔐'
+      permission_management: '🔐',
+      charges_management: '💲',
+      attendance_management: '🕒',
     };
     return icons[permission] || '📄';
   };
@@ -157,7 +159,7 @@ const BaseSidebar = ({
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
     administration: normalizedSidebarItems.filter(i =>
-      ['/employees', '/permission-management'].includes(i.path)
+      ['/employees', '/permission-management','/charges','/attendance-dashboard'].includes(i.path)
     )
   };
 

@@ -196,12 +196,9 @@ const EmployeeManagement = () => {
   // Check if user is merchant
   if (user?.role !== 'merchant') {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="text-4xl mb-4">🚫</div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Access Denied</h2>
-          <p className="text-gray-600">Only merchants can access employee management.</p>
-        </div>
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+        <p className="text-gray-600">Only merchants can access employee management.</p>
       </div>
     );
   }

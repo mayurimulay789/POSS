@@ -388,7 +388,7 @@ const BillingManagement = () => {
                         onClick={() => handlePrint(order)}
                         className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
                       >
-                        Print Bill
+                        Print Bills
                       </button>
                       <button
                         onClick={() => markCompleted(order)}
