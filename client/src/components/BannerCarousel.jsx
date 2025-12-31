@@ -115,7 +115,7 @@ const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]
                 {/* Elegant, minimalist button */}
                 <Link
                   to="/menu"
-                  className="inline-block border border-white/60 hover:border-white text-white px-10 py-3 text-xs uppercase tracking-[0.2em] transition-all duration-500 hover:bg-white hover:text-black"
+                  className="inline-block bg-amber-400 hover:bg-amber-500 border border-amber-400 hover:border-amber-500 text-white px-8 py-3 text-sm uppercase tracking-[0.15em] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
                 >
                   Discover Menu
                 </Link>

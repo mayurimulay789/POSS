@@ -22,7 +22,8 @@ const Login = lazy(() => import('./components/LoginForm'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const MenuManagement = lazy(() => import('./pages/MenuManagement'));
 const AddMenu = lazy(() => import('./components/merchant/MenuManagement/AddMenu'));
-const MenuList = lazy(() => import('./components/merchant/MenuManagement/MenuList'));
+const MerchantMenuList = lazy(() => import('./components/merchant/MenuManagement/MenuList'));
+const StaffMenuList = lazy(() => import('./components/staff/MenuManagement/MenuManagement'));
 const OrderManagement = lazy(() => import('./pages/OrderManagement'));
 const BillingManagement = lazy(() => import('./pages/BillingManagement'));
 const SpaceManagement = lazy(() => import('./pages/SpaceManagement'));
@@ -50,6 +51,34 @@ const LoadingSpinner = () => (
   </div>
 );
 
+// Role-based MenuList wrapper
+const MenuList = () => {
+  const userRole = (() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      return user?.role;
+    } catch (e) {
+      return null;
+    }
+  })();
+  
+  console.log('MenuList - Current user role:', userRole);
+  
+  // Staff and supervisor get read-only view, merchant and manager get full access
+  if (userRole === 'staff' || userRole === 'supervisor') {
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <StaffMenuList />
+      </Suspense>
+    );
+  }
+  
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <MerchantMenuList />
+    </Suspense>
+  );
+};
 
 // Public Layout (remove top padding on home so banner sits at very top under overlay nav)
 const PublicLayout = () => {

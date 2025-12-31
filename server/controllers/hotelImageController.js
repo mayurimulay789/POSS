@@ -92,6 +92,19 @@ exports.update = async (req, res) => {
       img.isCuisineCard = v === true || v === 'true' || v === '1' || v === 1;
     }
 
+    // Handle isLoginImage - only one image can be login page image
+    if (typeof req.body.isLoginImage !== 'undefined') {
+      const v = req.body.isLoginImage;
+      const shouldBeLoginImage = v === true || v === 'true' || v === '1' || v === 1;
+      if (shouldBeLoginImage) {
+        // Remove login image flag from all other images
+        await HotelImage.updateMany({ _id: { $ne: id } }, { isLoginImage: false });
+        img.isLoginImage = true;
+      } else {
+        img.isLoginImage = false;
+      }
+    }
+
     // Replace image if provided
     if (req.file && req.file.buffer) {
       const originalName = req.file.originalname || 'upload.jpg';

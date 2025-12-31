@@ -6,12 +6,12 @@ const DEFAULT_ROLE_PERMISSIONS = {
   merchant: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'charges_management'
+    'reports_analytics', 'employee_management', 'customer_management', 'charges_management','hotel_images'
   ],
   manager: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'charges_management'
+    'reports_analytics', 'employee_management', 'customer_management', 'charges_management','hotel_images'
   ],
   supervisor: [
     'order_management', 'billing_management', 'space_management', 'task_management','customer_management'

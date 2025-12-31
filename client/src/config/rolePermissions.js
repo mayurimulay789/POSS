@@ -12,8 +12,7 @@ export const SIDEBAR_ITEMS = {
     path: '/hotel-images',
     label: 'Hotel Images',
     icon: '🖼️',
-    // No permission required; visible to all roles
-    permission: null,
+    permission: FIXED_PERMISSIONS.HOTEL_IMAGES,
   },
   orders: {
     path: '/orders',
@@ -106,10 +105,13 @@ export const SIDEBAR_ITEMS = {
 
 // Get sidebar items for a specific role based on their permissions
 export const getSidebarItemsForRole = (rolePermissions = []) => {
-  return Object.values(SIDEBAR_ITEMS).filter(item =>
+  const items = Object.values(SIDEBAR_ITEMS).filter(item =>
     // Include if no permission required, else check role permissions
     !item.permission || rolePermissions.includes(item.permission)
   );
+  
+  console.log('getSidebarItemsForRole - Filtered items:', items.map(i => i.label));
+  return items;
 };
 
 // Group items for better organization

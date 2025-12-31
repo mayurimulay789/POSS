@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser, clearError, clearSuccess } from '../store/slices/authSlice';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'; 
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import axios from 'axios';
+
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
 
 const LoginForm = () => {
   const navigate = useNavigate();
@@ -13,6 +16,7 @@ const LoginForm = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [localMessage, setLocalMessage] = useState('');
+  const [loginImage, setLoginImage] = useState(null);
 
   const { email, password } = formData;
 
@@ -24,6 +28,20 @@ const LoginForm = () => {
   useEffect(() => {
     dispatch(clearError());
     dispatch(clearSuccess());
+    
+    // Fetch login image
+    const fetchLoginImage = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/api/hotel-images/public`);
+        const images = Array.isArray(res.data) ? res.data : [];
+        const loginImg = images.find(img => img.isLoginImage);
+        setLoginImage(loginImg || null);
+      } catch (err) {
+        console.error('Failed to load login image:', err);
+      }
+    };
+    
+    fetchLoginImage();
   }, [dispatch]);
 
   useEffect(() => {
@@ -53,12 +71,12 @@ const LoginForm = () => {
   const displayMessage = localMessage || error || success;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-800">
-      <div className="max-w-4xl w-full min-h-[450px] bg-white shadow-lg rounded-lg overflow-hidden flex">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A3D4D] via-[#134A5C] to-[#0A3D4D]">
+      <div className="max-w-4xl w-full min-h-[450px] bg-white shadow-2xl rounded-2xl overflow-hidden flex">
         {/* Left side image */}
         <div
           className="hidden md:block md:w-1/2 bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/two.jpg')" }}
+          style={{ backgroundImage: loginImage ? `url('${loginImage.url}')` : "url('/images/two.jpg')" }}
         >
           <div className="h-full w-full flex flex-col items-center justify-center bg-black bg-opacity-40">
             <h2 className="text-white text-3xl font-bold px-4 text-center">
@@ -72,8 +90,8 @@ const LoginForm = () => {
 
         {/* Right side form */}
         <div className="w-full md:w-1/2 p-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
-          <p className="text-center text-gray-500 mb-6">
+          <h2 className="text-3xl font-bold mb-4 text-center text-[#0A3D4D]">Login</h2>
+          <p className="text-center text-gray-600 mb-6">
             Please log in using your personal information
           </p>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -85,7 +103,7 @@ const LoginForm = () => {
                 value={email}
                 onChange={onChange}
                 placeholder="Enter your email"
-                className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
                 required
                 disabled={loading}
               />
@@ -99,7 +117,7 @@ const LoginForm = () => {
                 value={password}
                 onChange={onChange}
                 placeholder="Enter your password"
-                className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent pr-10"
                 required
                 disabled={loading}
               />
@@ -121,7 +139,7 @@ const LoginForm = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded font-semibold transition duration-300 disabled:bg-amber-300 disabled:cursor-not-allowed"
+                className="w-full bg-amber-400 hover:bg-amber-500 text-white py-3 rounded-lg font-semibold transition duration-300 disabled:bg-amber-300 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
               >
                 {loading ? 'Logging in...' : 'Log In'}
               </button>

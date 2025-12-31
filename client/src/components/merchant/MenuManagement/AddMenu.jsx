@@ -43,7 +43,9 @@ const AddMenu = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/menu/categories`);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await axios.get(`${API_BASE_URL}/menu/categories`, { headers });
       setCategories(res.data || []);
     } catch (err) {
       console.error(err);

@@ -252,12 +252,12 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">KOT (Kitchen Order Ticket)</h2>
-              <button
+              {/* <button
                 onClick={fetchOrders}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 Refresh
-              </button>
+              </button> */}
             </div>
 
             {loading ? (
@@ -321,12 +321,12 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">Print Bill</h2>
-              <button
+              {/* <button
                 onClick={fetchOrders}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 Refresh
-              </button>
+              </button> */}
             </div>
 
             {loading ? (
@@ -408,12 +408,12 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">Completed Bills</h2>
-              <button
+              {/* <button
                 onClick={fetchCompletedOrders}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 Refresh
-              </button>
+              </button> */}
             </div>
 
             {loading ? (

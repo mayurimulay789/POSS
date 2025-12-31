@@ -24,20 +24,20 @@ const ContactUs = () => {
   ];
 
   return (
-    <section id="contact" className="py-8 md:py-12 bg-gradient-to-br from-gray-50 to-gray-100">
+    <section id="contact" className="py-8 md:py-12 bg-gradient-to-br from-[#0A3D4D] to-[#134A5C]">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center mb-8">
-          <p className="text-amber-600 text-sm uppercase tracking-widest font-semibold mb-4">
+          <p className="text-[#FF9800] text-sm uppercase tracking-widest font-semibold mb-4">
             Get In Touch
           </p>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
             Contact Us
           </h2>
           <div className="flex justify-center mb-6">
-            <div className="w-24 h-1 bg-amber-600"></div>
+            <div className="w-24 h-1 bg-[#FF9800]"></div>
           </div>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-200 text-lg max-w-2xl mx-auto">
             Have questions or feedback? We'd love to hear from you. Reach out to us and we'll respond as soon as possible.
           </p>
         </div>
@@ -47,9 +47,9 @@ const ContactUs = () => {
           {contactInfo.map((info, index) => (
             <div
               key={index}
-              className="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300"
+              className="bg-white rounded-lg shadow-lg p-8 text-center hover:shadow-xl transition-shadow duration-300 border-t-4 border-[#FF9800]"
             >
-              <div className="flex justify-center mb-4 text-amber-600">
+              <div className="flex justify-center mb-4 text-[#FF9800]">
                 {info.icon}
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -87,8 +87,8 @@ const ContactUs = () => {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-100">
-                      <span className="text-amber-600 font-semibold">2</span>
+                    <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-yellow-100">
+                      <span className="text-yellow-600 font-semibold">2</span>
                     </div>
                   </div>
                   <div>
@@ -99,8 +99,8 @@ const ContactUs = () => {
 
                 <div className="flex gap-4">
                   <div className="flex-shrink-0">
-                    <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-100">
-                      <span className="text-amber-600 font-semibold">3</span>
+                    <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-yellow-100">
+                      <span className="text-yellow-600 font-semibold">3</span>
                     </div>
                   </div>
                   <div>
@@ -112,7 +112,7 @@ const ContactUs = () => {
             </div>
 
             {/* Business Hours */}
-            <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border-2 border-amber-200 p-8 md:p-10">
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border-2 border-yellow-400 p-8 md:p-10">
               <h3 className="text-xl font-semibold text-gray-900 mb-4">
                 Business Hours
               </h3>
@@ -130,7 +130,7 @@ const ContactUs = () => {
                   <span className="font-semibold">10:00 AM - 10:00 PM</span>
                 </div>
               </div>
-              <p className="text-sm text-amber-900 mt-4 pt-4 border-t border-amber-300">
+              <p className="text-sm text-yellow-900 mt-4 pt-4 border-t border-yellow-300">
                 Closed on major holidays. For emergencies, please call our hotline.
               </p>
             </div>
