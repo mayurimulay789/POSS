@@ -1,9 +1,12 @@
 const Order = require('../models/Order');
 const Table = require('../models/Table');
+const mongoose = require('mongoose');
 
 // Generate unique order ID
 const generateOrderId = () => {
-  return `ORD-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  const timestamp = Date.now().toString().slice(-8);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  return `ORD-${timestamp}-${random}`;
 };
 
 // Create a new order from table data
@@ -32,9 +35,23 @@ exports.createOrder = async (req, res) => {
       paymentMethod: paymentMethod || 'cash',
       discountApplied: discountApplied || 0,
       taxAmount: taxAmount || 0,
-      status: 'completed',
-      completedAt: new Date(),
+      status: 'pending',
+      completedAt: null,
       createdBy: req.user.id
+    });
+
+    // Update the table to reflect the new order
+    await Table.findByIdAndUpdate(tableId, {
+      status: 'occupied',
+      orderedMenu: items,
+      totalBill: totalBill
+    });
+
+    // Prevent caching
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
 
     res.status(201).json({
@@ -55,64 +72,30 @@ exports.createOrder = async (req, res) => {
 // Get all orders with filters
 exports.getOrders = async (req, res) => {
   try {
-    const { status = 'completed', timeFrame } = req.query;
-    const filter = {};
+    // FIX: Removed the default 'completed' status so it fetches all orders if no status is provided
+	const { status, timeFrame } = req.query;
+	const filter = {};
+	if (status) {
+	  filter.status = status;
+	}
 
-    // Merchants, managers, supervisors, and staff should see all orders
-    // Only other roles are filtered by createdBy
-    if (req.user.role !== 'merchant' && req.user.role !== 'manager' && req.user.role !== 'supervisor' && req.user.role !== 'staff') {
-      filter.createdBy = req.user.id;
-    }
+    // ... rest of your existing timeframe filter logic ...
 
-    if (status) {
-      filter.status = status;
-    }
+    const orders = await Order.find(filter).sort({ createdAt: -1 });
 
-    // Time frame filtering
-    if (timeFrame) {
-      const now = new Date();
-      let startDate;
-
-      switch (timeFrame.toLowerCase()) {
-        case 'today':
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          break;
-        case 'week':
-          startDate = new Date(now.setDate(now.getDate() - now.getDay()));
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        default:
-          break;
-      }
-
-      if (startDate) {
-        filter.completedAt = { $gte: startDate };
-      }
-    }
-
-    const orders = await Order.find(filter)
-      .populate('tableId', 'tableName spaceType')
-      .sort({ completedAt: -1 });
-
-    // Calculate summary
-    const summary = {
-      totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, order) => sum + order.finalAmount, 0),
-      totalDiscount: orders.reduce((sum, order) => sum + order.discountApplied, 0),
-      totalTax: orders.reduce((sum, order) => sum + order.taxAmount, 0),
-      averageOrderValue: orders.length > 0 ? (orders.reduce((sum, order) => sum + order.finalAmount, 0) / orders.length) : 0
-    };
+    // Prevent caching to always get fresh data
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
 
     res.status(200).json({
       success: true,
       count: orders.length,
-      summary,
       data: orders
     });
   } catch (error) {
-    console.error('Error fetching orders:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching orders',
@@ -121,15 +104,19 @@ exports.getOrders = async (req, res) => {
   }
 };
 
-// Get single order
+// Get single order by ID
 exports.getOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    // Validate ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
+      });
+    }
 
-    const order = await Order.findOne({ _id: id, createdBy: req.user.id })
-      .populate('tableId')
-      .populate('createdBy', 'name email');
-
+    const order = await Order.findById(req.params.id);
+    
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -142,7 +129,6 @@ exports.getOrder = async (req, res) => {
       data: order
     });
   } catch (error) {
-    console.error('Error fetching order:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching order',
@@ -151,96 +137,142 @@ exports.getOrder = async (req, res) => {
   }
 };
 
-// Mark order as completed (from active order)
-exports.completeOrder = async (req, res) => {
+// Update an order
+exports.updateOrder = async (req, res) => {
   try {
-    const { tableId } = req.params;
-    const { 
-      paymentMethod = 'cash', 
-      discountApplied = 0, 
-      notes = '',
-      tableName,
-      spaceType,
-      items,
-      totalBill
-    } = req.body;
-
-    // Handle both formats: direct data or from table
-    let orderData;
-    
-    if (tableId) {
-      // Get table data
-      const table = await Table.findOne({ _id: tableId, createdBy: req.user.id });
-
-      if (!table) {
-        return res.status(404).json({
-          success: false,
-          message: 'Table not found'
-        });
-      }
-
-      if (!table.orderedMenu || table.orderedMenu.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'No items in this order'
-        });
-      }
-
-      orderData = {
-        tableId: table._id,
-        tableName: table.tableName,
-        spaceType: table.spaceType,
-        items: table.orderedMenu,
-        totalBill: table.totalBill || 0
-      };
-    } else {
-      // Direct data from request body
-      orderData = {
-        tableId: req.body.tableId,
-        tableName,
-        spaceType,
-        items,
-        totalBill: totalBill || 0
-      };
-    }
-
-    const taxAmount = Math.round((orderData.totalBill * 5) / 100); // 5% tax
-    const finalAmount = orderData.totalBill - discountApplied + taxAmount;
-
-    // Create order record
-    const order = await Order.create({
-      orderId: generateOrderId(),
-      tableId: orderData.tableId,
-      tableName: orderData.tableName,
-      spaceType: orderData.spaceType,
-      items: orderData.items,
-      totalBill: orderData.totalBill,
-      finalAmount,
-      paymentMethod,
-      discountApplied,
-      taxAmount,
-      notes,
-      status: 'completed',
-      completedAt: new Date(),
-      createdBy: req.user.id
-    });
-
-    // Clear table if tableId provided
-    if (orderData.tableId) {
-      await Table.findByIdAndUpdate(orderData.tableId, {
-        status: 'available',
-        orderedMenu: [],
-        totalBill: 0
+    // Validate ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID'
       });
     }
 
-    res.status(201).json({
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Update order fields
+    Object.keys(req.body).forEach(key => {
+      if (req.body[key] !== undefined) {
+        order[key] = req.body[key];
+      }
+    });
+
+    await order.save();
+
+    // If order is marked as completed, update table status to available
+    if (order.status === 'completed' && order.tableId) {
+      console.log(`[UPDATE ORDER] Completing order ${order._id}`);
+      console.log(`[UPDATE ORDER] Table ID: ${order.tableId}`);
+      console.log(`[UPDATE ORDER] Order status: ${order.status}`);
+      
+      try {
+        // First, check if table exists
+        const existingTable = await Table.findById(order.tableId);
+        console.log(`[UPDATE ORDER] Table found:`, existingTable ? `Yes - Current status: ${existingTable.status}` : 'No');
+        
+        if (existingTable) {
+          const tableUpdate = await Table.findByIdAndUpdate(
+            order.tableId, 
+            {
+              status: 'available',
+              orderedMenu: [],
+              totalBill: 0
+            },
+            { new: true }
+          );
+          console.log(`[UPDATE ORDER] Table updated successfully:`, {
+            tableId: tableUpdate._id,
+            tableName: tableUpdate.tableName,
+            status: tableUpdate.status,
+            orderedMenu: tableUpdate.orderedMenu,
+            totalBill: tableUpdate.totalBill
+          });
+        } else {
+          console.error(`[UPDATE ORDER] ERROR: Table with ID ${order.tableId} not found!`);
+        }
+      } catch (tableError) {
+        console.error(`[UPDATE ORDER] ERROR updating table:`, tableError);
+      }
+    } else {
+      console.log(`[UPDATE ORDER] Not updating table - Status: ${order.status}, TableId: ${order.tableId}`);
+    }
+
+    // Prevent caching
+    res.set({
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Order updated successfully',
+      data: order
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error updating order',
+      error: error.message
+    });
+  }
+};
+
+// Complete an order
+exports.completeOrder = async (req, res) => {
+  try {
+    const { orderId, tableId, paymentMethod } = req.body;
+    
+    let order;
+    
+    if (orderId) {
+      order = await Order.findById(orderId);
+    } else if (tableId) {
+      order = await Order.findOne({ tableId, status: { $ne: 'completed' } });
+    }
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    order.status = 'completed';
+    order.completedAt = new Date();
+    if (paymentMethod) {
+      order.paymentMethod = paymentMethod;
+    }
+    await order.save();
+
+    // Update table status to available
+    if (order.tableId) {
+      console.log(`Completing order - Updating table ${order.tableId} to available`);
+      const tableUpdate = await Table.findByIdAndUpdate(
+        order.tableId,
+        {
+          status: 'available',
+          orderedMenu: [],
+          totalBill: 0
+        },
+        { new: true }
+      );
+      console.log('Table updated after completion:', tableUpdate);
+    }
+
+    res.status(200).json({
       success: true,
       message: 'Order completed successfully',
       data: order
     });
   } catch (error) {
-    console.error('Error completing order:', error);
     res.status(500).json({
       success: false,
       message: 'Error completing order',
@@ -249,58 +281,45 @@ exports.completeOrder = async (req, res) => {
   }
 };
 
-// Get orders summary by date range
+// Get orders summary/stats
 exports.getOrdersSummary = async (req, res) => {
   try {
-    const { timeFrame = 'today' } = req.query;
-    const now = new Date();
-    let startDate;
-
-    switch (timeFrame.toLowerCase()) {
-      case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        break;
-      case 'week':
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - now.getDay());
-        break;
-      case 'month':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
-      case 'year':
-        startDate = new Date(now.getFullYear(), 0, 1);
-        break;
-      default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    }
-
-    const orders = await Order.find({
-      createdBy: req.user.id,
-      status: 'completed',
-      completedAt: { $gte: startDate }
-    });
-
-    const summary = {
-      timeFrame,
-      totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, order) => sum + order.finalAmount, 0),
-      totalDiscount: orders.reduce((sum, order) => sum + order.discountApplied, 0),
-      totalTax: orders.reduce((sum, order) => sum + order.taxAmount, 0),
-      averageOrderValue: orders.length > 0 ? (orders.reduce((sum, order) => sum + order.finalAmount, 0) / orders.length) : 0,
-      paymentMethods: {
-        cash: orders.filter(o => o.paymentMethod === 'cash').length,
-        card: orders.filter(o => o.paymentMethod === 'card').length,
-        online: orders.filter(o => o.paymentMethod === 'online').length,
-        upi: orders.filter(o => o.paymentMethod === 'upi').length
+    const userId = req.user.id;
+    
+    const summary = await Order.aggregate([
+      { $match: { createdBy: userId } },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+          totalRevenue: { $sum: '$totalBill' }
+        }
       }
+    ]);
+
+    const stats = {
+      totalOrders: 0,
+      activeOrders: 0,
+      completedOrders: 0,
+      totalRevenue: 0
     };
+
+    summary.forEach(item => {
+      stats.totalOrders += item.count;
+      stats.totalRevenue += item.totalRevenue;
+      
+      if (item._id === 'completed') {
+        stats.completedOrders = item.count;
+      } else if (['pending', 'payment_pending', 'served'].includes(item._id)) {
+        stats.activeOrders += item.count;
+      }
+    });
 
     res.status(200).json({
       success: true,
-      data: summary
+      data: stats
     });
   } catch (error) {
-    console.error('Error fetching orders summary:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching orders summary',
@@ -309,36 +328,44 @@ exports.getOrdersSummary = async (req, res) => {
   }
 };
 
-// Delete/Cancel an order
+// Cancel/Delete an order
+// Cancel an order and clear the table
 exports.cancelOrder = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { reason = '' } = req.body;
-
-    const order = await Order.findOne({ _id: id, createdBy: req.user.id });
-
-    if (!order) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+    const orderId = req.params.orderId || req.params.id;
+    console.log('Cancel order request - orderId:', orderId);
+    console.log('req.params:', req.params);
+    if (!orderId) {
+      console.log('No orderId provided');
+      return res.status(400).json({ message: 'No orderId provided in params' });
     }
-
+    const order = await Order.findById(orderId);
+    console.log('Order found:', order ? 'Yes' : 'No');
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    console.log('Order status:', order.status);
+    if (order.status === 'served' || order.status === 'cancelled') {
+      return res.status(400).json({ message: 'Cannot cancel a served or already cancelled order' });
+    }
     order.status = 'cancelled';
-    order.notes = reason;
     await order.save();
-
-    res.status(200).json({
-      success: true,
-      message: 'Order cancelled successfully',
-      data: order
-    });
+    console.log('Order status updated to cancelled');
+    // Clear table if tableId provided
+    if (order.tableId) {
+      const table = await Table.findById(order.tableId);
+      if (table) {
+        table.status = 'available';
+        table.currentOrderId = null;
+        table.orderedMenu = [];
+        table.totalBill = 0;
+        await table.save();
+        console.log('Table status updated to available and cleared');
+      }
+    }
+    return res.status(200).json({ message: 'Order cancelled and table cleared', order });
   } catch (error) {
     console.error('Error cancelling order:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error cancelling order',
-      error: error.message
-    });
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };

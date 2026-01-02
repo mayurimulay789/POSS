@@ -82,6 +82,7 @@ const authRoutes = require("../routes/auth");
 const employeeRoute = require("../routes/EmployeeRoute");
 const permissionRoutes = require("../routes/rolePermissionRoutes");
 const menuRoutes = require("../routes/menuRoutes");
+const spaceRoutes = require("../routes/spaceRoutes");
 const tableRoutes = require("../routes/tableRoutes");
 const orderRoutes = require("../routes/orderRoutes");
 const hotelImageRoutes = require("../routes/hotelImageRoutes");
@@ -91,6 +92,10 @@ const customerRoutes = require('../routes/customerRoutes');
 const dashboardRoutes = require('../routes/dashboardRoutes');
 const attendanceRoutes = require('../routes/attendanceRoutes'); 
 const merchantAttendance=require('../routes/merchantAttendance');
+const aboutUsRoutes = require('../routes/aboutUsRoutes');
+const contactUsRoutes = require('../routes/contactUsRoutes');
+const welcomeSectionRoutes = require('../routes/welcomeSectionRoutes');
+const cuisineGalleryRoutes = require('../routes/cuisineGalleryRoutes');
 
 // ========== USE ROUTES ==========
 app.use("/api/auth", authRoutes);
@@ -98,6 +103,7 @@ app.use("/api/employee", employeeRoute);
 app.use("/api/role-permissions", permissionRoutes);
 
 app.use('/api/menu', menuRoutes);
+app.use('/api/space', spaceRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/hotel-images', hotelImageRoutes);
@@ -134,7 +140,10 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/attendance', attendanceRoutes); // NEW
 app.use('/api/merchant/attendance',merchantAttendance); // NEW
-
+app.use('/api/about-us', aboutUsRoutes); // About Us routes
+app.use('/api/contact-us', contactUsRoutes); // Contact Us routes
+app.use('/api/welcome-section', welcomeSectionRoutes); // Welcome Section routes
+app.use('/api/cuisine-gallery', cuisineGalleryRoutes); // Cuisine Gallery routes
 
 // 404 handler for undefined routes
 app.use((req, res) => {

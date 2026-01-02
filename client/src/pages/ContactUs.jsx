@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchContactUs } from '../store/slices/contactUsSlice';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon } from '@heroicons/react/24/solid';
 
 const ContactUs = () => {
-  const contactInfo = [
+  const dispatch = useDispatch();
+  const contactUs = useSelector(state => state.contactUs);
+  const [iframeError, setIframeError] = useState(false);
+  
+  const loading = contactUs?.loading || false;
+  const contactData = contactUs?.data;
+
+  // Default fallback data
+  const defaultContactInfo = [
     {
       icon: <PhoneIcon className="w-6 h-6" />,
       title: 'Phone',
@@ -22,6 +32,32 @@ const ContactUs = () => {
       subtext: 'Your City, State 12345'
     }
   ];
+
+  useEffect(() => {
+    dispatch(fetchContactUs());
+  }, [dispatch]);
+
+  // Build contact info array from API data or use defaults
+  const contactInfo = contactData ? [
+    {
+      icon: <PhoneIcon className="w-6 h-6" />,
+      title: 'Phone',
+      details: contactData.contactNo,
+      subtext: 'Mon-Fri, 9AM-6PM'
+    },
+    {
+      icon: <EnvelopeIcon className="w-6 h-6" />,
+      title: 'Email',
+      details: contactData.email,
+      subtext: 'We respond within 24 hours'
+    },
+    {
+      icon: <MapPinIcon className="w-6 h-6" />,
+      title: 'Location',
+      details: contactData.address.split('\n')[0],
+      subtext: contactData.address.split('\n').slice(1).join(', ')
+    }
+  ] : defaultContactInfo;
 
   return (
     <section id="contact" className="py-8 md:py-12 bg-gradient-to-br from-[#0A3D4D] to-[#134A5C]">
@@ -111,28 +147,65 @@ const ContactUs = () => {
               </div>
             </div>
 
-            {/* Business Hours */}
+            {/* Business Hours OR Google Map */}
             <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg border-2 border-yellow-400 p-8 md:p-10">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Business Hours
-              </h3>
-              <div className="space-y-2 text-gray-700">
-                <div className="flex justify-between">
-                  <span>Monday - Friday</span>
-                  <span className="font-semibold">9:00 AM - 10:00 PM</span>
+              {contactData?.googleMapLocation ? (
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    Find Us
+                  </h3>
+                  {iframeError && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
+                      <strong>Map Error:</strong> Unable to load Google Maps. The embed URL might be invalid.
+                      <br />
+                      <small>Admin: Please verify the Google Maps embed URL in Contact Us Management</small>
+                    </div>
+                  )}
+                  <div className="rounded-lg overflow-hidden" style={{ width: '100%', height: '300px', backgroundColor: '#f3f4f6' }}>
+                    <iframe
+                      src={contactData.googleMapLocation}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0, display: 'block' }}
+                      allowFullScreen=""
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Restaurant Location"
+                      onError={() => {
+                        console.error('Map iframe failed to load:', contactData.googleMapLocation);
+                        setIframeError(true);
+                      }}
+                      onLoad={() => {
+                        console.log('Map iframe loaded successfully');
+                        setIframeError(false);
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Saturday</span>
-                  <span className="font-semibold">10:00 AM - 11:00 PM</span>
+              ) : (
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    Business Hours
+                  </h3>
+                  <div className="space-y-2 text-gray-700">
+                    <div className="flex justify-between">
+                      <span>Monday - Friday</span>
+                      <span className="font-semibold">9:00 AM - 10:00 PM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Saturday</span>
+                      <span className="font-semibold">10:00 AM - 11:00 PM</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Sunday</span>
+                      <span className="font-semibold">10:00 AM - 10:00 PM</span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-yellow-900 mt-4 pt-4 border-t border-yellow-300">
+                    Closed on major holidays. For emergencies, please call our hotline.
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span>Sunday</span>
-                  <span className="font-semibold">10:00 AM - 10:00 PM</span>
-                </div>
-              </div>
-              <p className="text-sm text-yellow-900 mt-4 pt-4 border-t border-yellow-300">
-                Closed on major holidays. For emergencies, please call our hotline.
-              </p>
+              )}
             </div>
           </div>
       </div>

@@ -1,12 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
+// --- Validation helpers for future role upgrades ---
+function isDuplicateCategory(categories, newName) {
+  if (!newName) return false;
+  const norm = (str) => (str || '').trim().toLowerCase();
+  return categories.some(cat => norm(cat) === norm(newName));
+}
+
+function validateItemForm(item) {
+  if (!item.name || !item.name.trim()) return 'Item name is required';
+  if (!item.price || isNaN(item.price) || Number(item.price) <= 0) return 'Valid price is required';
+  if (!item.category) return 'Category is required';
+  return null;
+}
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMenuItems } from '../../../store/slices/menuSlice';
 import API_BASE_URL from '../../../config/apiConfig';
 
 const MenuManagement = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [activeCategory, setActiveCategory] = useState('All');
+  const dispatch = useDispatch();
+  const { items, loading } = useSelector(state => state.menu);
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {

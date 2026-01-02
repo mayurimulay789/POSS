@@ -56,8 +56,12 @@ export default function Footer() {
               <a href="#" className="w-10 h-10 bg-[#FF9800] rounded-full flex items-center justify-center hover:bg-[#F57C00] transition">
                 f
               </a>
-              <a href="#" className="w-10 h-10 bg-[#FF9800] rounded-full flex items-center justify-center hover:bg-[#F57C00] transition">
-                📷
+              <a href="#" aria-label="Instagram" className="w-10 h-10 bg-[#FF9800] rounded-full flex items-center justify-center hover:bg-[#F57C00] transition">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-white stroke-[1.6]">
+                  <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+                  <circle cx="12" cy="12" r="4.2" />
+                  <circle cx="17.4" cy="6.6" r="0.8" />
+                </svg>
               </a>
               <a href="#" className="w-10 h-10 bg-[#FF9800] rounded-full flex items-center justify-center hover:bg-[#F57C00] transition">
                 𝕏

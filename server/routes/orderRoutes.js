@@ -4,6 +4,7 @@ const {
   createOrder,
   getOrders,
   getOrder,
+  updateOrder,
   completeOrder,
   getOrdersSummary,
   cancelOrder
@@ -24,6 +25,10 @@ router.post('/complete', completeOrder);
 // Complete an order (from active to completed)
 router.post('/:tableId/complete', completeOrder);
 
+// Cancel order - MUST be before /:id routes to avoid conflicts
+router.post('/:orderId/cancel', cancelOrder);
+router.delete('/:id/cancel', cancelOrder);
+
 // Then more general routes
 // Create a new order
 router.post('/', createOrder);
@@ -34,7 +39,10 @@ router.get('/', getOrders);
 // Get single order
 router.get('/:id', getOrder);
 
-// Cancel/Delete order
+// Update order
+router.put('/:id', updateOrder);
+
+// Delete order
 router.delete('/:id', cancelOrder);
 
 module.exports = router;

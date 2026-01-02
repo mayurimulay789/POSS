@@ -1,41 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../config/apiConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMenuItems } from '../store/slices/menuSlice';
 
 const MenuSection = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const dispatch = useDispatch();
+  const { items, loading, error } = useSelector(state => state.menu);
   const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
-    const loadMenu = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/menu/items`);
-        setItems(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        setError('Unable to load menu.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadMenu();
-  }, []);
+    dispatch(fetchMenuItems());
+  }, [dispatch]);
 
   const categories = useMemo(() => {
-    const cats = ['All', ...new Set(items.map(item => item.category?.name || 'Menu'))];
+    const cats = ['All', ...new Set((items || []).map(item => item.category?.name || 'Menu'))];
     return cats;
   }, [items]);
 
   const filteredItems = useMemo(() => {
-    if (activeCategory === 'All') return items;
-    return items.filter(item => (item.category?.name || 'Menu') === activeCategory);
+    if (activeCategory === 'All') return items || [];
+    return (items || []).filter(item => (item.category?.name || 'Menu') === activeCategory);
   }, [items, activeCategory]);
 
   if (loading) return (
     <div className="flex justify-center py-20 bg-slate-50">
       <div className="h-8 w-8 border-2 border-slate-700 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex justify-center py-20 bg-slate-50">
+      <span className="text-red-500">{error}</span>
     </div>
   );
 
@@ -78,12 +72,12 @@ const MenuSection = () => {
                   </h3>
                   {/* Price Leader Dots */}
                   <div className="flex-1 border-b border-dotted border-gray-500 relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-slate-900">
+                  <span className="text-lg font-serif text-white">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>
                 {item.description && (
-                  <p className="text-slate-500 text-sm mt-2 italic max-w-[85%] leading-relaxed">
+                  <p className="text-slate-300 text-sm mt-2 italic max-w-[85%] leading-relaxed">
                     {item.description}
                   </p>
                 )}

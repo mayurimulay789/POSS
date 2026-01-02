@@ -1,145 +1,65 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../../../config/apiConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchOrders, updateOrder } from '../../../store/slices/orderSlice';
+import { fetchTables } from '../../../store/slices/tableSlice';
 
 const BillingManagement = () => {
+  const dispatch = useDispatch();
+  const { items: orders, loading } = useSelector(state => state.order);
   const [activeTab, setActiveTab] = useState('kot');
-  const [orders, setOrders] = useState([]);
-  const [servedOrders, setServedOrders] = useState([]);
-  const [completedOrders, setCompletedOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState({});
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/tables`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const data = response.data?.data || [];
-      const activeOrders = data.filter(
-        (t) => t.orderedMenu && t.orderedMenu.length > 0 && (t.status === 'occupied' || !t.status)
-      );
-      const served = data.filter(
-        (t) => t.orderedMenu && t.orderedMenu.length > 0 && t.status === 'served'
-      );
-      setOrders(activeOrders);
-      setServedOrders(served);
-    } catch (err) {
-      console.error('Error fetching orders:', err.message || err);
-      setOrders([]);
-      setServedOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCompletedOrders = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/orders?status=completed`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setCompletedOrders(response.data?.data || []);
-    } catch (err) {
-      console.error('Error fetching completed orders:', err.message || err);
-      setCompletedOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Filter orders based on status
+  const pendingOrders = orders.filter(o => o.status === 'pending');
+  const servedOrders = orders.filter(o => o.status === 'payment_pending' || o.status === 'served');
+  const completedOrders = orders.filter(o => o.status === 'completed');
 
   useEffect(() => {
     if (activeTab === 'completed') {
-      fetchCompletedOrders();
+      dispatch(fetchOrders('completed'));
+    } else if (activeTab === 'print-bill') {
+      dispatch(fetchOrders('payment_pending'));
     } else {
-      fetchOrders();
+      dispatch(fetchOrders('pending'));
     }
-  }, [activeTab]);
+  }, [activeTab, dispatch]);
+  // All data is now managed via Redux thunks/selectors. No direct API calls here.
 
   const markServed = async (order) => {
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-
-      await axios.put(
-        `${API_BASE_URL}/tables/${order._id}`,
-        {
-          tableName: order.tableName,
-          capacity: order.capacity,
-          spaceType: order.spaceType,
-          status: 'served',
-          orderedMenu: order.orderedMenu,
-          totalBill: order.totalBill
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      fetchOrders();
-    } catch (err) {
-      console.error('Error marking order as served:', err.response?.data || err.message || err);
-      alert('Failed to mark order as served: ' + (err.response?.data?.message || err.message));
-    } finally {
-      setLoading(false);
+      await dispatch(updateOrder({ 
+        id: order._id, 
+        data: { status: 'payment_pending' } 
+      })).unwrap();
+      dispatch(fetchOrders('pending'));
+    } catch (error) {
+      console.error('Error marking order as served:', error);
+      alert('Failed to mark order as served');
     }
   };
 
   const markCompleted = async (order) => {
-    const paymentMethod = selectedPayment[order._id] || 'cash';
-    
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-
-      // Create order in database
-      await axios.post(
-        `${API_BASE_URL}/orders/complete`,
-        {
-          tableId: order._id,
-          tableName: order.tableName,
-          spaceType: order.spaceType,
-          items: order.orderedMenu,
-          totalBill: order.totalBill,
-          paymentMethod: paymentMethod
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      // Clear the table
-      await axios.put(
-        `${API_BASE_URL}/tables/${order._id}`,
-        {
-          tableName: order.tableName,
-          capacity: order.capacity,
-          spaceType: order.spaceType,
-          status: 'available',
-          orderedMenu: [],
-          totalBill: 0
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
-      fetchOrders();
-    } catch (err) {
-      console.error('Error completing order:', err.response?.data || err.message || err);
-      alert('Failed to complete order');
-    } finally {
-      setLoading(false);
+      const paymentMethod = selectedPayment[order._id] || 'cash';
+      await dispatch(updateOrder({ 
+        id: order._id, 
+        data: { 
+          status: 'completed',
+          paymentMethod: paymentMethod,
+          completedAt: new Date()
+        } 
+      })).unwrap();
+      dispatch(fetchOrders('payment_pending'));
+      dispatch(fetchTables());
+      alert('Payment completed successfully!');
+    } catch (error) {
+      console.error('Error completing payment:', error);
+      alert('Failed to complete payment');
     }
   };
 
   const handlePrint = (order) => {
     const paymentMethod = selectedPayment[order._id] || 'cash';
-    
     const printWindow = window.open('', '', 'width=800,height=600');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -177,7 +97,7 @@ const BillingManagement = () => {
             </tr>
           </thead>
           <tbody>
-            ${order.orderedMenu.map(item => `
+            ${(order.items || order.orderedMenu || []).map(item => `
               <tr>
                 <td>${item.name}</td>
                 <td>${item.quantity}</td>
@@ -252,21 +172,14 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">KOT (Kitchen Order Ticket)</h2>
-              {/* <button
-                onClick={fetchOrders}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Refresh
-              </button> */}
             </div>
-
             {loading ? (
               <p className="text-gray-600">Loading orders...</p>
-            ) : orders.length === 0 ? (
+            ) : (pendingOrders && pendingOrders.length === 0) ? (
               <p className="text-gray-600">No pending orders right now.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {orders.map((order) => (
+                {pendingOrders && pendingOrders.map((order) => (
                   <div
                     key={order._id}
                     className="border rounded-lg p-4 bg-slate-50 hover:shadow-md transition-shadow"
@@ -280,17 +193,15 @@ const BillingManagement = () => {
                         Pending
                       </span>
                     </div>
-
                     <div className="mb-2">
                       <p className="text-xs text-gray-500">
                         {new Date(order.createdAt || Date.now()).toLocaleDateString()} {new Date(order.createdAt || Date.now()).toLocaleTimeString()}
                       </p>
                     </div>
-
                     <div className="mb-3">
                       <p className="text-sm font-semibold text-gray-700 mb-1">Items</p>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {order.orderedMenu.map((item, idx) => (
+                        {(order.items || order.orderedMenu || []).map((item, idx) => (
                           <div
                             key={`${order._id}-item-${idx}`}
                             className="flex justify-between text-sm bg-white rounded px-2 py-1 border"
@@ -301,7 +212,6 @@ const BillingManagement = () => {
                         ))}
                       </div>
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         onClick={() => markServed(order)}
@@ -321,21 +231,14 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">Print Bill</h2>
-              {/* <button
-                onClick={fetchOrders}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Refresh
-              </button> */}
             </div>
-
             {loading ? (
               <p className="text-gray-600">Loading served orders...</p>
-            ) : servedOrders.length === 0 ? (
+            ) : (servedOrders && servedOrders.length === 0) ? (
               <p className="text-gray-600">No served orders available for billing.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {servedOrders.map((order) => (
+                {servedOrders && servedOrders.map((order) => (
                   <div
                     key={order._id}
                     className="border rounded-lg p-4 bg-slate-50 hover:shadow-md transition-shadow"
@@ -349,15 +252,13 @@ const BillingManagement = () => {
                         Served
                       </span>
                     </div>
-
                     <div className="mb-2">
                       <p className="text-sm font-semibold text-gray-800">Total: ₹{order.totalBill?.toFixed(2) || '0.00'}</p>
                     </div>
-
                     <div className="mb-3">
                       <p className="text-sm font-semibold text-gray-700 mb-1">Items</p>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {order.orderedMenu.map((item, idx) => (
+                        {(order.items || order.orderedMenu || []).map((item, idx) => (
                           <div
                             key={`${order._id}-item-${idx}`}
                             className="flex justify-between text-sm bg-white rounded px-2 py-1 border"
@@ -368,7 +269,6 @@ const BillingManagement = () => {
                         ))}
                       </div>
                     </div>
-
                     <div className="mb-3">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Method</label>
                       <select
@@ -382,7 +282,6 @@ const BillingManagement = () => {
                         <option value="online">Online</option>
                       </select>
                     </div>
-
                     <div className="flex gap-2">
                       <button
                         onClick={() => handlePrint(order)}
@@ -408,21 +307,14 @@ const BillingManagement = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-800">Completed Bills</h2>
-              {/* <button
-                onClick={fetchCompletedOrders}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-              >
-                Refresh
-              </button> */}
             </div>
-
             {loading ? (
               <p className="text-gray-600">Loading completed bills...</p>
-            ) : completedOrders.length === 0 ? (
+            ) : (completedOrders && completedOrders.length === 0) ? (
               <p className="text-gray-600">No completed bills yet.</p>
             ) : (
               <div className="space-y-3">
-                {completedOrders.map((order) => (
+                {completedOrders && completedOrders.map((order) => (
                   <div
                     key={order._id}
                     className="border rounded-lg p-4 bg-green-50 hover:shadow-md transition-shadow"
@@ -447,7 +339,6 @@ const BillingManagement = () => {
                         </p>
                       </div>
                     </div>
-
                     <div className="border-t pt-2">
                       <p className="text-sm font-semibold text-gray-700 mb-1">Items:</p>
                       <div className="space-y-1">
@@ -470,7 +361,7 @@ const BillingManagement = () => {
         )}
 
         <p className="text-gray-600">
-          This is the BillingManagement component for merchant role.
+          {/* This is the BillingManagement component for merchant role. */}
         </p>
         {/* Add your BillingManagement content here */}
 

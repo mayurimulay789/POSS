@@ -29,18 +29,16 @@ const LoginForm = () => {
     dispatch(clearError());
     dispatch(clearSuccess());
     
-    // Fetch login image
+    // Fetch login image from new endpoint
     const fetchLoginImage = async () => {
       try {
-        const res = await axios.get(`${API_BASE}/api/hotel-images/public`);
-        const images = Array.isArray(res.data) ? res.data : [];
-        const loginImg = images.find(img => img.isLoginImage);
-        setLoginImage(loginImg || null);
+        const res = await axios.get(`${API_BASE}/api/hotel-images/login`);
+        setLoginImage(res.data || null);
       } catch (err) {
         console.error('Failed to load login image:', err);
+        setLoginImage(null);
       }
     };
-    
     fetchLoginImage();
   }, [dispatch]);
 

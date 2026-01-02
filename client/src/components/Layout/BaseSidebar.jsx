@@ -74,6 +74,7 @@ const BaseSidebar = ({
   /* -------- NORMALIZE SIDEBAR ITEMS -------- */
   const normalizedSidebarItems = sidebarItems
     .map(item => {
+      // If it's a string, convert to object
       if (typeof item === 'string') {
         return {
           path: `/${item.replace('_management', '').replace(/_/g, '-')}`,
@@ -81,13 +82,31 @@ const BaseSidebar = ({
           icon: getIconForPermission(item)
         };
       }
-      return item;
+      // If it's an object, ensure label is a string
+      if (item && typeof item === 'object') {
+        return {
+          ...item,
+          label: typeof item.label === 'string' ? item.label : String(item.label || 'Unknown'),
+          icon: item.icon || '📄',
+          subItems: item.subItems?.map(sub => ({
+            ...sub,
+            label: typeof sub.label === 'string' ? sub.label : String(sub.label || 'Unknown')
+          })) || []
+        };
+      }
+      return null;
     })
     .filter(Boolean);
 
   /* ------------ MENU ITEM RENDER ------------ */
   const renderMenuItem = item => {
-    const hasSub = item.subItems?.length;
+    // Safety check: ensure item has required properties
+    if (!item || !item.path || !item.label) {
+      console.warn('Invalid menu item:', item);
+      return null;
+    }
+
+    const hasSub = item.subItems?.length > 0;
     const isOpen = openSubMenus[item.path];
     const active =
       isActive(item.path) ||
@@ -104,7 +123,7 @@ const BaseSidebar = ({
           >
             <span className="flex gap-3">
               <span>{item.icon}</span>
-              {item.label}
+              <span>{String(item.label)}</span>
             </span>
             <span className={isOpen ? 'rotate-180' : ''}>▼</span>
           </button>
@@ -121,7 +140,7 @@ const BaseSidebar = ({
                       : 'hover:bg-gray-50'
                   }`}
                 >
-                  {sub.label}
+                  {String(sub.label || 'Unknown')}
                 </button>
               ))}
             </div>
@@ -141,7 +160,7 @@ const BaseSidebar = ({
         }`}
       >
         <span>{item.icon}</span>
-        {item.label}
+        <span>{String(item.label)}</span>
       </button>
     );
   };
@@ -161,7 +180,7 @@ const BaseSidebar = ({
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
     administration: normalizedSidebarItems.filter(i =>
-      ['/employees', '/permission-management'].includes(i.path)
+      ['/employees', '/permission-management', '/landing-page', '/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'].includes(i.path)
     )
   };
 

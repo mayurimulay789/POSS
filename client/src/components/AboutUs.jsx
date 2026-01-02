@@ -1,134 +1,133 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAboutUs } from '../store/slices/aboutUsSlice';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
 const AboutUs = () => {
-  const highlights = [
-    {
-      title: 'Premium Quality',
-      description: 'We source the finest ingredients to ensure every dish meets our high standards',
-      icon: '🥘'
-    },
-    {
-      title: 'Expert Chefs',
-      description: 'Our culinary team brings decades of experience in authentic cuisine',
-      icon: '👨‍🍳'
-    },
-    {
-      title: 'Perfect Ambiance',
-      description: 'Enjoy your meal in our elegantly designed dining spaces',
-      icon: '✨'
-    },
-    {
-      title: 'Exceptional Service',
-      description: 'Our dedicated staff ensures a memorable dining experience',
-      icon: '🤝'
-    }
-  ];
+  const dispatch = useDispatch();
+  const aboutUs = useSelector(state => state.aboutUs);
 
-  const values = [
-    'Authentic Flavors',
-    'Fresh Ingredients',
-    'Traditional Recipes',
-    'Customer Satisfaction',
-    'Excellence in Service',
-    'Warm Hospitality'
-  ];
+  // Default fallback data
+  const defaultData = {
+    yearEstablished: '1985',
+    mainTitle: 'About Us',
+    mainDescription: 'A dining room built for long conversations, generous portions, and the kind of hospitality that remembers your order before you ask.',
+    highlights: [
+      { title: 'Premium ingredients', description: 'Responsible sourcing, prepared fresh every day.', icon: '🥘' },
+      { title: 'Seasonal menus', description: 'Plates that follow the market and the weather.', icon: '🌿' },
+      { title: 'Attentive hosts', description: 'Service paced to your table, never rushed.', icon: '🤝' },
+      { title: 'Atmosphere', description: 'Soft light, warm wood, and room to linger.', icon: '✨' }
+    ],
+    values: [
+      { text: 'Founded in 1985 with a slow-cooking ethos.' },
+      { text: 'Spices roasted in-house for bright aromatics.' },
+      { text: 'Breads baked on order so they arrive steaming.' },
+      { text: 'Plates balanced for sharing and conversation.' },
+      { text: 'Music and pacing tuned to the room, not the clock.' },
+      { text: 'Your favorites remembered, your time unhurried.' }
+    ],
+    stats: [
+      { label: 'Years perfecting', value: '39+', detail: 'Crafted since 1985' },
+      { label: 'Signature plates', value: '120', detail: 'Across classic regions' },
+      { label: 'Guests hosted', value: '50K+', detail: 'Stories shared at our tables' }
+    ],
+    rhythmTitle: 'Paced for real conversations',
+    rhythmDescription: 'Courses arrive when your table is ready, not the ticket. Music stays soft, lighting stays warm, and every plate is plated to share. It is the kind of room that invites you to stay for one more tea.',
+    rhythmQuote: '"We cook and host the way family does at home - attentive, never rushed, always with a little extra on the plate."'
+  };
+
+  const loading = aboutUs?.loading || false;
+
+  useEffect(() => {
+    dispatch(fetchAboutUs());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <section id="AboutUs" className="relative overflow-hidden bg-slate-950 py-20 md:py-24 text-white">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </section>
+    );
+  }
+
+  const data = aboutUs?.data || defaultData;
+  const highlights = data.highlights || [];
+  const values = data.values || [];
+  const stats = data.stats || [];
 
   return (
-    <section id="AboutUs" className="py-16 md:py-20 bg-gradient-to-b from-[#0A3D4D] to-[#134A5C]">
-      <div className="container mx-auto px-4">
-        {/* Section Header */}
-        <div className="text-center mb-10">
-          <p className="text-[#FF9800] text-sm uppercase tracking-widest font-semibold mb-4">
-            Our Story
-          </p>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
-            About Our Restaurant
-          </h2>
-          <div className="flex justify-center mb-6">
-            <div className="w-24 h-1 bg-[#FF9800]"></div>
+    <section id="AboutUs" className="relative overflow-hidden bg-slate-950 py-20 md:py-24 text-white">
+      <div className="absolute inset-0 opacity-80">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a3d4d] via-[#0f5063] to-[#062b36]" />
+        <div className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
+        <div className="absolute top-10 right-0 h-80 w-80 rounded-full bg-cyan-200/15 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(255,255,255,0.08),transparent_32%),radial-gradient(circle_at_80%_8%,rgba(255,152,0,0.12),transparent_28%)]" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-4">
+        <div className="flex flex-col gap-4 text-center">
+          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-200">
+            Since {data.yearEstablished}
           </div>
+          <h2 className="text-4xl md:text-5xl font-semibold leading-tight">{data.mainTitle}</h2>
+          <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto">
+            {data.mainDescription}
+          </p>
         </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
-          {/* Left Content */}
-          <div className="space-y-6">
-            <p className="text-gray-200 text-lg leading-relaxed">
-              Founded in 1985, India Restaurant has been serving authentic culinary experiences to food enthusiasts across the city. Our journey began with a simple mission: to bring the true flavors of India to your table.
-            </p>
-
-            <p className="text-gray-700 text-lg leading-relaxed">
-              We believe in the art of cooking, where every ingredient is carefully selected, and every dish is prepared with passion and precision. Our chefs, trained in traditional cooking methods, combine heritage recipes with modern culinary techniques to create unforgettable dining moments.
-            </p>
-
-            <p className="text-gray-700 text-lg leading-relaxed">
-              With four decades of excellence, we have become a destination for those who appreciate authentic flavors, warm hospitality, and a dining experience that touches the heart.
-            </p>
-
-            {/* Values List */}
-            <div className="grid grid-cols-2 gap-4 mt-8">
+        <div className="mt-12 grid items-start gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+            <div className="grid gap-4 md:grid-cols-2">
               {values.map((value, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <CheckCircleIcon className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                  <span className="text-gray-700 font-medium">{value}</span>
+                <div key={index} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <CheckCircleIcon className="h-5 w-5 text-amber-300" />
+                  <p className="text-sm text-white/90 leading-relaxed">{value.text || value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {stats.map((stat, index) => (
+                <div key={index} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-center shadow-lg shadow-black/10">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200/90">{stat.label}</p>
+                  <p className="mt-2 text-3xl font-serif font-bold text-white">{stat.value}</p>
+                  <p className="mt-1 text-sm text-white/70">{stat.detail}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Right Content - Stats or Image Placeholder */}
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-200">
-            <div className="space-y-8">
-              <div className="border-l-4 border-yellow-500 pl-6">
-                <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Since</p>
-                <p className="text-4xl font-serif font-bold text-gray-900">1985</p>
-                <p className="text-gray-700 mt-2">39+ Years of Excellence</p>
-              </div>
-
-              <div className="border-l-4 border-yellow-500 pl-6">
-                <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Customers Served</p>
-                <p className="text-4xl font-serif font-bold text-gray-900">50K+</p>
-                <p className="text-gray-700 mt-2">Satisfied Food Lovers</p>
-              </div>
-
-              <div className="border-l-4 border-yellow-500 pl-6">
-                <p className="text-gray-600 text-sm uppercase tracking-wider mb-2">Awards</p>
-                <p className="text-4xl font-serif font-bold text-gray-900">15+</p>
-                <p className="text-gray-700 mt-2">Culinary Recognition</p>
-              </div>
-
-              <div className="bg-yellow-100 p-6 rounded-lg border-l-4 border-yellow-500">
-                <p className="text-gray-900 font-semibold mb-2">Our Commitment</p>
-                <p className="text-gray-700 text-sm">
-                  We are committed to providing exceptional dining experiences through authentic cuisine, impeccable service, and a welcoming atmosphere that makes every guest feel at home.
+          <div className="space-y-6">
+            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/15 via-white/5 to-white/0 p-7 backdrop-blur shadow-2xl shadow-black/25">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.14),transparent_32%)]" />
+              <div className="relative space-y-4">
+                <p className="text-sm uppercase tracking-[0.18em] text-amber-200">House rhythm</p>
+                <h3 className="text-2xl font-semibold">{data.rhythmTitle}</h3>
+                <p className="text-white/80 leading-relaxed text-base">
+                  {data.rhythmDescription}
                 </p>
+                <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/80">
+                  {data.rhythmQuote}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Highlights Section */}
-        <div className="mt-20">
-          <h3 className="text-3xl font-serif font-bold text-gray-900 text-center mb-12">
-            Why Choose Us
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {highlights.map((highlight, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 p-8 text-center border-2 border-yellow-200 hover:border-yellow-400"
-              >
-                <div className="text-5xl mb-4">{highlight.icon}</div>
-                <h4 className="text-xl font-serif font-bold text-gray-900 mb-3">
-                  {highlight.title}
-                </h4>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {highlight.description}
-                </p>
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+              <p className="text-sm uppercase tracking-[0.2em] text-amber-200/90">Highlights</p>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                {highlights.map((highlight, index) => (
+                  <div key={index} className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                    <div className="text-2xl">{highlight.icon}</div>
+                    <div>
+                      <p className="text-base font-semibold text-white">{highlight.title}</p>
+                      <p className="text-sm text-white/75 leading-relaxed">{highlight.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>

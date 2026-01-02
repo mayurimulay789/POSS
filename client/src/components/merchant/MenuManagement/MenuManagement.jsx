@@ -1,10 +1,23 @@
+
+function validateItemForm(item) {
+  if (!item.name || !item.name.trim()) return 'Item name is required';
+  if (!item.description || !item.description.trim()) return 'Description is required';
+  if (!item.category) return 'Category is required';
+  const price = Number(item.price);
+  if (isNaN(price) || price <= 0) return 'Price must be a positive number (greater than zero)';
+  if (!/^\d+(\.\d{1,2})?$/.test(item.price.toString()) || price < 0) return 'Price must be a valid positive number';
+  return null;
+}
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMenuItems } from '../../../store/slices/menuSlice';
 import API_BASE_URL from '../../../config/apiConfig';
 
 const MenuManagement = () => {
+  const dispatch = useDispatch();
+  const { items: menuItems, loading } = useSelector(state => state.menu);
+  
   const [categories, setCategories] = useState([]);
-  const [items, setItems] = useState([]);
   const [catName, setCatName] = useState('');
   const [parentCat, setParentCat] = useState('');
 
@@ -14,22 +27,23 @@ const MenuManagement = () => {
   const [toast, setToast] = useState(null);
   const [excelFile, setExcelFile] = useState(null);
   const [excelStatus, setExcelStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
   const topRef = useRef(null);
   const nameInputRef = useRef(null);
 
+  const token = localStorage.getItem('token');
+
+  // Prevent duplicate category (case-insensitive, trimmed, no whitespace diff)
   const isDuplicateCategory = (name, parentId = null) => {
-    const normalizedName = (name || '').trim().toLowerCase();
+    const normalizedName = (name || '').replace(/\s+/g, '').toLowerCase();
     const normalizedParent = parentId || null;
     return categories.some(c => {
       const existingParent = c && c.parent ? c.parent.toString() : null;
-      return (c.name || '').trim().toLowerCase() === normalizedName && existingParent === normalizedParent;
+      return (c.name || '').replace(/\s+/g, '').toLowerCase() === normalizedName && existingParent === normalizedParent;
     });
   };
 
   useEffect(() => {
     fetchData();
-    // listen to menuUpdated events
     const handler = () => fetchData();
     window.addEventListener('menuUpdated', handler);
     return () => window.removeEventListener('menuUpdated', handler);
@@ -43,25 +57,21 @@ const MenuManagement = () => {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
       const [catRes, itemRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/menu/categories`),
-        axios.get(`${API_BASE_URL}/menu/items`)
+        fetch(`${API_BASE_URL}/menu/categories`).then(r => r.json()),
+        fetch(`${API_BASE_URL}/menu/items`).then(r => r.json())
       ]);
-      setCategories(catRes.data || []);
-      setItems(itemRes.data || []);
+      setCategories(catRes || []);
+      // Using Redux state instead of local state
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
   // Build auth headers if token exists in localStorage
   const getAuthHeaders = () => {
     try {
-      const token = localStorage.getItem('token');
-      if (token) return { headers: { Authorization: `Bearer ${token}` } };
+      if (token) return { Authorization: `Bearer ${token}` };
     } catch (e) {
       // ignore
     }
@@ -76,44 +86,79 @@ const MenuManagement = () => {
       setToast('Please enter a category name');
       return;
     }
+    // Disallow names with only spaces or empty after trimming
+    if (trimmedName.replace(/\s+/g, '') === '') {
+      setToast('Category name cannot be empty or only spaces');
+      return;
+    }
     if (isDuplicateCategory(trimmedName, parentTarget)) {
       setToast('Category already exists at this level');
       return;
     }
     try {
-      await axios.post(`${API_BASE_URL}/menu/categories`, { name: trimmedName, parent: parentTarget });
-      setCatName('');
-      setParentCat('');
-      fetchData();
-      window.dispatchEvent(new CustomEvent('menuUpdated'));
+      const response = await fetch(`${API_BASE_URL}/menu/categories`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({ name: trimmedName, parent: parentTarget })
+      });
+      if (response.ok) {
+        setCatName('');
+        setParentCat('');
+        fetchData();
+        window.dispatchEvent(new CustomEvent('menuUpdated'));
+      } else {
+        const data = await response.json();
+        setToast(data?.message || 'Failed to create category');
+      }
     } catch (err) {
       console.error(err);
-      const reason = err?.response?.data?.message || err.message || 'Failed to create category';
-      setToast(reason);
+      setToast(err?.message || 'Failed to create category');
     }
   };
 
   const createOrUpdateItem = async (e) => {
     e.preventDefault();
+    // Final check: block negative/zero prices
+    const priceNum = Number(itemForm.price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setToast('Price must be a positive number');
+      return;
+    }
+    const validationError = validateItemForm(itemForm);
+    if (validationError) {
+      setToast(validationError);
+      return;
+    }
     try {
       setSubmitting(true);
       setToast(null);
       const form = new FormData();
-      form.append('name', itemForm.name);
-      form.append('description', itemForm.description);
-      form.append('price', itemForm.price);
+      form.append('name', itemForm.name.trim());
+      form.append('description', itemForm.description.trim());
+      form.append('price', priceNum);
       form.append('category', itemForm.category);
       if (itemForm.image) form.append('image', itemForm.image);
-      if (editingItemId) {
-        await axios.put(`${API_BASE_URL}/menu/items/${editingItemId}`, form);
+      const url = editingItemId 
+        ? `${API_BASE_URL}/menu/items/${editingItemId}`
+        : `${API_BASE_URL}/menu/items`;
+      const method = editingItemId ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: getAuthHeaders(),
+        body: form
+      });
+      if (response.ok) {
+        setItemForm({ name: '', description: '', price: '', category: '', image: null });
+        setEditingItemId(null);
+        setToast(editingItemId ? 'Item updated' : 'Item created');
+        fetchData();
+        window.dispatchEvent(new CustomEvent('menuUpdated'));
       } else {
-        await axios.post(`${API_BASE_URL}/menu/items`, form);
+        setToast('Failed to save item');
       }
-      setItemForm({ name: '', description: '', price: '', category: '', image: null });
-      setEditingItemId(null);
-      setToast(editingItemId ? 'Item updated' : 'Item created');
-      fetchData();
-      window.dispatchEvent(new CustomEvent('menuUpdated'));
     } catch (err) {
       console.error(err);
       setToast('Failed to save item');
@@ -132,24 +177,55 @@ const MenuManagement = () => {
       setExcelStatus('Uploading...');
       const form = new FormData();
       form.append('file', excelFile);
-      const res = await axios.post(`${API_BASE_URL}/menu/upload-excel`, form);
-      const msg = (res && res.data && res.data.message) ? res.data.message : 'File uploaded successfully';
-      setExcelStatus(msg);
-      setExcelFile(null);
-      fetchData();
-      window.dispatchEvent(new CustomEvent('menuUpdated'));
-      setTimeout(() => setExcelStatus(null), 4000);
+      const response = await fetch(`${API_BASE_URL}/menu/upload-excel`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: form
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExcelStatus(data?.message || 'File uploaded successfully');
+        setExcelFile(null);
+        fetchData();
+        window.dispatchEvent(new CustomEvent('menuUpdated'));
+        setTimeout(() => setExcelStatus(null), 4000);
+      } else {
+        setExcelStatus('Upload failed');
+        setTimeout(() => setExcelStatus(null), 6000);
+      }
     } catch (err) {
       console.error('Excel upload error', err);
-      const reason = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : (err.message || 'Upload failed');
-      setExcelStatus(`Upload failed: ${reason}`);
+      setExcelStatus(`Upload failed: ${err.message || 'Unknown error'}`);
       setTimeout(() => setExcelStatus(null), 6000);
+    }
+  };
+
+  const deleteItem = async (itemId) => {
+    if (!confirm('Delete this item?')) return;
+    try {
+      setSubmitting(true);
+      const response = await fetch(`${API_BASE_URL}/menu/items/${itemId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setToast(data?.message || 'Item deleted');
+        fetchData();
+      } else {
+        setToast('Failed to delete item');
+      }
+    } catch (err) {
+      console.error('Delete error', err);
+      setToast(`Failed to delete: ${err.message || 'Unknown error'}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div ref={topRef} className="p-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-3">Menu Management — Merchant</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-3">Menu Management </h1>
       {toast && <div className="mb-3 p-2 bg-red-100 text-green-800 rounded">{toast}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -207,18 +283,23 @@ const MenuManagement = () => {
         <h2 className="font-semibold mb-2">Existing Items</h2>
         {loading ? <div>Loading...</div> : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-            {items.map(it => (
+            {menuItems && menuItems.map(it => (
               <div key={it._id} className="border p-2 rounded">
                 {it.imageUrl && <img src={it.imageUrl} alt={it.name} className="h-20 w-full object-cover mb-1 rounded" />}
                 <div className="font-semibold text-sm">{it.name}</div>
                 <div className="text-xs text-gray-600 line-clamp-2">{it.description}</div>
-                <div className="text-green-600 font-bold text-sm">₹{it.price}</div>
+                <div className="text-green-600 font-bold text-sm">₹{Number(it.price) > 0 ? it.price : '0.00'}</div>
                 <div className="text-xs text-gray-500">Category: {it.category?.name || '—'}</div>
                 <div className="mt-1 flex gap-2">
                   <button className="px-2 py-1 bg-yellow-500 text-white rounded" onClick={() => {
                     setEditingItemId(it._id);
-                    setItemForm({ name: it.name || '', description: it.description || '', price: it.price || '', category: it.category?._id || '', image: null });
-                    // Scroll the top of this component into view and focus the name input
+                    setItemForm({
+                      name: it.name || '',
+                      description: it.description || '',
+                      price: (Number(it.price) > 0 ? String(it.price) : ''),
+                      category: it.category?._id || '',
+                      image: null
+                    });
                     try {
                       if (topRef && topRef.current && typeof topRef.current.scrollIntoView === 'function') {
                         topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -232,23 +313,7 @@ const MenuManagement = () => {
                       try { nameInputRef.current && nameInputRef.current.focus(); } catch (fErr) { /* ignore */ }
                     }, 350);
                   }}>Edit</button>
-                  <button className="px-2 py-1 bg-red-600 text-white rounded" onClick={async () => {
-                    if (!confirm('Delete this item?')) return;
-                    try {
-                      setSubmitting(true);
-                      const res = await axios.delete(`${API_BASE_URL}/menu/items/${it._id}`, getAuthHeaders());
-                      console.log('Delete response', res && res.data);
-                      const msg = res && res.data && res.data.message ? res.data.message : 'Item deleted';
-                      setToast(msg);
-                      fetchData();
-                    } catch (err) {
-                      console.error('Delete error', err, err && err.response && err.response.data);
-                      const reason = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : (err.message || 'Delete failed');
-                      setToast(`Failed to delete: ${reason}`);
-                    } finally {
-                      setSubmitting(false);
-                    }
-                  }}>Delete</button>
+                  <button className="px-2 py-1 bg-red-600 text-white rounded" onClick={() => deleteItem(it._id)}>Delete</button>
                 </div>
               </div>
             ))}
