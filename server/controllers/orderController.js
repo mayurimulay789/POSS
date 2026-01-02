@@ -156,14 +156,18 @@ exports.completeOrder = async (req, res) => {
   try {
     const { tableId } = req.params;
     const { 
-      paymentMethod = 'cash', 
-      discountApplied = 0, 
-      notes = '',
+      paymentMethod,
       tableName,
       spaceType,
       items,
-      totalBill
+      totalBill,
+      discountPercentage,
+      systemChargeTax,
+      systemChargesAmount,
+      optionalCharges,
+      finalTotal
     } = req.body;
+
 
     // Handle both formats: direct data or from table
     let orderData;
@@ -204,8 +208,12 @@ exports.completeOrder = async (req, res) => {
       };
     }
 
-    const taxAmount = Math.round((orderData.totalBill * 5) / 100); // 5% tax
-    const finalAmount = orderData.totalBill - discountApplied + taxAmount;
+    const discountApplied = Math.round((orderData.totalBill * (discountPercentage || 0)) / 100);
+    let finalAmount = orderData.totalBill - discountApplied ;
+    const taxAmount = Math.round((finalAmount * (systemChargeTax || 0)) / 100)+ (systemChargesAmount || 0);
+    finalAmount += taxAmount;
+
+    return 0;
 
     // Create order record
     const order = await Order.create({
@@ -215,11 +223,11 @@ exports.completeOrder = async (req, res) => {
       spaceType: orderData.spaceType,
       items: orderData.items,
       totalBill: orderData.totalBill,
-      finalAmount,
+      finalAmount: finalAmount,
       paymentMethod,
-      discountApplied,
-      taxAmount,
-      notes,
+      discountApplied: discountApplied,
+      taxAmount: taxAmount,
+      notes: '',
       status: 'completed',
       completedAt: new Date(),
       createdBy: req.user.id

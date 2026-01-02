@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   XCircle, 
   Loader,
@@ -6,7 +6,8 @@ import {
   Mail,
   Phone,
   User,
-  Calendar
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 
 // Base Modal Container
@@ -29,15 +30,73 @@ const ModalContainer = ({ children, size = 'md', onClose }) => (
   </div>
 );
 
+// Validation functions
+const validatePhone = (phone) => {
+  if (!phone) return { isValid: true, message: '' }; // Phone is optional
+  const phoneRegex = /^\d{10}$/;
+  const isValid = phoneRegex.test(phone);
+  return {
+    isValid,
+    message: isValid ? '' : 'Phone number must be exactly 10 digits'
+  };
+};
+
+const validateMembershipId = (membershipId) => {
+  if (!membershipId) return { isValid: true, message: '' }; // Membership ID is optional
+  
+  // Check if exactly 12 characters
+  if (membershipId.length !== 12) {
+    return {
+      isValid: false,
+      message: 'Membership ID must be exactly 12 characters'
+    };
+  }
+  
+  // Check if contains both letters and digits
+  const hasLetters = /[a-zA-Z]/.test(membershipId);
+  const hasDigits = /\d/.test(membershipId);
+  
+  if (!hasLetters || !hasDigits) {
+    return {
+      isValid: false,
+      message: 'Membership ID must contain both letters and numbers'
+    };
+  }
+  
+  // Check if alphanumeric only
+  const isAlphanumeric = /^[a-zA-Z0-9]+$/.test(membershipId);
+  
+  return {
+    isValid: isAlphanumeric,
+    message: isAlphanumeric ? '' : 'Membership ID can only contain letters and numbers'
+  };
+};
+
+// Error message component
+const ErrorMessage = ({ message }) => (
+  <div className="flex items-center mt-1 text-red-600 text-xs">
+    <AlertCircle className="w-3 h-3 mr-1" />
+    {message}
+  </div>
+);
+
 // Customer Form Component (for Create/Edit)
 export const CustomerForm = ({ 
   formData, 
   onChange,
+  errors = {},
+  onValidate,
   isEdit = false,
   selectedCustomer = null
 }) => {
   const handleChange = (field, value) => {
-    onChange({ ...formData, [field]: value });
+    const updatedData = { ...formData, [field]: value };
+    onChange(updatedData);
+    
+    // Trigger validation on change
+    if (onValidate) {
+      onValidate(field, value);
+    }
   };
 
   return (
@@ -55,9 +114,12 @@ export const CustomerForm = ({
               required
               value={formData.cust_name}
               onChange={(e) => handleChange('cust_name', e.target.value)}
-              className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.cust_name ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="Enter customer name"
             />
+            {errors.cust_name && <ErrorMessage message={errors.cust_name} />}
           </div>
 
           <div>
@@ -68,9 +130,12 @@ export const CustomerForm = ({
               type="email"
               value={formData.email || ''}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.email ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="customer@example.com"
             />
+            {errors.email && <ErrorMessage message={errors.email} />}
           </div>
 
           <div>
@@ -81,9 +146,17 @@ export const CustomerForm = ({
               type="tel"
               value={formData.phone || ''}
               onChange={(e) => handleChange('phone', e.target.value)}
-              className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter phone number"
+              className={`w-full px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.phone ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Enter 10-digit phone number"
             />
+            {errors.phone && <ErrorMessage message={errors.phone} />}
+            {!errors.phone && formData.phone && (
+              <div className="mt-1 text-xs text-gray-500">
+                {formData.phone.length}/10 digits
+              </div>
+            )}
           </div>
 
           <div>
@@ -94,9 +167,17 @@ export const CustomerForm = ({
               type="text"
               value={formData.membership_id || ''}
               onChange={(e) => handleChange('membership_id', e.target.value)}
-              className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Optional membership ID"
+              className={`w-full px-3 py-2 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.membership_id ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Enter 12-character alphanumeric ID"
             />
+            {errors.membership_id && <ErrorMessage message={errors.membership_id} />}
+            {!errors.membership_id && formData.membership_id && (
+              <div className="mt-1 text-xs text-gray-500">
+                {formData.membership_id.length}/12 characters
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -113,11 +194,111 @@ export const CreateCustomerModal = ({
   onSubmit, 
   loading 
 }) => {
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
   if (!show) return null;
+
+  const handleValidate = (field, value) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'cust_name':
+        if (!value.trim()) {
+          newErrors.cust_name = 'Customer name is required';
+        } else {
+          delete newErrors.cust_name;
+        }
+        break;
+      
+      case 'phone':
+        const phoneValidation = validatePhone(value);
+        if (!phoneValidation.isValid) {
+          newErrors.phone = phoneValidation.message;
+        } else {
+          delete newErrors.phone;
+        }
+        break;
+      
+      case 'membership_id':
+        const membershipValidation = validateMembershipId(value);
+        if (!membershipValidation.isValid) {
+          newErrors.membership_id = membershipValidation.message;
+        } else {
+          delete newErrors.membership_id;
+        }
+        break;
+      
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Please enter a valid email address';
+        } else {
+          delete newErrors.email;
+        }
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validate required fields
+    if (!formData.cust_name?.trim()) {
+      newErrors.cust_name = 'Customer name is required';
+    }
+    
+    // Validate phone if provided
+    if (formData.phone) {
+      const phoneValidation = validatePhone(formData.phone);
+      if (!phoneValidation.isValid) {
+        newErrors.phone = phoneValidation.message;
+      }
+    }
+    
+    // Validate membership ID if provided
+    if (formData.membership_id) {
+      const membershipValidation = validateMembershipId(formData.membership_id);
+      if (!membershipValidation.isValid) {
+        newErrors.membership_id = membershipValidation.message;
+      }
+    }
+    
+    // Validate email if provided
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    return newErrors;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(e);
+    
+    // Mark all fields as touched
+    setTouched({
+      cust_name: true,
+      email: true,
+      phone: true,
+      membership_id: true
+    });
+    
+    const formErrors = validateForm();
+    
+    if (Object.keys(formErrors).length === 0) {
+      onSubmit(e);
+    } else {
+      setErrors(formErrors);
+    }
+  };
+
+  const handleBlur = (field) => {
+    setTouched({ ...touched, [field]: true });
+  };
+
+  const handleFormChange = (updatedData) => {
+    onChange(updatedData);
   };
 
   return (
@@ -133,14 +314,26 @@ export const CreateCustomerModal = ({
           </button>
         </div>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="max-h-[60vh] sm:max-h-[50vh] overflow-y-auto pr-2 -mr-2">
             <CustomerForm 
               formData={formData}
-              onChange={onChange}
+              onChange={handleFormChange}
+              errors={errors}
+              onValidate={handleValidate}
               isEdit={false}
             />
           </div>
+
+          {/* Show validation summary if there are errors */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center text-red-800 text-sm">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Please fix the errors above before submitting
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-3">
             <button
@@ -152,7 +345,7 @@ export const CreateCustomerModal = ({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || Object.keys(errors).length > 0}
               className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
             >
               {loading ? (
@@ -181,11 +374,107 @@ export const EditCustomerModal = ({
   loading,
   selectedCustomer 
 }) => {
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+
   if (!show || !selectedCustomer) return null;
+
+  const handleValidate = (field, value) => {
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'cust_name':
+        if (!value.trim()) {
+          newErrors.cust_name = 'Customer name is required';
+        } else {
+          delete newErrors.cust_name;
+        }
+        break;
+      
+      case 'phone':
+        const phoneValidation = validatePhone(value);
+        if (!phoneValidation.isValid) {
+          newErrors.phone = phoneValidation.message;
+        } else {
+          delete newErrors.phone;
+        }
+        break;
+      
+      case 'membership_id':
+        const membershipValidation = validateMembershipId(value);
+        if (!membershipValidation.isValid) {
+          newErrors.membership_id = membershipValidation.message;
+        } else {
+          delete newErrors.membership_id;
+        }
+        break;
+      
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Please enter a valid email address';
+        } else {
+          delete newErrors.email;
+        }
+        break;
+    }
+    
+    setErrors(newErrors);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Validate required fields
+    if (!formData.cust_name?.trim()) {
+      newErrors.cust_name = 'Customer name is required';
+    }
+    
+    // Validate phone if provided
+    if (formData.phone) {
+      const phoneValidation = validatePhone(formData.phone);
+      if (!phoneValidation.isValid) {
+        newErrors.phone = phoneValidation.message;
+      }
+    }
+    
+    // Validate membership ID if provided
+    if (formData.membership_id) {
+      const membershipValidation = validateMembershipId(formData.membership_id);
+      if (!membershipValidation.isValid) {
+        newErrors.membership_id = membershipValidation.message;
+      }
+    }
+    
+    // Validate email if provided
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+    
+    return newErrors;
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(e);
+    
+    // Mark all fields as touched
+    setTouched({
+      cust_name: true,
+      email: true,
+      phone: true,
+      membership_id: true
+    });
+    
+    const formErrors = validateForm();
+    
+    if (Object.keys(formErrors).length === 0) {
+      onSubmit(e);
+    } else {
+      setErrors(formErrors);
+    }
+  };
+
+  const handleFormChange = (updatedData) => {
+    onChange(updatedData);
   };
 
   return (
@@ -201,15 +490,27 @@ export const EditCustomerModal = ({
           </button>
         </div>
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="max-h-[60vh] sm:max-h-[50vh] overflow-y-auto pr-2 -mr-2">
             <CustomerForm 
               formData={formData}
-              onChange={onChange}
+              onChange={handleFormChange}
+              errors={errors}
+              onValidate={handleValidate}
               isEdit={true}
               selectedCustomer={selectedCustomer}
             />
           </div>
+
+          {/* Show validation summary if there are errors */}
+          {Object.keys(errors).length > 0 && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center text-red-800 text-sm">
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Please fix the errors above before submitting
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row justify-end space-y-3 space-y-reverse sm:space-y-0 sm:space-x-3">
             <button
@@ -221,7 +522,7 @@ export const EditCustomerModal = ({
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || Object.keys(errors).length > 0}
               className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-sm sm:text-base"
             >
               {loading ? (
@@ -420,3 +721,5 @@ export const CustomerDetailsModal = ({
     </ModalContainer>
   );
 };
+
+export { validatePhone, validateMembershipId };

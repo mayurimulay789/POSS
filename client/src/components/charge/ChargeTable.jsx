@@ -1,9 +1,20 @@
 import React from 'react';
+// Replace lucide-react with react-icons
 import { 
-  DollarSign, Percent, Cpu, Package, Eye, Edit, 
-  Trash2, ToggleLeft, ToggleRight, ChevronDown, ChevronUp,
-  AlertCircle, CheckCircle
-} from 'lucide-react';
+  FaDollarSign, 
+  FaPercent, 
+  FaMicrochip, 
+  FaBox, 
+  FaEye, 
+  FaEdit,
+  FaTrashAlt, 
+  FaToggleOn, 
+  FaToggleOff,
+  FaChevronDown, 
+  FaChevronUp,
+  FaExclamationCircle,
+  FaCheckCircle
+} from 'react-icons/fa';
 
 const ChargeTable = ({
   charges,
@@ -29,30 +40,27 @@ const ChargeTable = ({
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1">
             <div className="flex items-center">
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center mr-2 ${
-                charge.category === 'systemcharge' ? 'bg-blue-100' : 'bg-green-100'
-              }`}>
+              <div className={`h-8 w-8 rounded-full flex items-center justify-center mr-2 ${charge.category === 'systemcharge' ? 'bg-blue-100' : 'bg-green-100'
+                }`}>
                 {charge.category === 'systemcharge' ? (
-                  <Cpu className="h-4 w-4 text-blue-600" />
+                  <FaMicrochip className="h-4 w-4 text-blue-600" />
                 ) : (
-                  <Package className="h-4 w-4 text-green-600" />
+                  <FaBox className="h-4 w-4 text-green-600" />
                 )}
               </div>
               <div>
                 <h3 className="font-medium text-gray-900 text-sm">{charge.chargeName}</h3>
                 <div className="flex items-center mt-1 space-x-2">
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${
-                    charge.category === 'systemcharge' 
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-green-100 text-green-800'
-                  }`}>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${charge.category === 'systemcharge'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-green-100 text-green-800'
+                    }`}>
                     {charge.category}
                   </span>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${
-                    charge.active 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
+                  <span className={`px-2 py-0.5 text-xs rounded-full ${charge.active
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
+                    }`}>
                     {charge.active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -62,8 +70,9 @@ const ChargeTable = ({
           <button
             onClick={() => onToggleExpand(charge._id)}
             className="text-gray-400 hover:text-gray-600 ml-2"
+            aria-label={expanded ? `Collapse details for ${charge.chargeName}` : `Expand details for ${charge.chargeName}`}
           >
-            {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            {expanded ? <FaChevronUp size={20} /> : <FaChevronDown size={20} />}
           </button>
         </div>
 
@@ -71,13 +80,13 @@ const ChargeTable = ({
         <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 mb-3">
           <div className="flex items-center">
             {charge.chargeType === 'percentage' ? (
-              <Percent className="w-3 h-3 mr-1 text-gray-400" />
+              <FaPercent className="w-3 h-3 mr-1 text-gray-400" />
             ) : (
-              <DollarSign className="w-3 h-3 mr-1 text-gray-400" />
+              <FaDollarSign className="w-3 h-3 mr-1 text-gray-400" />
             )}
             <span className="font-medium">
-              {charge.chargeType === 'percentage' 
-                ? `${charge.value}%` 
+              {charge.chargeType === 'percentage'
+                ? `${charge.value}%`
                 : `₹${charge.value}`}
             </span>
           </div>
@@ -91,47 +100,46 @@ const ChargeTable = ({
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <button
             onClick={() => onToggleStatus(charge, !charge.active)}
-            className={`flex items-center px-2 py-1 rounded text-xs ${
-              charge.active
-                ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                : 'bg-green-50 text-green-600 hover:bg-green-100'
-            }`}
+            className={`flex items-center px-2 py-1 rounded text-xs ${charge.active
+              ? 'bg-red-50 text-red-600 hover:bg-red-100'
+              : 'bg-green-50 text-green-600 hover:bg-green-100'
+              }`}
+            aria-label={charge.active ? `Deactivate ${charge.chargeName}` : `Activate ${charge.chargeName}`}
           >
             {charge.active ? (
               <>
-                <ToggleRight className="w-3 h-3 mr-1" />
+                <FaToggleOn className="w-3 h-3 mr-1" />
                 Deactivate
               </>
             ) : (
               <>
-                <ToggleLeft className="w-3 h-3 mr-1" />
+                <FaToggleOff className="w-3 h-3 mr-1" />
                 Activate
               </>
             )}
           </button>
-          
+
           <div className="flex items-center space-x-1">
             <button
               onClick={() => onDetailsClick(charge)}
               className="text-blue-600 hover:text-blue-800 p-1"
-              title="View Details"
+              aria-label={`View details for ${charge.chargeName}`}
             >
-              <Eye className="w-4 h-4" />
+              <FaEye className="w-4 h-4" />
             </button>
-            
             <button
               onClick={() => onEditClick(charge)}
               className="text-blue-600 hover:text-blue-800 p-1"
-              title="Edit Charge"
+              aria-label={`Edit ${charge.chargeName}`}
             >
-              <Edit className="w-4 h-4" />
+              <FaEdit className="w-4 h-4" />
             </button>
             <button
               onClick={() => onDeleteClick(charge)}
               className="text-red-600 hover:text-red-800 p-1"
-              title="Delete Charge"
+              aria-label={`Delete ${charge.chargeName}`}
             >
-              <Trash2 className="w-4 h-4" />
+              <FaTrashAlt className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -150,8 +158,8 @@ const ChargeTable = ({
                 <div className="flex justify-between">
                   <span>Value:</span>
                   <span className="font-medium">
-                    {charge.chargeType === 'percentage' 
-                      ? `${charge.value}%` 
+                    {charge.chargeType === 'percentage'
+                      ? `${charge.value}%`
                       : `₹${charge.value}`}
                   </span>
                 </div>
@@ -172,9 +180,8 @@ const ChargeTable = ({
                 </div>
                 <div className="flex justify-between">
                   <span>Status:</span>
-                  <span className={`font-medium ${
-                    charge.active ? 'text-green-600' : 'text-red-600'
-                  }`}>
+                  <span className={`font-medium ${charge.active ? 'text-green-600' : 'text-red-600'
+                    }`}>
                     {charge.active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -200,13 +207,12 @@ const ChargeTable = ({
           <td className="px-6 py-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                  charge.category === 'systemcharge' ? 'bg-blue-100' : 'bg-green-100'
-                }`}>
+                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${charge.category === 'systemcharge' ? 'bg-blue-100' : 'bg-green-100'
+                  }`}>
                   {charge.category === 'systemcharge' ? (
-                    <Cpu className="h-5 w-5 text-blue-600" />
+                    <FaMicrochip className="h-5 w-5 text-blue-600" />
                   ) : (
-                    <Package className="h-5 w-5 text-green-600" />
+                    <FaBox className="h-5 w-5 text-green-600" />
                   )}
                 </div>
               </div>
@@ -214,7 +220,6 @@ const ChargeTable = ({
                 <div className="text-sm font-medium text-gray-900">
                   {charge.chargeName}
                 </div>
-                
               </div>
             </div>
           </td>
@@ -223,27 +228,24 @@ const ChargeTable = ({
             <div className="text-sm text-gray-900">
               {charge.chargeType === 'percentage' ? (
                 <div className="flex items-center">
-                  {/* <Percent className="w-4 h-4 mr-2" /> */}
                   {charge.value}%
                 </div>
               ) : (
                 <div className="flex items-center">
-                  {/* <DollarSign className="w-4 h-4 mr-2" /> */}
                   ₹{charge.value}
                 </div>
               )}
             </div>
-            <div className="text-xs text-gray-700  mt-0.5">
+            <div className="text-xs text-gray-700 mt-0.5">
               Type: {charge.chargeType}
             </div>
           </td>
 
           <td className="px-6 py-4">
-            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-              charge.category === 'systemcharge' 
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-green-100 text-green-800'
-            }`}>
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${charge.category === 'systemcharge'
+              ? 'bg-blue-100 text-blue-800'
+              : 'bg-green-100 text-green-800'
+              }`}>
               {charge.category}
             </span>
           </td>
@@ -271,20 +273,20 @@ const ChargeTable = ({
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => onToggleStatus(charge, !charge.active)}
-                className={`flex items-center px-3 py-1 rounded text-sm ${
-                  charge.active
-                    ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                    : 'bg-green-50 text-green-600 hover:bg-green-100'
-                }`}
+                className={`flex items-center px-3 py-1 rounded text-sm ${charge.active
+                  ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                  : 'bg-green-50 text-green-600 hover:bg-green-100'
+                  }`}
+                aria-label={charge.active ? `Deactivate ${charge.chargeName}` : `Activate ${charge.chargeName}`}
               >
                 {charge.active ? (
                   <>
-                    <ToggleRight className="w-4 h-4 mr-1" />
+                    <FaToggleOn className="w-4 h-4 mr-1" />
                     Deactivate
                   </>
                 ) : (
                   <>
-                    <ToggleLeft className="w-4 h-4 mr-1" />
+                    <FaToggleOff className="w-4 h-4 mr-1" />
                     Activate
                   </>
                 )}
@@ -294,33 +296,34 @@ const ChargeTable = ({
                 <button
                   onClick={() => onDetailsClick(charge)}
                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                  title="View Details"
+                  aria-label={`View details for ${charge.chargeName}`}
                 >
-                  <Eye className="w-4 h-4" />
+                  <FaEye className="w-4 h-4" />
                 </button>
+                
                 <button
                   onClick={() => onEditClick(charge)}
                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                  title="Edit Charge"
+                  aria-label={`Edit ${charge.chargeName}`}
                 >
-                  <Edit className="w-4 h-4" />
+                  <FaEdit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onDeleteClick(charge)}
                   className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                  title="Delete Charge"
+                  aria-label={`Delete ${charge.chargeName}`}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <FaTrashAlt className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onToggleExpand(charge._id)}
                   className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors"
-                  title={expandedRows[charge._id] ? 'Collapse' : 'Expand'}
+                  aria-label={expandedRows[charge._id] ? `Collapse details for ${charge.chargeName}` : `Expand details for ${charge.chargeName}`}
                 >
                   {expandedRows[charge._id] ? (
-                    <ChevronUp className="w-4 h-4" />
+                    <FaChevronUp className="w-4 h-4" />
                   ) : (
-                    <ChevronDown className="w-4 h-4" />
+                    <FaChevronDown className="w-4 h-4" />
                   )}
                 </button>
               </div>
@@ -345,8 +348,8 @@ const ChargeTable = ({
                       <div>
                         <label className="text-xs text-gray-500">Charge Value</label>
                         <p className="font-medium">
-                          {charge.chargeType === 'percentage' 
-                            ? `${charge.value}%` 
+                          {charge.chargeType === 'percentage'
+                            ? `${charge.value}%`
                             : `₹${charge.value}`}
                         </p>
                       </div>
@@ -354,8 +357,8 @@ const ChargeTable = ({
                     <div>
                       <label className="text-xs text-gray-500">Display Value</label>
                       <p className="font-medium">
-                        {charge.displayValue || (charge.chargeType === 'percentage' 
-                          ? `${charge.value}%` 
+                        {charge.displayValue || (charge.chargeType === 'percentage'
+                          ? `${charge.value}%`
                           : `₹${charge.value}`)}
                       </p>
                     </div>
@@ -369,9 +372,8 @@ const ChargeTable = ({
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-gray-500">Status</label>
-                        <p className={`font-medium ${
-                          charge.active ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <p className={`font-medium ${charge.active ? 'text-green-600' : 'text-red-600'
+                          }`}>
                           {charge.active ? 'Active' : 'Inactive'}
                         </p>
                       </div>
@@ -415,20 +417,20 @@ const ChargeTable = ({
           <button
             onClick={() => onPageChange((pagination.current || 1) - 1)}
             disabled={!pagination.hasPrev}
-            className={`px-4 py-2 border rounded-lg ${
-              pagination.hasPrev
-                ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                : 'border-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+            className={`px-4 py-2 border rounded-lg ${pagination.hasPrev
+              ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            aria-label="Go to previous page"
           >
             Previous
           </button>
-          
+
           {Array.from({ length: Math.min(3, pagination.pages || 1) }, (_, i) => {
             const currentPage = pagination.current || 1;
             const totalPages = pagination.pages || 1;
             let pageNum;
-            
+
             if (totalPages <= 3) {
               pageNum = i + 1;
             } else if (currentPage <= 2) {
@@ -438,30 +440,30 @@ const ChargeTable = ({
             } else {
               pageNum = currentPage - 1 + i;
             }
-            
+
             return (
               <button
                 key={pageNum}
                 onClick={() => onPageChange(pageNum)}
-                className={`px-3 py-1 border rounded ${
-                  currentPage === pageNum
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`px-3 py-1 border rounded ${currentPage === pageNum
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                aria-label={`Go to page ${pageNum}`}
               >
                 {pageNum}
               </button>
             );
           })}
-          
+
           <button
             onClick={() => onPageChange((pagination.current || 1) + 1)}
             disabled={!pagination.hasNext}
-            className={`px-4 py-2 border rounded-lg ${
-              pagination.hasNext
-                ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                : 'border-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+            className={`px-4 py-2 border rounded-lg ${pagination.hasNext
+              ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              : 'border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            aria-label="Go to next page"
           >
             Next
           </button>
@@ -482,7 +484,7 @@ const ChargeTable = ({
   if (charges.length === 0) {
     return (
       <div className="p-8 text-center">
-        <DollarSign className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+        <FaDollarSign className="w-12 h-12 text-gray-300 mx-auto mb-3" />
         <h3 className="text-lg font-medium text-gray-900 mb-1">No charges found</h3>
         <p className="text-gray-500">
           Start by adding your first charge

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,12 +17,16 @@ import {
   clearFilters
 } from '../store/slices/chargeSlice';
 import { selectCurrentUser } from '../store/slices/authSlice';
-import { CheckCircle, AlertCircle } from 'lucide-react';
 
-// Import components
-import ChargeStats from '../components/charge/ChargeStats.jsx';
-import ChargeHeader from '../components/charge/ChargeHeader.jsx';
-import ChargeTable from '../components/charge/ChargeTable.jsx';
+// Using react-icons instead of lucide-react (much smaller bundle)
+import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa';
+
+// Lazy load heavy components only
+const ChargeStats = lazy(() => import('../components/charge/ChargeStats.jsx'));
+const ChargeHeader = lazy(() => import('../components/charge/ChargeHeader.jsx'));
+const ChargeTable = lazy(() => import('../components/charge/ChargeTable.jsx'));
+
+// Import modal components (not lazy loaded since they're used conditionally)
 import {
   CreateChargeModal,
   EditChargeModal,
@@ -31,10 +35,18 @@ import {
   ChargeDetailsModal
 } from '../components/charge/ChargeModals.jsx';
 
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-[200px]">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+);
+
 const ChargeManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
+  
   const {
     charges,
     systemCharges,
@@ -47,6 +59,7 @@ const ChargeManagement = () => {
     filters
   } = useSelector((state) => state.charges);
 
+  // State declarations
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -65,30 +78,76 @@ const ChargeManagement = () => {
     active: true
   });
 
-  // Check user permissions
-  const canManageCharges = user?.role === 'merchant' || user?.role === 'manager';
-  const canExport = user?.role === 'merchant' || user?.role === 'manager';
+  // Memoized values for performance
+  const canManageCharges = useMemo(() => 
+    user?.role === 'merchant' || user?.role === 'manager',
+    [user?.role]
+  );
 
-  // Load charges based on active tab
+  const canExport = useMemo(() => 
+    user?.role === 'merchant' || user?.role === 'manager',
+    [user?.role]
+  );
+
+  // Memoized charge calculations
+  const chargeCounts = useMemo(() => ({
+    system: canManageCharges 
+      ? charges.filter(c => c.category === 'systemcharge').length
+      : systemCharges.length,
+    optional: canManageCharges
+      ? charges.filter(c => c.category === 'optionalcharge').length
+      : optionalCharges.length
+  }), [canManageCharges, charges, systemCharges, optionalCharges]);
+
+  // Debounced search to prevent excessive API calls
   useEffect(() => {
-    const loadCharges = () => {
-      if (!canManageCharges) {
-        // Regular users can only view active charges
-        dispatch(getSystemCharges());
-        dispatch(getOptionalCharges());
-      } else {
-        // Admin/Manager can view all charges with filters
-        dispatch(getAllCharges(filters));
+    const timer = setTimeout(() => {
+      if (searchTerm !== filters.search) {
+        dispatch(setFilters({ search: searchTerm, page: 1 }));
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, dispatch, filters.search]);
+
+  // Load charges based on active tab with cleanup
+  useEffect(() => {
+    const controller = new AbortController();
+    
+    const loadCharges = async () => {
+      try {
+        if (!canManageCharges) {
+          // Regular users can only view active charges
+          dispatch(getSystemCharges({ signal: controller.signal }));
+          dispatch(getOptionalCharges({ signal: controller.signal }));
+        } else {
+          // Admin/Manager can view all charges with filters
+          dispatch(getAllCharges({ ...filters, signal: controller.signal }));
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error loading charges:', error);
+        }
       }
     };
 
     loadCharges();
+
+    return () => {
+      controller.abort(); // Cancel pending requests on unmount
+    };
   }, [activeTab, filters, canManageCharges, dispatch]);
 
-  // Load system charges summary
+  // Load system charges summary only once or when charges change
   useEffect(() => {
-    dispatch(getSystemChargesSummary());
-  }, [dispatch]);
+    const controller = new AbortController();
+    
+    dispatch(getSystemChargesSummary({ signal: controller.signal }));
+    
+    return () => {
+      controller.abort();
+    };
+  }, [dispatch, charges.length]); // Only reload when charges count changes
 
   // Clear error/success messages
   useEffect(() => {
@@ -101,8 +160,8 @@ const ChargeManagement = () => {
     }
   }, [error, success, dispatch]);
 
-  // Handle form submissions
-  const handleCreateSubmit = async (e) => {
+  // Memoized event handlers
+  const handleCreateSubmit = useCallback(async (e) => {
     e.preventDefault();
     
     // Validation
@@ -135,9 +194,9 @@ const ChargeManagement = () => {
       // Refresh summary after creating a charge
       dispatch(getSystemChargesSummary());
     }
-  };
+  }, [formData, dispatch]);
 
-  const handleEditSubmit = async (e) => {
+  const handleEditSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!selectedCharge) return;
     
@@ -152,9 +211,9 @@ const ChargeManagement = () => {
       // Refresh summary after updating a charge
       dispatch(getSystemChargesSummary());
     }
-  };
+  }, [selectedCharge, formData, dispatch]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!selectedCharge) return;
     
     const result = await dispatch(deleteCharge(selectedCharge._id));
@@ -164,9 +223,9 @@ const ChargeManagement = () => {
       // Refresh summary after deleting a charge
       dispatch(getSystemChargesSummary());
     }
-  };
+  }, [selectedCharge, dispatch]);
 
-  const handleToggleStatus = async () => {
+  const handleToggleStatus = useCallback(async () => {
     if (!selectedCharge || statusToSet === null) return;
     
     const result = await dispatch(toggleChargeStatus({
@@ -181,9 +240,9 @@ const ChargeManagement = () => {
       // Refresh summary after toggling status
       dispatch(getSystemChargesSummary());
     }
-  };
+  }, [selectedCharge, statusToSet, dispatch]);
 
-  const handleEditClick = (charge) => {
+  const handleEditClick = useCallback((charge) => {
     setSelectedCharge(charge);
     setFormData({
       chargeName: charge.chargeName,
@@ -193,20 +252,20 @@ const ChargeManagement = () => {
       active: charge.active
     });
     setShowEditModal(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (charge) => {
+  const handleDeleteClick = useCallback((charge) => {
     setSelectedCharge(charge);
     setShowDeleteModal(true);
-  };
+  }, []);
 
-  const handleStatusClick = (charge, newStatus) => {
+  const handleStatusClick = useCallback((charge, newStatus) => {
     setSelectedCharge(charge);
     setStatusToSet(newStatus);
     setShowStatusModal(true);
-  };
+  }, []);
 
-  const handleDetailsClick = async (charge) => {
+  const handleDetailsClick = useCallback(async (charge) => {
     try {
       if (canManageCharges) {
         const result = await dispatch(getChargeById(charge._id));
@@ -221,31 +280,26 @@ const ChargeManagement = () => {
     } catch (error) {
       console.error('Error fetching charge details:', error);
     }
-  };
+  }, [canManageCharges, dispatch]);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    dispatch(setFilters({ search: searchTerm, page: 1 }));
-  };
-
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     setSearchTerm('');
     dispatch(clearFilters());
-  };
+  }, [dispatch]);
 
-  const handleFilterChange = (field, value) => {
+  const handleFilterChange = useCallback((field, value) => {
     dispatch(setFilters({ [field]: value || '', page: 1 }));
-  };
+  }, [dispatch]);
 
-  const toggleRowExpand = (chargeId) => {
+  const toggleRowExpand = useCallback((chargeId) => {
     setExpandedRows(prev => ({
       ...prev,
       [chargeId]: !prev[chargeId]
     }));
-  };
+  }, []);
 
-  // Utility functions
-  const formatDate = (dateString) => {
+  // Memoized utility function
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return 'N/A';
     try {
       return new Date(dateString).toLocaleDateString('en-IN', {
@@ -258,10 +312,10 @@ const ChargeManagement = () => {
     } catch (error) {
       return 'Invalid date';
     }
-  };
+  }, []);
 
-  // Get current charges based on active tab
-  const getCurrentCharges = () => {
+  // Memoized current charges calculation
+  const currentCharges = useMemo(() => {
     if (!canManageCharges) {
       // Regular users see different tabs
       switch (activeTab) {
@@ -285,153 +339,148 @@ const ChargeManagement = () => {
       
       return filteredCharges;
     }
-  };
-
-  const currentCharges = getCurrentCharges();
-
-  // Get counts for stats
-  const chargeCounts = {
-    system: canManageCharges 
-      ? charges.filter(c => c.category === 'systemcharge').length
-      : systemCharges.length,
-    optional: canManageCharges
-      ? charges.filter(c => c.category === 'optionalcharge').length
-      : optionalCharges.length
-  };
+  }, [canManageCharges, activeTab, systemCharges, optionalCharges, charges]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Charge Management</h1>
-          <p className="text-gray-600">
-            {canManageCharges 
-              ? 'Manage system and optional charges for billing'
-              : 'View available charges for billing'}
-          </p>
+    <main role="main">
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Charge Management</h1>
+            <p className="text-gray-600">
+              {canManageCharges 
+                ? 'Manage system and optional charges for billing'
+                : 'View available charges for billing'}
+            </p>
+          </div>
+
+          {/* Stats Cards - Only show for managers/admins */}
+          {canManageCharges && (
+            <Suspense fallback={<LoadingFallback />}>
+              <ChargeStats 
+                summary={systemChargesSummary} 
+                counts={chargeCounts} 
+              />
+            </Suspense>
+          )}
+
+          {/* Main Content */}
+          <div className="bg-white rounded-lg shadow mb-6">
+            {/* Header with Tabs and Toolbar */}
+            <Suspense fallback={<LoadingFallback />}>
+              <ChargeHeader
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                searchTerm={searchTerm}
+                onSearchChange={(e) => setSearchTerm(e.target.value)}
+                onClearFilters={handleClearFilters}
+                onCreateCharge={() => setShowCreateModal(true)}
+                onExport={() => console.log('Export charges')}
+                canExport={canExport}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+              />
+            </Suspense>
+
+            {/* Error/Success Messages */}
+            {error && (
+              <div className="m-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
+                <FaExclamationCircle className="w-5 h-5 text-red-500 mr-2" />
+                <p className="text-red-700">{error}</p>
+              </div>
+            )}
+
+            {success && (
+              <div className="m-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
+                <FaCheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <p className="text-green-700">{success}</p>
+              </div>
+            )}
+
+            {/* Charges Table */}
+            <Suspense fallback={<LoadingFallback />}>
+              <ChargeTable
+                charges={currentCharges}
+                loading={loading}
+                user={user}
+                canManageCharges={canManageCharges}
+                formatDate={formatDate}
+                onEditClick={handleEditClick}
+                onDeleteClick={handleDeleteClick}
+                onToggleStatus={handleStatusClick}
+                onDetailsClick={handleDetailsClick}
+                expandedRows={expandedRows}
+                onToggleExpand={toggleRowExpand}
+              />
+            </Suspense>
+          </div>
         </div>
 
-        {/* Stats Cards - Only show for managers/admins */}
+        {/* Modals */}
         {canManageCharges && (
-          <ChargeStats 
-            summary={systemChargesSummary} 
-            counts={chargeCounts} 
-          />
+          <>
+            <CreateChargeModal
+              show={showCreateModal}
+              onClose={() => setShowCreateModal(false)}
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleCreateSubmit}
+              loading={loading}
+            />
+
+            <EditChargeModal
+              show={showEditModal}
+              onClose={() => {
+                setShowEditModal(false);
+                setSelectedCharge(null);
+              }}
+              formData={formData}
+              onChange={setFormData}
+              onSubmit={handleEditSubmit}
+              loading={loading}
+              selectedCharge={selectedCharge}
+            />
+
+            <DeleteChargeModal
+              show={showDeleteModal}
+              onClose={() => {
+                setShowDeleteModal(false);
+                setSelectedCharge(null);
+              }}
+              selectedCharge={selectedCharge}
+              onSubmit={handleDelete}
+              loading={loading}
+            />
+
+            <StatusToggleModal
+              show={showStatusModal}
+              onClose={() => {
+                setShowStatusModal(false);
+                setSelectedCharge(null);
+                setStatusToSet(null);
+              }}
+              selectedCharge={selectedCharge}
+              newStatus={statusToSet}
+              onSubmit={handleToggleStatus}
+              loading={loading}
+            />
+          </>
         )}
 
-        {/* Main Content */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          {/* Header with Tabs and Toolbar */}
-          <ChargeHeader
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            searchTerm={searchTerm}
-            onSearchChange={(e) => setSearchTerm(e.target.value)}
-            onSearchSubmit={handleSearchSubmit}
-            onClearFilters={handleClearFilters}
-            onCreateCharge={() => setShowCreateModal(true)}
-            onExport={() => console.log('Export charges')}
-            canExport={canExport}
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
-
-          {/* Error/Success Messages */}
-          {error && (
-            <div className="m-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-500 mr-2" />
-              <p className="text-red-700">{error}</p>
-            </div>
-          )}
-
-          {success && (
-            <div className="m-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
-              <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-              <p className="text-green-700">{success}</p>
-            </div>
-          )}
-
-          {/* Charges Table */}
-          <ChargeTable
-            charges={currentCharges}
-            loading={loading}
-            user={user}
-            canManageCharges={canManageCharges}
-            formatDate={formatDate}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-            onToggleStatus={handleStatusClick}
-            onDetailsClick={handleDetailsClick}
-            expandedRows={expandedRows}
-            onToggleExpand={toggleRowExpand}
-          />
-        </div>
+        <ChargeDetailsModal
+          show={showDetailsModal}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedCharge(null);
+          }}
+          selectedCharge={selectedCharge}
+          onEditClick={canManageCharges ? handleEditClick : null}
+          formatDate={formatDate}
+        />
       </div>
-
-      {/* Modals */}
-      {canManageCharges && (
-        <>
-          <CreateChargeModal
-            show={showCreateModal}
-            onClose={() => setShowCreateModal(false)}
-            formData={formData}
-            onChange={setFormData}
-            onSubmit={handleCreateSubmit}
-            loading={loading}
-          />
-
-          <EditChargeModal
-            show={showEditModal}
-            onClose={() => {
-              setShowEditModal(false);
-              setSelectedCharge(null);
-            }}
-            formData={formData}
-            onChange={setFormData}
-            onSubmit={handleEditSubmit}
-            loading={loading}
-            selectedCharge={selectedCharge}
-          />
-
-          <DeleteChargeModal
-            show={showDeleteModal}
-            onClose={() => {
-              setShowDeleteModal(false);
-              setSelectedCharge(null);
-            }}
-            selectedCharge={selectedCharge}
-            onSubmit={handleDelete}
-            loading={loading}
-          />
-
-          <StatusToggleModal
-            show={showStatusModal}
-            onClose={() => {
-              setShowStatusModal(false);
-              setSelectedCharge(null);
-              setStatusToSet(null);
-            }}
-            selectedCharge={selectedCharge}
-            newStatus={statusToSet}
-            onSubmit={handleToggleStatus}
-            loading={loading}
-          />
-        </>
-      )}
-
-      <ChargeDetailsModal
-        show={showDetailsModal}
-        onClose={() => {
-          setShowDetailsModal(false);
-          setSelectedCharge(null);
-        }}
-        selectedCharge={selectedCharge}
-        onEditClick={canManageCharges ? handleEditClick : null}
-        formatDate={formatDate}
-      />
-    </div>
+    </main>
   );
 };
 
-export default ChargeManagement;
+export default React.memo(ChargeManagement);

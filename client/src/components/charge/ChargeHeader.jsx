@@ -1,5 +1,6 @@
 import React from 'react';
-import { Plus, Search, } from 'lucide-react';
+// Replace lucide-react with react-icons
+import { FaPlus, FaSearch } from 'react-icons/fa';
 
 const ChargeHeader = ({
   activeTab,
@@ -58,7 +59,7 @@ const ChargeHeader = ({
               {/* Search Bar */}
               <form onSubmit={onSearchSubmit} className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <input
                     type="text"
                     placeholder="Search charges by name..."
@@ -76,8 +77,9 @@ const ChargeHeader = ({
             <button
               onClick={onCreateCharge}
               className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              aria-label="Add new charge"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <FaPlus className="w-4 h-4 mr-2" />
               Add Charge
             </button>
           </div>
@@ -89,6 +91,7 @@ const ChargeHeader = ({
             <button
               onClick={onClearFilters}
               className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-sm"
+              aria-label="Clear all filters"
             >
               Clear Filters
             </button>

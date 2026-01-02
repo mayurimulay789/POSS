@@ -4,6 +4,7 @@ const Customer = require('../models/Customer');
 const Expense = require('../models/Expense');
 const Task = require('../models/Task');
 const User = require('../models/User');
+const Order = require('../models/Order');
 
 // Helper functions for date ranges
 const getTodayDateRange = () => {
@@ -232,6 +233,14 @@ exports.getMerchantDashboard = async (req, res) => {
         timestamp: expense.date
       }))
     ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+
+    //order stats -total orders and todays orders
+     //order stats only total order and today's order count
+    const totalOrders = await Order.countDocuments({
+    });
+    const todaysOrders = await Order.countDocuments({
+      createdAt: { $gte: todayRange.start, $lte: todayRange.end }
+    });
     
     // 9. Payment method distribution for expenses
     const expenseByPaymentMethod = await Expense.aggregate([
@@ -276,7 +285,11 @@ exports.getMerchantDashboard = async (req, res) => {
             expiredMemberships,
             membershipRevenue: 0 // Placeholder
           }
-        },
+      },
+      orderStats: {
+          totalOrders,
+          todaysOrders
+      },
         
         employeeStats: {
           totalEmployees,
@@ -474,6 +487,14 @@ exports.getManagerDashboard = async (req, res) => {
     expenseByPaymentMethod.forEach(method => {
       paymentMethodStats[method._id] = method.totalAmount;
     });
+
+    //order stats only total order and today's order count
+    const totalOrders = await Order.countDocuments({
+    });
+    const todaysOrders = await Order.countDocuments({
+      createdAt: { $gte: todayRange.start, $lte: todayRange.end }
+    });
+
     
     // 8. Get upcoming deadlines
     const expiringMemberships = await Customer.find({
@@ -537,6 +558,7 @@ exports.getManagerDashboard = async (req, res) => {
           }
         },
         
+        
         teamStats: {
           teamSize: teamUsers.length,
           tasksAssigned: teamTasks,
@@ -553,10 +575,16 @@ exports.getManagerDashboard = async (req, res) => {
           dueToday: myDueTodayTasks
         },
         
+
+        
         expenseStats: {
           totalExpenses,
           expensesByPaymentMethod: paymentMethodStats,
           topExpenseCategories: [] // Placeholder - need expense categories
+        },
+        orderStats: {
+          totalOrders,
+          todaysOrders
         },
         
         upcomingDeadlines
@@ -682,6 +710,16 @@ exports.getSupervisorDashboard = async (req, res) => {
       assignedTo: { $in: teamMemberIds },
       status: 'pending'
     });
+
+    //order my total orders and today's orders
+    const totalOrders = await Order.countDocuments({
+      createdBy: supervisorId
+    });
+    const todaysOrders = await Order.countDocuments({
+      createdBy: supervisorId,
+      createdAt: { $gte: todayRange.start, $lte: todayRange.end }
+    });
+
     
     // 6. Daily stats
     const dailyExpenses = await Expense.countDocuments({
@@ -727,6 +765,11 @@ exports.getSupervisorDashboard = async (req, res) => {
             ((teamTasksCompleted / teamTasksAssignedByMe) * 100).toFixed(1) + '%' : '0%'
         },
         
+        orderStats: {
+          totalOrders,
+          todaysOrders
+        },
+        
         taskStats: {
           myTasks: {
             total: myTasks,
@@ -738,7 +781,7 @@ exports.getSupervisorDashboard = async (req, res) => {
             assignedByMe: tasksAssignedByMe,
             pending: teamTasksPending,
             completed: teamTasksCompleted
-          }
+          },
         },
         
         dailyStats: {
@@ -820,6 +863,16 @@ exports.getStaffDashboard = async (req, res) => {
       createdBy: staffId,
       membership_type: { $ne: 'none' }
     });
+
+    //order stats - total orders and today's orders
+    const totalOrders = await Order.countDocuments({
+      createdBy: staffId
+    });
+    const todaysOrders = await Order.countDocuments({
+      createdBy: staffId,
+      createdAt: { $gte: todayRange.start, $lte: todayRange.end }
+    });
+
     
     // 3. Get task stats
     const assignedTasks = await Task.countDocuments({ assignedTo: staffId });
@@ -935,6 +988,10 @@ exports.getStaffDashboard = async (req, res) => {
           myExpensesThisWeek,
           expenseLimitRemaining: 0, // Placeholder
           workHours: '0/8' // Placeholder
+        },
+        orderStats: {
+          totalOrders,
+          todaysOrders
         },
         
         customerStats: {

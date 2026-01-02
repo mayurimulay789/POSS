@@ -1,12 +1,13 @@
 import React from 'react';
-import { DollarSign, Percent, Cpu, Clock } from 'lucide-react';
+// Replace lucide-react with react-icons
+import { FaDollarSign, FaPercent, FaMicrochip, FaClock } from 'react-icons/fa';
 
 const ChargeStats = ({ summary, counts }) => {
   const stats = [
     {
       label: 'Total System Charges',
       value: counts?.system || 0,
-      icon: Cpu,
+      icon: FaMicrochip,
       bgColor: 'bg-blue-100',
       iconColor: 'text-blue-600',
       description: 'Mandatory charges'
@@ -14,7 +15,7 @@ const ChargeStats = ({ summary, counts }) => {
     {
       label: 'Total Optional Charges',
       value: counts?.optional || 0,
-      icon: DollarSign,
+      icon: FaDollarSign,
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
       description: 'Optional charges'
@@ -22,7 +23,7 @@ const ChargeStats = ({ summary, counts }) => {
     {
       label: 'System Charge Rate',
       value: `${summary?.totalSystemChargeRate || 0}%`,
-      icon: Percent,
+      icon: FaPercent,
       bgColor: 'bg-purple-100',
       iconColor: 'text-purple-600',
       description: 'Total percentage rate'
@@ -30,7 +31,7 @@ const ChargeStats = ({ summary, counts }) => {
     {
       label: 'System Fixed Amount',
       value: `₹${summary?.totalSystemChargesAmount || 0}`,
-      icon: DollarSign,
+      icon: FaDollarSign,
       bgColor: 'bg-indigo-100',
       iconColor: 'text-indigo-600',
       description: 'Total fixed amount'
@@ -62,4 +63,4 @@ const ChargeStats = ({ summary, counts }) => {
   );
 };
 
-export default ChargeStats;
+export default React.memo(ChargeStats);

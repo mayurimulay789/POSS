@@ -1,5 +1,16 @@
-import React from 'react';
-import { Clock, Calendar, CheckCircle, XCircle, AlertCircle, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Clock, 
+  Calendar, 
+  CheckCircle, 
+  XCircle, 
+  AlertCircle, 
+  Eye,
+  StopCircle 
+} from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { endShiftById } from '../../store/slices/attendanceSlice';
+import AttendanceCameraModal from '../../components/attendance/AttendanceCameraModal';
 
 const AttendanceHistory = ({ 
   attendanceHistory, 
@@ -9,6 +20,15 @@ const AttendanceHistory = ({
   formatTime,
   formatDate
 }) => {
+  const dispatch = useDispatch();
+  const [endingShiftId, setEndingShiftId] = useState(null);
+  const [showEndModal, setShowEndModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selfieImage, setSelfieImage] = useState(null);
+  const [selfieFile, setSelfieFile] = useState(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
@@ -29,6 +49,89 @@ const AttendanceHistory = ({
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleEndShiftClick = (record) => {
+    setSelectedRecord(record);
+    setShowEndModal(true);
+  };
+
+  const handleConfirmEndShift = () => {
+    setShowEndModal(false);
+    setShowCameraModal(true);
+  };
+
+  const handleCapturePhoto = (imageSrc) => {
+    setSelfieImage(imageSrc);
+    
+    // Convert base64 to file
+    const blob = dataURLtoBlob(imageSrc);
+    const file = new File([blob], `end_selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setSelfieFile(file);
+  };
+
+  const handleFileUpload = (file) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelfieImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      setSelfieFile(file);
+    }
+  };
+
+  const dataURLtoBlob = (dataURL) => {
+    const byteString = atob(dataURL.split(',')[1]);
+    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    
+    for (let i = 0; i < byteString.length; i++) {
+      ia[i] = byteString.charCodeAt(i);
+    }
+    
+    return new Blob([ab], { type: mimeString });
+  };
+
+  const handleSubmitSelfie = async () => {
+    if (!selectedRecord) return;
+    
+    const recordId = selectedRecord._id || selectedRecord.id;
+    if (!recordId) {
+      alert('Cannot end shift: Invalid record ID');
+      return;
+    }
+
+    const formData = new FormData();
+    if (selfieFile) {
+      formData.append('selfie', selfieFile);
+    }
+
+    setEndingShiftId(recordId);
+    try {
+      await dispatch(endShiftById({ id: recordId, formData })).unwrap();
+      setShowCameraModal(false);
+      setSelectedRecord(null);
+      setSelfieImage(null);
+      setSelfieFile(null);
+    } catch (error) {
+      console.error('Failed to end shift:', error);
+    } finally {
+      setEndingShiftId(null);
+    }
+  };
+
+  const handleRetakePhoto = () => {
+    setSelfieImage(null);
+    setSelfieFile(null);
+  };
+
+  const handleCloseCameraModal = () => {
+    setShowCameraModal(false);
+    setSelfieImage(null);
+    setSelfieFile(null);
+    setSelectedRecord(null);
   };
 
   if (loading && attendanceHistory.length === 0) {
@@ -74,6 +177,9 @@ const AttendanceHistory = ({
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Selfie
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
               </th>
             </tr>
           </thead>
@@ -144,6 +250,33 @@ const AttendanceHistory = ({
                     )}
                   </div>
                 </td>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {record.status === 'active' ? (
+                    <button
+                      onClick={() => handleEndShiftClick(record)}
+                      disabled={endingShiftId === (record._id || record.id)}
+                      className={`inline-flex items-center px-3 py-1.5 rounded text-xs font-medium ${
+                        endingShiftId === (record._id || record.id)
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                          : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                      }`}
+                    >
+                      {endingShiftId === (record._id || record.id) ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-1"></div>
+                          Ending...
+                        </>
+                      ) : (
+                        <>
+                          <StopCircle className="w-3 h-3 mr-1" />
+                          End Shift
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -173,7 +306,7 @@ const AttendanceHistory = ({
               </span>
             </div>
             
-            <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
               <div>
                 <span className="text-gray-500">Duration:</span>
                 <span className="font-medium ml-2">
@@ -206,9 +339,105 @@ const AttendanceHistory = ({
                 </div>
               </div>
             </div>
+
+            {/* End Shift Button for Mobile */}
+            {record.status === 'active' && (
+              <button
+                onClick={() => handleEndShiftClick(record)}
+                disabled={endingShiftId === (record._id || record.id)}
+                className={`w-full mt-2 inline-flex items-center justify-center px-4 py-2.5 rounded text-sm font-medium ${
+                  endingShiftId === (record._id || record.id)
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
+                }`}
+              >
+                {endingShiftId === (record._id || record.id) ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Ending Shift...
+                  </>
+                ) : (
+                  <>
+                    <StopCircle className="w-4 h-4 mr-2" />
+                    End Shift
+                  </>
+                )}
+              </button>
+            )}
           </div>
         ))}
       </div>
+
+      {/* End Shift Confirmation Modal */}
+      {showEndModal && selectedRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center mb-4">
+              <AlertCircle className="w-6 h-6 text-orange-500 mr-3" />
+              <h3 className="text-lg font-semibold text-gray-800">End Shift Confirmation</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to end the shift from <span className="font-medium">{formatTime(selectedRecord.startTime)}</span>?
+            </p>
+            
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div>
+                  <span className="text-gray-500">Date:</span>
+                  <span className="font-medium ml-2">{formatDate(selectedRecord.date)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Started:</span>
+                  <span className="font-medium ml-2">{formatTime(selectedRecord.startTime)}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-sm text-gray-500 mb-6">
+              <p className="mb-2">You can optionally upload an end-of-shift selfie.</p>
+              <p>Selfie is not required but recommended for verification.</p>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowEndModal(false);
+                  setSelectedRecord(null);
+                }}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmEndShift}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Camera Modal for End Shift */}
+      <AttendanceCameraModal
+        show={showCameraModal}
+        onClose={handleCloseCameraModal}
+        isStartingShift={false}
+        selfieImage={selfieImage}
+        onCapturePhoto={handleCapturePhoto}
+        onFileUpload={handleFileUpload}
+        onRetakePhoto={handleRetakePhoto}
+        onSubmit={handleSubmitSelfie}
+        loading={endingShiftId !== null}
+        isCameraActive={isCameraActive}
+        onCameraToggle={() => setIsCameraActive(!isCameraActive)}
+        title="End Shift Selfie"
+        description="Optional: Take a selfie to end your shift"
+        submitButtonText="End Shift"
+        isOptional={true}
+      />
 
       {/* Pagination */}
       {pagination.pages > 1 && (
