@@ -328,8 +328,6 @@ exports.getOrdersSummary = async (req, res) => {
   }
 };
 
-// Cancel/Delete an order
-// Cancel an order and clear the table
 exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.orderId || req.params.id;
