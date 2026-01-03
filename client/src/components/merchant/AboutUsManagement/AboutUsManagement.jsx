@@ -1,24 +1,47 @@
 import React, { useState, useEffect } from 'react';
+// Simple Accordion Section component
+const AccordionSection = ({ title, helper, open, onToggle, children }) => (
+  <div className="mb-4 border rounded-lg bg-white shadow">
+    <button
+      type="button"
+      className="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus:ring font-semibold text-lg"
+      onClick={onToggle}
+    >
+      <span>{title}</span>
+      <span className="ml-2 text-gray-400">{open ? '▲' : '▼'}</span>
+    </button>
+    {open && (
+      <div className="px-6 pb-6 pt-2 border-t">
+        {helper && <div className="text-sm text-gray-500 mb-2">{helper}</div>}
+        {children}
+      </div>
+    )}
+  </div>
+);
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAboutUs, updateAboutUs, clearSuccess, clearError } from '../../../store/slices/aboutUsSlice';
+import { fetchAboutUs, updateAboutUs, clearSuccess, clearError, setAboutUsField } from '../../../store/slices/aboutUsSlice';
 
 const AboutUsManagement = () => {
   const dispatch = useDispatch();
+
   const aboutUs = useSelector(state => state.aboutUs);
   const { data, loading, error, success } = aboutUs;
+  const mainDescription = data?.mainDescription || '';
+  const rhythmTitle = data?.rhythmTitle || '';
+  const rhythmDescription = data?.rhythmDescription || '';
+  const rhythmQuote = data?.rhythmQuote || '';
+  const highlights = data?.highlights || [];
+  const values = data?.values || [];
+  const stats = data?.stats || [];
 
-  // Form states
-  const [mainDescription, setMainDescription] = useState('');
-  const [rhythmTitle, setRhythmTitle] = useState('');
-  const [rhythmDescription, setRhythmDescription] = useState('');
-  const [rhythmQuote, setRhythmQuote] = useState('');
-  const [highlights, setHighlights] = useState([]);
-  const [values, setValues] = useState([]);
-  const [stats, setStats] = useState([]);
+  // Accordion open state for each section (MUST be before any conditional return)
+  const [openSection, setOpenSection] = useState('main');
+
+  // Local state only for new highlight/value/stat being added
   const [newHighlight, setNewHighlight] = useState({ title: '', description: '', icon: '' });
   const [newValue, setNewValue] = useState('');
   const [newStat, setNewStat] = useState({ label: '', value: '', detail: '' });
-  
+
   // Validation states
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -26,17 +49,7 @@ const AboutUsManagement = () => {
     dispatch(fetchAboutUs());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (data) {
-      setMainDescription(data.mainDescription || '');
-      setRhythmTitle(data.rhythmTitle || '');
-      setRhythmDescription(data.rhythmDescription || '');
-      setRhythmQuote(data.rhythmQuote || '');
-      setHighlights(data.highlights || []);
-      setValues(data.values || []);
-      setStats(data.stats || []);
-    }
-  }, [data]);
+  // No need to sync local state with Redux for form fields anymore
 
   // Validation functions
   const validateHighlight = (highlight) => {
@@ -181,13 +194,15 @@ const AboutUsManagement = () => {
       setValidationErrors({ newValue: error });
       return;
     }
-    setValues([...values, { text: newValue }]);
+    const newArr = [...values, { text: newValue }];
+    dispatch(setAboutUsField({ field: 'values', value: newArr }));
     setNewValue('');
     setValidationErrors({});
   };
 
   const handleRemoveValue = (index) => {
-    setValues(values.filter((_, i) => i !== index));
+    const newArr = values.filter((_, i) => i !== index);
+    dispatch(setAboutUsField({ field: 'values', value: newArr }));
   };
 
   const handleAddStat = () => {
@@ -196,13 +211,15 @@ const AboutUsManagement = () => {
       setValidationErrors({ newStat: errors });
       return;
     }
-    setStats([...stats, newStat]);
+    const newArr = [...stats, newStat];
+    dispatch(setAboutUsField({ field: 'stats', value: newArr }));
     setNewStat({ label: '', value: '', detail: '' });
     setValidationErrors({});
   };
 
   const handleRemoveStat = (index) => {
-    setStats(stats.filter((_, i) => i !== index));
+    const newArr = stats.filter((_, i) => i !== index);
+    dispatch(setAboutUsField({ field: 'stats', value: newArr }));
   };
 
   const handleSubmit = async (e) => {
@@ -229,8 +246,11 @@ const AboutUsManagement = () => {
     setTimeout(() => dispatch(clearSuccess('aboutUs')), 3000);
   };
 
+  // ...existing code...
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      {/* Removed 'SINCE 2026' badge as requested */}
       <h1 className="text-3xl font-bold text-gray-800 mb-6">About Us Management</h1>
 
       {error && (
@@ -248,13 +268,16 @@ const AboutUsManagement = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Main Description */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Main Description</h2>
+      <form onSubmit={handleSubmit}>
+        <AccordionSection
+          title="Main Description"
+          helper="This is the main text shown on your About Us page."
+          open={openSection === 'main'}
+          onToggle={() => setOpenSection(openSection === 'main' ? '' : 'main')}
+        >
           <textarea
             value={mainDescription}
-            onChange={(e) => setMainDescription(e.target.value)}
+            onChange={e => dispatch(setAboutUsField({ field: 'mainDescription', value: e.target.value }))}
             rows="4"
             className={`w-full px-3 py-2 border rounded-lg ${validationErrors.mainDescription ? 'border-red-500' : ''}`}
             placeholder="Main description... (20-2000 characters)"
@@ -263,25 +286,33 @@ const AboutUsManagement = () => {
             <p className="text-red-600 text-sm mt-1">{validationErrors.mainDescription}</p>
           )}
           <p className="text-gray-500 text-xs mt-1">{mainDescription.length}/2000 characters</p>
-        </div>
+        </AccordionSection>
 
-        {/* Highlights */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Highlights ({highlights.length})</h2>
+        <AccordionSection
+          title={`Highlights (${highlights.length})`}
+          helper="Add fun highlights with emoji. These will be shown as features on your About Us page."
+          open={openSection === 'highlights'}
+          onToggle={() => setOpenSection(openSection === 'highlights' ? '' : 'highlights')}
+        >
           {validationErrors.highlights && (
             <p className="text-red-600 text-sm mb-3">{validationErrors.highlights}</p>
           )}
           <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
             {highlights.map((highlight, index) => (
-              <div key={index} className="flex justify-between items-center bg-gray-100 p-3 rounded">
-                <div>
-                  <p className="font-semibold">{highlight.title} {highlight.icon}</p>
-                  <p className="text-sm text-gray-600">{highlight.description}</p>
+              <div key={index} className="flex items-center bg-gray-50 p-3 rounded border border-gray-200 gap-3">
+                <span className="text-2xl mr-2">{highlight.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{highlight.title}</div>
+                  <div className="text-sm text-gray-600 truncate">{highlight.description}</div>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveHighlight(index)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
+                  onClick={() => {
+                    const newArr = highlights.filter((_, i) => i !== index);
+                    dispatch(setAboutUsField({ field: 'highlights', value: newArr }));
+                  }}
+                  className="ml-2 text-red-600 hover:text-red-800 font-bold text-lg px-2"
+                  title="Remove"
                 >
                   ✕
                 </button>
@@ -294,8 +325,8 @@ const AboutUsManagement = () => {
               <input
                 type="text"
                 value={newHighlight.title}
-                onChange={(e) => setNewHighlight({ ...newHighlight, title: e.target.value })}
-                placeholder="Highlight title..."
+                onChange={e => setNewHighlight({ ...newHighlight, title: e.target.value })}
+                placeholder="e.g. Best Chefs, Family Vibes..."
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.title ? 'border-red-500' : ''}`}
               />
               {validationErrors.newHighlight?.title && (
@@ -306,8 +337,8 @@ const AboutUsManagement = () => {
               <label className="block text-sm font-medium mb-1">Description</label>
               <textarea
                 value={newHighlight.description}
-                onChange={(e) => setNewHighlight({ ...newHighlight, description: e.target.value })}
-                placeholder="Highlight description..."
+                onChange={e => setNewHighlight({ ...newHighlight, description: e.target.value })}
+                placeholder="Short description for this highlight..."
                 rows="2"
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.description ? 'border-red-500' : ''}`}
               />
@@ -316,12 +347,25 @@ const AboutUsManagement = () => {
               )}
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Icon/Emoji</label>
+              <label className="block text-sm font-medium mb-1">Pick an Emoji</label>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {["🍽️","🍕","🍔","🥗","🍜","🍛","🍣","🍰","☕","🥘","🎉","🏆","👨‍🍳","👩‍🍳","🌟","💡","❤️","😊","👍"].map((emoji) => (
+                  <button
+                    type="button"
+                    key={emoji}
+                    className={`text-2xl px-2 py-1 rounded hover:bg-blue-100 ${newHighlight.icon === emoji ? 'bg-blue-200 border border-blue-400' : ''}`}
+                    onClick={() => setNewHighlight({ ...newHighlight, icon: emoji })}
+                    aria-label={emoji}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 value={newHighlight.icon}
-                onChange={(e) => setNewHighlight({ ...newHighlight, icon: e.target.value })}
-                placeholder="🥘"
+                onChange={e => setNewHighlight({ ...newHighlight, icon: e.target.value })}
+                placeholder="Or paste your own emoji..."
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.icon ? 'border-red-500' : ''}`}
               />
               {validationErrors.newHighlight?.icon && (
@@ -330,17 +374,30 @@ const AboutUsManagement = () => {
             </div>
             <button
               type="button"
-              onClick={handleAddHighlight}
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              onClick={() => {
+                const errors = validateHighlight(newHighlight);
+                if (Object.keys(errors).length > 0) {
+                  setValidationErrors({ newHighlight: errors });
+                  return;
+                }
+                const newArr = [...highlights, newHighlight];
+                dispatch(setAboutUsField({ field: 'highlights', value: newArr }));
+                setNewHighlight({ title: '', description: '', icon: '' });
+                setValidationErrors({});
+              }}
+              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mt-2"
             >
               Add Highlight
             </button>
           </div>
-        </div>
+        </AccordionSection>
 
-        {/* Values */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Values ({values.length})</h2>
+        <AccordionSection
+          title={`Values (${values.length})`}
+          helper="Add your core values. These will be shown as a list."
+          open={openSection === 'values'}
+          onToggle={() => setOpenSection(openSection === 'values' ? '' : 'values')}
+        >
           {validationErrors.values && (
             <p className="text-red-600 text-sm mb-3">{validationErrors.values}</p>
           )}
@@ -377,11 +434,14 @@ const AboutUsManagement = () => {
           {validationErrors.newValue && (
             <p className="text-red-600 text-xs mt-1">{validationErrors.newValue}</p>
           )}
-        </div>
+        </AccordionSection>
 
-        {/* Statistics */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Statistics ({stats.length})</h2>
+        <AccordionSection
+          title={`Statistics (${stats.length})`}
+          helper="Add some fun stats about your business."
+          open={openSection === 'stats'}
+          onToggle={() => setOpenSection(openSection === 'stats' ? '' : 'stats')}
+        >
           {validationErrors.stats && (
             <p className="text-red-600 text-sm mb-3">{validationErrors.stats}</p>
           )}
@@ -450,18 +510,21 @@ const AboutUsManagement = () => {
               Add Statistic
             </button>
           </div>
-        </div>
+        </AccordionSection>
 
-        {/* Rhythm Section */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Rhythm Section</h2>
+        <AccordionSection
+          title="Rhythm Section"
+          helper="Describe the unique rhythm or vibe of your place."
+          open={openSection === 'rhythm'}
+          onToggle={() => setOpenSection(openSection === 'rhythm' ? '' : 'rhythm')}
+        >
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Title</label>
               <input
                 type="text"
                 value={rhythmTitle}
-                onChange={(e) => setRhythmTitle(e.target.value)}
+                onChange={e => dispatch(setAboutUsField({ field: 'rhythmTitle', value: e.target.value }))}
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmTitle ? 'border-red-500' : ''}`}
                 placeholder="e.g., Paced for real conversations"
               />
@@ -474,7 +537,7 @@ const AboutUsManagement = () => {
               <label className="block text-sm font-medium mb-2">Description</label>
               <textarea
                 value={rhythmDescription}
-                onChange={(e) => setRhythmDescription(e.target.value)}
+                onChange={e => dispatch(setAboutUsField({ field: 'rhythmDescription', value: e.target.value }))}
                 rows="3"
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmDescription ? 'border-red-500' : ''}`}
                 placeholder="Describe the rhythm section... (20-1000 characters)"
@@ -488,7 +551,7 @@ const AboutUsManagement = () => {
               <label className="block text-sm font-medium mb-2">Quote</label>
               <textarea
                 value={rhythmQuote}
-                onChange={(e) => setRhythmQuote(e.target.value)}
+                onChange={e => dispatch(setAboutUsField({ field: 'rhythmQuote', value: e.target.value }))}
                 rows="2"
                 className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmQuote ? 'border-red-500' : ''}`}
                 placeholder="e.g., 'We cook and host the way family does at home...'"
@@ -499,12 +562,12 @@ const AboutUsManagement = () => {
               <p className="text-gray-500 text-xs mt-1">{rhythmQuote.length}/500 characters</p>
             </div>
           </div>
-        </div>
+        </AccordionSection>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50 transition"
+          className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50 transition mt-6"
         >
           {loading ? 'Saving...' : 'Save About Us Content'}
         </button>

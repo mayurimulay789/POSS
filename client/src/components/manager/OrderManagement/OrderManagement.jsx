@@ -100,43 +100,50 @@ const OrderManagement = () => {
   };
 
   const renderActiveTab = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-10 justify-center">
       {activeOrders.map((order) => (
-        <div key={order._id} className="border rounded-xl p-5 bg-white shadow-sm border-l-4 border-l-yellow-500">
-          <div className="flex justify-between items-start mb-3">
+        <div
+          key={order._id}
+          className="border rounded-2xl p-7 bg-white shadow-lg border-l-8 border-l-yellow-400 flex flex-col min-h-[320px] transition-all hover:shadow-2xl mx-auto w-full max-w-2xl"
+          style={{ minWidth: 0 }}
+        >
+          <div className="flex justify-between items-start mb-5">
             <div>
-              <h3 className="text-xl font-bold text-slate-800">{order.tableName}</h3>
-              <p className="text-xs text-slate-400 uppercase font-bold">{order.spaceType}</p>
+              <h3 className="text-2xl font-extrabold text-slate-800 mb-1">{order.tableName}</h3>
+              <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">{order.spaceType}</p>
             </div>
-            <span className="px-2 py-1 text-[10px] rounded-full font-bold uppercase bg-yellow-100 text-yellow-700 border border-yellow-200">
+            <span className="px-3 py-1 text-xs rounded-full font-bold uppercase bg-yellow-100 text-yellow-700 border border-yellow-200 shadow-sm">
               {order.status}
             </span>
           </div>
-          <div className="space-y-2 mb-4 max-h-32 overflow-y-auto pr-2">
-            {order.items?.map((item, idx) => (
-              <div key={idx} className="flex justify-between text-sm text-slate-600">
-                <span>{item.name} <span className="text-slate-400">x{item.quantity}</span></span>
-                <span className="font-medium text-slate-800">₹{item.subtotal}</span>
-              </div>
-            ))}
+          <div className="mb-5">
+            <div className="text-xs text-slate-400 font-semibold mb-1">Items</div>
+            <div className="space-y-2 max-h-24 overflow-y-auto pr-1">
+              {order.items?.map((item, idx) => (
+                <div key={idx} className="flex justify-between text-base text-slate-700">
+                  <span>{item.name} <span className="text-slate-400">x{item.quantity}</span></span>
+                  <span className="font-semibold text-slate-900">₹{item.subtotal}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="pt-3 border-t flex justify-between items-center">
-            <span className="text-slate-400 text-sm font-bold">Total Bill</span>
-            <span className="text-lg font-black text-slate-900">₹{order.totalBill}</span>
+          <div className="border-t border-slate-200 my-3"></div>
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-slate-500 text-base font-bold">Total Bill</span>
+            <span className="text-2xl font-extrabold text-green-700">₹{order.totalBill}</span>
           </div>
-          {/* Cancel button for non-served/cancelled orders */}
+          <div className="flex-1"></div>
           {order.status !== 'served' && order.status !== 'cancelled' && (
             <button
               onClick={() => handleCancelOrder(order._id)}
-              className="mt-4 w-full py-2 bg-red-600 text-white rounded font-bold hover:bg-red-700"
+              className="mt-4 w-full py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow"
             >
               Cancel Order
             </button>
           )}
-          {/* Print Bill button only if payment is completed */}
           {order.status === 'completed' && (
             <button
-              className="mt-2 w-full py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700"
+              className="mt-2 w-full py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow"
               onClick={() => window.print && window.print()}
             >
               Print Bill
@@ -148,15 +155,65 @@ const OrderManagement = () => {
   );
 
   const renderCompletedTab = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-10 justify-center">
       {completedOrders.map((order) => (
-        <div key={order._id} className="border rounded-xl p-5 bg-white shadow-sm opacity-80 grayscale-[0.5]">
-          <div className="flex justify-between mb-2">
-            <h3 className="font-bold text-lg text-slate-700">{order.tableName}</h3>
-            <span className="text-green-600 text-[10px] font-bold px-2 py-1 bg-green-50 rounded uppercase border border-green-100">COMPLETED</span>
+        <div
+          key={order._id}
+          className="mx-auto w-full max-w-2xl bg-green-50 rounded-2xl shadow-lg overflow-hidden border-2 border-green-200 p-8 mb-8 flex flex-col min-h-[340px] transition-all hover:shadow-2xl"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tables</div>
+              <div className="text-2xl font-extrabold text-green-900 mb-1"> {order.tableName || '-'}</div>
+              <div className="text-xs text-gray-400">ORD-{order.orderId || order._id}</div>
+            </div>
+            <span className="bg-green-500 text-white text-xs font-bold px-5 py-1 rounded-full shadow">COMPLETED</span>
           </div>
-          <p className="text-2xl font-black text-slate-900">₹{order.totalBill}</p>
-          <p className="text-[10px] text-slate-400 mt-2">Order ID: {order.orderId}</p>
+          <div className="flex justify-between text-base mb-3">
+            <div>
+              <div className="text-gray-500">Subtotal</div>
+              <div className="font-semibold">₹{order.totalBill?.toFixed(2) ?? '0.00'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">Discount</div>
+              <div className="text-red-500 font-semibold">-₹{order.discount?.toFixed(2) ?? '0.00'}</div>
+            </div>
+          </div>
+          <div className="flex justify-between text-base mb-3">
+            <div>
+              <div className="text-gray-500">Tax</div>
+              <div className="font-semibold">₹{order.tax?.toFixed(2) ?? '0.00'}</div>
+            </div>
+            <div>
+              <div className="text-gray-500">Payment</div>
+              <div className="font-bold">{order.paymentMethod || order.paymentType || '-'}</div>
+            </div>
+          </div>
+          <div className="border-t border-green-200 my-3"></div>
+          <div className="text-xl font-extrabold text-green-700 mb-3">
+            Total: ₹{order.finalAmount?.toFixed(2) ?? order.totalBill?.toFixed(2) ?? '0.00'}
+          </div>
+          <div className="mb-3">
+            <div className="text-gray-500 text-sm mb-1">Items ({order.items?.length ?? 0})</div>
+            {order.items && order.items.length > 0 ? (
+              <div className="max-h-24 overflow-y-auto rounded border border-green-100 bg-green-100/40 my-1">
+                <ul className="text-base divide-y divide-green-100">
+                  {order.items.map((item, idx) => (
+                    <li key={idx} className="flex justify-between px-3 py-1">
+                      <span>{item.name} <span className="text-gray-400">x{item.quantity}</span></span>
+                      <span className="font-semibold">₹{(item.subtotal || (item.price * item.quantity) || 0).toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="text-gray-400 text-xs">No items</div>
+            )}
+          </div>
+          <div className="flex-1"></div>
+          <div className="text-xs text-gray-400 mt-2">
+            Completed {order.completedAt ? new Date(order.completedAt).toLocaleString() : '-'}
+          </div>
         </div>
       ))}
     </div>

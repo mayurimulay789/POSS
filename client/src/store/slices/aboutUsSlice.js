@@ -37,7 +37,17 @@ const aboutUsSlice = createSlice({
   initialState,
   reducers: {
     clearSuccess: (state) => { state.success = false; },
-    clearError: (state) => { state.error = null; }
+    clearError: (state) => { state.error = null; },
+    setAboutUsField: (state, action) => {
+      // action.payload: { field, value }
+      if (!state.data) state.data = {};
+      state.data[action.payload.field] = action.payload.value;
+    },
+    setAboutUsFields: (state, action) => {
+      // action.payload: { ...fields }
+      if (!state.data) state.data = {};
+      Object.assign(state.data, action.payload);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -71,5 +81,5 @@ const aboutUsSlice = createSlice({
   }
 });
 
-export const { clearSuccess, clearError } = aboutUsSlice.actions;
+export const { clearSuccess, clearError, setAboutUsField, setAboutUsFields } = aboutUsSlice.actions;
 export default aboutUsSlice.reducer;

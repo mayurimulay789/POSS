@@ -68,9 +68,7 @@ const AboutUs = () => {
 
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="flex flex-col gap-4 text-center">
-          <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-amber-200">
-            Since {data.yearEstablished}
-          </div>
+          {/* Removed 'Since {data.yearEstablished}' badge as requested */}
           <h2 className="text-4xl md:text-5xl font-semibold leading-tight">{data.mainTitle}</h2>
           <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto">
             {data.mainDescription}
