@@ -59,17 +59,7 @@ const OrderBill = ({ order, onClose }) => {
               <span className="font-semibold">₹{order.totalBill?.toFixed(2)}</span>
             </div>
             
-            {order.discountApplied > 0 && (
-              <div className="flex justify-between text-sm text-red-600">
-                <span>Discount</span>
-                <span className="font-semibold">-₹{order.discountApplied?.toFixed(2)}</span>
-              </div>
-            )}
-            
-            <div className="flex justify-between text-sm">
-              <span>Tax (5%)</span>
-              <span className="font-semibold">₹{order.taxAmount?.toFixed(2)}</span>
-            </div>
+
 
             <div className="flex justify-between border-t-2 border-gray-300 pt-2 mt-2">
               <span className="font-bold text-lg">Total</span>

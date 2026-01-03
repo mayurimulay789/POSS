@@ -79,16 +79,44 @@ const AddMenu = () => {
 
   const createItem = async (e) => {
     e.preventDefault();
+    // Validation logic
+    const name = (itemForm.name || '').trim();
+    const description = (itemForm.description || '').trim();
+    const price = itemForm.price;
+    const category = itemForm.category;
+    if (!name) {
+      setToast('Please enter an item name');
+      return;
+    }
+    if (!description) {
+      setToast('Please enter a description');
+      return;
+    }
+    if (!price || isNaN(price)) {
+      setToast('Please enter a valid price');
+      return;
+    }
+    if (Number(price) < 0) {
+      setToast('Price cannot be negative');
+      return;
+    }
+    if (Number(price) === 0) {
+      setToast('Price cannot be zero');
+      return;
+    }
+    if (!category) {
+      setToast('Please select a category');
+      return;
+    }
     try {
       setSubmitting(true);
       setToast(null);
       const form = new FormData();
-      form.append('name', itemForm.name);
-      form.append('description', itemForm.description);
-      form.append('price', itemForm.price);
-      form.append('category', itemForm.category);
+      form.append('name', name);
+      form.append('description', description);
+      form.append('price', price);
+      form.append('category', category);
       if (itemForm.image) form.append('image', itemForm.image);
-      
       await axios.post(`${API_BASE_URL}/menu/items`, form, getAuthHeaders());
       setItemForm({ name: '', description: '', price: '', category: '', image: null });
       if (itemImageInputRef.current) itemImageInputRef.current.value = '';

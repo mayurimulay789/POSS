@@ -1,10 +1,19 @@
+// --- Validation helper for item form ---
+function validateItemForm(item) {
+  if (!item.name || !item.name.trim()) return 'Item name is required';
+  if (!item.description || !item.description.trim()) return 'Description is required';
+  if (!item.category) return 'Category is required';
+  if (!item.price || isNaN(item.price) || Number(item.price) <= 0) return 'Price must be a positive number';
+  return null;
+}
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
-import API_BASE_URL from '../../../config/apiConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchMenuItems } from '../../../store/slices/menuSlice';
+
 
 const MenuManagement = () => {
-  const [categories, setCategories] = useState([]);
-  const [items, setItems] = useState([]);
+  const dispatch = useDispatch();
+  const { items, loading } = useSelector(state => state.menu);
   const [catName, setCatName] = useState('');
   const [parentCat, setParentCat] = useState('');
 
@@ -14,26 +23,23 @@ const MenuManagement = () => {
   const [toast, setToast] = useState(null);
   const [excelFile, setExcelFile] = useState(null);
   const [excelStatus, setExcelStatus] = useState(null);
-  const [loading, setLoading] = useState(false);
+
   const topRef = useRef(null);
   const nameInputRef = useRef(null);
 
+  // Prevent duplicate category (case-insensitive, trimmed, no whitespace diff)
   const isDuplicateCategory = (name, parentId = null) => {
-    const normalizedName = (name || '').trim().toLowerCase();
+    const normalizedName = (name || '').replace(/\s+/g, '').toLowerCase();
     const normalizedParent = parentId || null;
     return categories.some(c => {
       const existingParent = c && c.parent ? c.parent.toString() : null;
-      return (c.name || '').trim().toLowerCase() === normalizedName && existingParent === normalizedParent;
+      return (c.name || '').replace(/\s+/g, '').toLowerCase() === normalizedName && existingParent === normalizedParent;
     });
   };
 
   useEffect(() => {
-    fetchData();
-    // listen to menuUpdated events
-    const handler = () => fetchData();
-    window.addEventListener('menuUpdated', handler);
-    return () => window.removeEventListener('menuUpdated', handler);
-  }, []);
+    dispatch(fetchMenuItems());
+  }, [dispatch]);
 
   useEffect(() => {
     if (!toast) return;
@@ -41,21 +47,7 @@ const MenuManagement = () => {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const [catRes, itemRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/menu/categories`),
-        axios.get(`${API_BASE_URL}/menu/items`)
-      ]);
-      setCategories(catRes.data || []);
-      setItems(itemRes.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // All data is now managed via Redux thunks/selectors. No direct API calls here.
 
   // Build auth headers if token exists in localStorage
   const getAuthHeaders = () => {
@@ -74,6 +66,11 @@ const MenuManagement = () => {
     const parentTarget = parentCat || null;
     if (!trimmedName) {
       setToast('Please enter a category name');
+      return;
+    }
+    // Disallow names with only spaces or empty after trimming
+    if (trimmedName.replace(/\s+/g, '') === '') {
+      setToast('Category name cannot be empty or only spaces');
       return;
     }
     if (isDuplicateCategory(trimmedName, parentTarget)) {
@@ -95,13 +92,18 @@ const MenuManagement = () => {
 
   const createOrUpdateItem = async (e) => {
     e.preventDefault();
+    const validationError = validateItemForm(itemForm);
+    if (validationError) {
+      setToast(validationError);
+      return;
+    }
     try {
       setSubmitting(true);
       setToast(null);
       const form = new FormData();
-      form.append('name', itemForm.name);
-      form.append('description', itemForm.description);
-      form.append('price', itemForm.price);
+      form.append('name', itemForm.name.trim());
+      form.append('description', itemForm.description.trim());
+      form.append('price', parseFloat(itemForm.price));
       form.append('category', itemForm.category);
       if (itemForm.image) form.append('image', itemForm.image);
       if (editingItemId) {

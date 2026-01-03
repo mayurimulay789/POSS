@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchHotelImages } from '../store/slices/hotelImageSlice';
 import { Link } from 'react-router-dom';
-import API_BASE_URL from '../config/apiConfig';
+
 
 const AutoDots = ({ count, activeIndex, onJump }) => (
   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 z-20">
@@ -41,33 +42,16 @@ const NavButton = ({ dir = 'prev', onClick }) => (
 );
 
 const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]' }) => {
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { items: images = [], loading } = useSelector(state => state.hotelImage);
   const [active, setActive] = useState(0);
   const timerRef = useRef(null);
 
   const hasImages = images && images.length > 0;
 
   useEffect(() => {
-    let cancelled = false;
-    const fetchImages = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/hotel-images/public`);
-        if (!cancelled) {
-          const list = Array.isArray(res.data) ? res.data : [];
-          setImages(list);
-        }
-      } catch (e) {
-        console.error('Failed to load images:', e);
-        if (!cancelled) setImages([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    fetchImages();
-    return () => { cancelled = true; };
-  }, []);
+    dispatch(fetchHotelImages());
+  }, [dispatch]);
 
   useEffect(() => {
     if (!hasImages) return;
@@ -87,6 +71,18 @@ const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]
       title: img.bannerHeading || img.title || 'A Ticket To A Heavenly Food Experience.',
     }));
   }, [images]);
+
+  const scrollToMenu = (event) => {
+  
+    event.preventDefault();
+    const menuEl = document.getElementById('menu');
+    if (menuEl) {
+      menuEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+
+    window.location.href = '/#menu';
+  };
 
   return (
     <section className={`relative w-full ${heightClass} bg-[#0a0a0a] overflow-hidden`}>
@@ -114,7 +110,8 @@ const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]
 
                 {/* Elegant, minimalist button */}
                 <Link
-                  to="/menu"
+                  to="/#menu"
+                  onClick={scrollToMenu}
                   className="inline-block bg-amber-400 hover:bg-amber-500 border border-amber-400 hover:border-amber-500 text-white px-8 py-3 text-sm uppercase tracking-[0.15em] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
                 >
                   Discover Menu

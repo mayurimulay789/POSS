@@ -9,6 +9,15 @@ import dashboardReducer from './slices/dashboardSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import merchantAttendanceReducer from './slices/merchantAttendanceSlice';
 import chargeReducer from './slices/chargeSlice';
+import aboutUsReducer from './slices/aboutUsSlice';
+import contactUsReducer from './slices/contactUsSlice';
+import welcomeSectionReducer from './slices/welcomeSectionSlice';
+import cuisineGalleryReducer from './slices/cuisineGallerySlice';
+import orderReducer from './slices/orderSlice';
+import billingReducer from './slices/billingSlice';
+import tableReducer from './slices/tableSlice';
+import menuReducer from './slices/menuSlice';
+import hotelImageReducer from './slices/hotelImageSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,11 +31,20 @@ export const store = configureStore({
      attendance: attendanceReducer,
      merchantAttendance: merchantAttendanceReducer,
      charges: chargeReducer,
+    aboutUs: aboutUsReducer,
+    contactUs: contactUsReducer,
+    welcomeSection: welcomeSectionReducer,
+    cuisineGallery: cuisineGalleryReducer,
+    order: orderReducer,
+    billing: billingReducer,
+    table: tableReducer,
+    menu: menuReducer,
+    hotelImage: hotelImageReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types
+    
         ignoredActions: ['persist/PERSIST'],
       },
     }),

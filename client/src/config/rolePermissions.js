@@ -101,6 +101,38 @@ export const SIDEBAR_ITEMS = {
     permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT, // Only for merchant
   },
 
+  landingPageManagement: {
+    path: '/landing-page',
+    label: 'Landing Page Management',
+    icon: '🌐',
+    permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT, // Only for merchant
+    subItems: [
+      {
+        path: '/about-us-management',
+        label: 'About Us',
+        icon: 'ℹ️',
+        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+      },
+      {
+        path: '/contact-us-management',
+        label: 'Contact Us',
+        icon: '📞',
+        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+      },
+      {
+        path: '/welcome-section-management',
+        label: 'Welcome Section',
+        icon: '🏨',
+        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+      },
+      {
+        path: '/cuisine-gallery-management',
+        label: 'Cuisine Gallery',
+        icon: '🍽️',
+        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+      }
+    ]
+  }
 };
 
 // Get sidebar items for a specific role based on their permissions
@@ -120,5 +152,5 @@ export const GROUPED_SIDEBAR_ITEMS = {
   operations: ['orders', 'menu', 'billing'],
   management: ['hotelImages', 'spaces', 'tasks', 'expenses','customers'],
   analytics: ['reports'],
-  administration: ['employees', 'permissions', 'charges','attendance'],
+  administration: ['employees', 'permissions', 'charges','attendance','landingPageManagement'],
 };

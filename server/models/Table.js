@@ -4,6 +4,7 @@ const tableSchema = new mongoose.Schema({
   tableName: {
     type: String,
     required: [true, 'Please add a table name'],
+    unique: true,
     trim: true
   },
   capacity: {

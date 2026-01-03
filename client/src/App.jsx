@@ -33,6 +33,10 @@ const ReportsAnalytics = lazy(() => import('./pages/ReportsAnalytics'));
 const EmployeeManagement = lazy(() => import('./pages/EmployeeManagement'));
 const CustomerManagement = lazy(() => import('./pages/CustomerManagement'));
 const PermissionManagement = lazy(() => import('./pages/PermissionManagement'));
+const AboutUsManagement = lazy(() => import('./pages/AboutUsManagement'));
+const ContactUsManagement = lazy(() => import('./pages/ContactUsManagement'));
+const WelcomeSectionManagement = lazy(() => import('./pages/WelcomeSectionManagement'));
+const CuisineGalleryManagement = lazy(() => import('./pages/CuisineGalleryManagement'));
 const HotelImages = lazy(() => import('./pages/HotelImages'));
 const AttendanceManagement = lazy(() => import('./pages/AttendanceManagement'));
 const MerchantAttendanceDashboard = lazy(() => import('./pages/MerchantAttendanceDashboard'));
@@ -213,6 +217,10 @@ function App() {
                 <Route path="employees" element={<EmployeeManagement />} />
                 <Route path="customers" element={<CustomerManagement />} />
                 <Route path="permission-management" element={<PermissionManagement />} />
+                <Route path="about-us-management" element={<AboutUsManagement />} />
+                <Route path="contact-us-management" element={<ContactUsManagement />} />
+                <Route path="welcome-section-management" element={<WelcomeSectionManagement />} />
+                <Route path="cuisine-gallery-management" element={<CuisineGalleryManagement />} />
                 <Route path="attendance" element={<AttendanceManagement />} />
                 <Route path="attendance-dashboard" element={<MerchantAttendanceDashboard />} />
                 <Route path="charges" element={<ChargesManagement />} />

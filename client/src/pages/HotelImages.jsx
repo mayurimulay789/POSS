@@ -1,14 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchHotelImages, uploadHotelImages, updateHotelImage, deleteHotelImage, clearSuccess, clearError } from '../store/slices/hotelImageSlice';
 
 const HotelImages = () => {
+  const dispatch = useDispatch();
+  const { items, loading, error, success } = useSelector(state => state.hotelImage);
+  
   const fileInputRef = useRef(null);
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Ensure images is always an array
+  const imageList = items || [];
 
   const handleAddImagesClick = () => {
     if (fileInputRef.current) {
@@ -16,37 +19,10 @@ const HotelImages = () => {
     }
   };
 
-  const getAuthHeaders = () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) return { headers: { Authorization: `Bearer ${token}` } };
-    } catch (_) {}
-    return {};
-  };
-
-  const fetchImages = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${API_BASE}/api/hotel-images`, getAuthHeaders());
-      // Preserve the current state by merging with fetched data
-      setImages(prev => {
-        const fetched = res.data || [];
-        // If we have previous state, try to preserve unsaved changes
-        if (prev.length === 0) return fetched;
-        // Otherwise just return fresh data
-        return fetched;
-      });
-      setImages(res.data || []);
-    } catch (err) {
-      console.error('Fetch images error', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchImages();
-  }, []);
+    dispatch(fetchHotelImages());
+  }, [dispatch]);
+  // All data is now managed via Redux thunks/selectors. No direct API calls here.
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -70,37 +46,44 @@ const HotelImages = () => {
           accept="image/*"
           multiple
           className="hidden"
-          onChange={async (e) => {
+          onChange={(e) => {
             const files = Array.from(e.target.files || []);
             if (!files.length) return;
             const form = new FormData();
             files.forEach(f => form.append('images', f));
-            try {
-              setSaving(true);
-              const res = await axios.post(`${API_BASE}/api/hotel-images`, form, getAuthHeaders());
-              setToast('Images uploaded');
-              setImages(prev => [...res.data, ...prev]);
-            } catch (err) {
-              console.error('Upload images error', err);
-              setToast('Failed to upload');
-            } finally {
-              setSaving(false);
-              e.target.value = '';
-              setTimeout(() => setToast(null), 2500);
-            }
+            setSaving(true);
+            dispatch(uploadHotelImages(form))
+              .unwrap()
+              .then(() => {
+                setToast('Images uploaded successfully');
+                dispatch(fetchHotelImages());
+              })
+              .catch(err => {
+                setToast('Failed to upload images');
+                console.error('Upload error:', err);
+              })
+              .finally(() => {
+                setSaving(false);
+                e.target.value = '';
+                setTimeout(() => setToast(null), 2500);
+              });
           }}
         />
-        {toast && <div className="mb-4 p-2 bg-green-100 text-green-800 rounded">{toast}</div>}
+        {(toast || error) && (
+          <div className={`mb-4 p-2 rounded ${error ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+            {error || toast}
+          </div>
+        )}
 
         {loading ? (
           <div>Loading...</div>
-        ) : images.length === 0 ? (
+        ) : imageList.length === 0 ? (
           <div className="flex items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-lg text-gray-500">
             No images yet. Click "Add Images" to upload.
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {images.map(img => (
+            {imageList.map(img => (
               <div key={img._id} className="border rounded-lg overflow-hidden">
                 <img src={img.url} alt={img.alt || img.title || 'Hotel image'} className="w-full h-40 object-cover" />
                 <div className="p-3 space-y-3">
@@ -112,7 +95,14 @@ const HotelImages = () => {
                         checked={!!img.isBanner}
                         onChange={(e) => {
                           const val = e.target.checked;
-                          setImages(prev => prev.map(i => i._id === img._id ? { ...i, isBanner: val } : i));
+                          dispatch(updateHotelImage({
+                            id: img._id,
+                            data: { isBanner: val }
+                          }))
+                            .catch(err => {
+                              setToast('Failed to update image');
+                              console.error('Update error:', err);
+                            });
                         }}
                       />
                       <span>Use in banner</span>
@@ -120,19 +110,17 @@ const HotelImages = () => {
                     <button
                       className="px-3 py-1 bg-red-600 text-white rounded disabled:opacity-60"
                       disabled={saving}
-                      onClick={async () => {
+                      onClick={() => {
                         if (!confirm('Delete this image?')) return;
-                        try {
-                          setSaving(true);
-                          await axios.delete(`${API_BASE}/api/hotel-images/${img._id}`, getAuthHeaders());
-                          setImages(prev => prev.filter(i => i._id !== img._id));
-                        } catch (err) {
-                          console.error('Delete image error', err);
-                          setToast('Failed to delete');
-                          setTimeout(() => setToast(null), 1500);
-                        } finally {
-                          setSaving(false);
-                        }
+                        dispatch(deleteHotelImage(img._id))
+                          .unwrap()
+                          .then(() => {
+                            setToast('Image deleted successfully');
+                          })
+                          .catch(err => {
+                            setToast('Failed to delete image');
+                            console.error('Delete error:', err);
+                          });
                       }}
                     >Delete</button>
                   </div>
@@ -145,14 +133,14 @@ const HotelImages = () => {
                         checked={!!img.isWelcome}
                         onChange={(e) => {
                           const val = e.target.checked;
-                          // Ensure only one welcome image at a time
-                          setImages(prev => prev.map(i => {
-                            if (i._id === img._id) {
-                              return { ...i, isWelcome: val };
-                            }
-                            // When selecting this one, turn off others
-                            return val ? { ...i, isWelcome: false } : i;
-                          }));
+                          dispatch(updateHotelImage({
+                            id: img._id,
+                            data: { isWelcome: val, isCuisineGallery: val ? false : img.isCuisineGallery }
+                          }))
+                            .catch(err => {
+                              setToast('Failed to update image');
+                              console.error('Update error:', err);
+                            });
                         }}
                       />
                       <span>Use as welcome image</span>
@@ -168,14 +156,14 @@ const HotelImages = () => {
                         checked={!!img.isCuisineGallery}
                         onChange={(e) => {
                           const val = e.target.checked;
-                          // Ensure only one cuisine gallery image at a time
-                          setImages(prev => prev.map(i => {
-                            if (i._id === img._id) {
-                              return { ...i, isCuisineGallery: val };
-                            }
-                            // When selecting this one, turn off others
-                            return val ? { ...i, isCuisineGallery: false } : i;
-                          }));
+                          dispatch(updateHotelImage({
+                            id: img._id,
+                            data: { isCuisineGallery: val, isWelcome: val ? false : img.isWelcome }
+                          }))
+                            .catch(err => {
+                              setToast('Failed to update image');
+                              console.error('Update error:', err);
+                            });
                         }}
                       />
                       <span>Cuisine gallery background</span>
@@ -191,12 +179,14 @@ const HotelImages = () => {
                         checked={!!img.isCuisineCard}
                         onChange={(e) => {
                           const val = e.target.checked;
-                          setImages(prev => prev.map(i => {
-                            if (i._id === img._id) {
-                              return { ...i, isCuisineCard: val };
-                            }
-                            return i;
-                          }));
+                          dispatch(updateHotelImage({
+                            id: img._id,
+                            data: { isCuisineCard: val }
+                          }))
+                            .catch(err => {
+                              setToast('Failed to update image');
+                              console.error('Update error:', err);
+                            });
                         }}
                       />
                       <span>Show in cuisine gallery</span>
@@ -212,14 +202,14 @@ const HotelImages = () => {
                         checked={!!img.isLoginImage}
                         onChange={(e) => {
                           const val = e.target.checked;
-                          // Ensure only one login image at a time
-                          setImages(prev => prev.map(i => {
-                            if (i._id === img._id) {
-                              return { ...i, isLoginImage: val };
-                            }
-                            // When selecting this one, turn off others
-                            return val ? { ...i, isLoginImage: false } : i;
-                          }));
+                          dispatch(updateHotelImage({
+                            id: img._id,
+                            data: { isLoginImage: val }
+                          }))
+                            .catch(err => {
+                              setToast('Failed to update image');
+                              console.error('Update error:', err);
+                            });
                         }}
                       />
                       <span>Use as login page image</span>
@@ -234,7 +224,14 @@ const HotelImages = () => {
                       value={img.bannerHeading || ''}
                       onChange={(e) => {
                         const v = e.target.value;
-                        setImages(prev => prev.map(i => i._id === img._id ? { ...i, bannerHeading: v } : i));
+                        dispatch(updateHotelImage({
+                          id: img._id,
+                          data: { bannerHeading: v }
+                        }))
+                          .catch(err => {
+                            setToast('Failed to update image');
+                            console.error('Update error:', err);
+                          });
                       }}
                       placeholder="e.g., Come Join Us For A Magical Experience"
                       className="w-full border rounded px-2 py-1.5 text-sm"
@@ -244,36 +241,9 @@ const HotelImages = () => {
                   <div className="flex items-center justify-end gap-2">
                     <button
                       className="px-3 py-1 bg-gray-200 text-gray-700 rounded"
-                      onClick={() => fetchImages()}
+                      onClick={() => dispatch(fetchHotelImages())}
                       disabled={saving}
                     >Reset</button>
-                    <button
-                      className="px-3 py-1 bg-blue-600 text-white rounded disabled:opacity-60"
-                      disabled={saving}
-                      onClick={async () => {
-                        try {
-                          setSaving(true);
-                          const payload = {
-                            isBanner: !!img.isBanner,
-                            bannerHeading: img.bannerHeading || '',
-                            isWelcome: !!img.isWelcome,
-                            isCuisineGallery: !!img.isCuisineGallery,
-                            isCuisineCard: !!img.isCuisineCard,
-                            isLoginImage: !!img.isLoginImage,
-                          };
-                          const res = await axios.put(`${API_BASE}/api/hotel-images/${img._id}`, payload, getAuthHeaders());
-                          // Update the image with the server response to show saved state
-                          setImages(prev => prev.map(i => i._id === img._id ? { ...i, ...res.data } : i));
-                          setToast('Saved successfully');
-                        } catch (err) {
-                          console.error('Save image meta error', err);
-                          setToast('Failed to save');
-                        } finally {
-                          setSaving(false);
-                          setTimeout(() => setToast(null), 1500);
-                        }
-                      }}
-                    >Save</button>
                   </div>
                 </div>
               </div>

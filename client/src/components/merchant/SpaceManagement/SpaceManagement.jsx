@@ -1,48 +1,40 @@
+// ...existing code...
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError } from '../../../store/slices/tableSlice';
 import { MdTableRestaurant } from 'react-icons/md';
-import API_BASE_URL from '../../../config/apiConfig';
 
 const SpaceManagement = () => {
+  const dispatch = useDispatch();
+  const { items: tables = [], loading, error, success } = useSelector(state => state.table);
+
+  // Error display (if error exists in Redux state)
+  let errorMessage = null;
+  if (error) {
+    errorMessage = (
+      <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        {error}
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState('Tables');
-  const [tables, setTables] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingTable, setEditingTable] = useState(null);
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     tableName: '',
-    capacity: ''
+    capacity: '',
+    spaceType: 'Tables'
   });
 
   const tabs = ['Tables'];
 
-  // Fetch tables when tab changes
-  useEffect(() => {
-    fetchTables();
-  }, [activeTab]);
-
-  const fetchTables = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await axios.get(
-        `${API_BASE_URL}/tables?spaceType=${activeTab}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-      setTables(response.data.data || []);
-    } catch (err) {
-      console.error('Error fetching tables:', err.message || err);
-      if (err.response && err.response.status !== 404) {
-        alert('Failed to fetch tables. Please try again.');
-      }
-      setTables([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch tables when component mounts and set up auto-refresh
+ useEffect(() => {
+  dispatch(fetchTables());
+  
+  // The interval and cleanup logic have been removed from here
+}, [dispatch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -83,23 +75,18 @@ const SpaceManagement = () => {
     const errors = {};
     const nameError = validateTableName(formData.tableName);
     const capacityError = validateCapacity(formData.capacity);
-    
-    if (nameError) errors.tableName = nameError;
+    if (nameError) errors.spaceName = nameError;
     if (capacityError) errors.capacity = capacityError;
-    
     return errors;
   };
 
   const handleReserveTable = async (table, e) => {
     e.stopPropagation();
     try {
-      const token = localStorage.getItem('token');
-      
       const isReserving = !table.isReserved;
-      
-      await axios.put(
-        `${API_BASE_URL}/tables/${table._id}`,
-        {
+      await dispatch(updateTable({
+        id: table._id,
+        data: {
           tableName: table.tableName,
           capacity: table.capacity,
           spaceType: table.spaceType,
@@ -107,44 +94,25 @@ const SpaceManagement = () => {
           orderedMenu: table.orderedMenu || [],
           totalBill: table.totalBill || 0,
           isReserved: isReserving
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
-      );
-
-      // Update local state immediately
-      setTables(prevTables =>
-        prevTables.map(t =>
-          t._id === table._id ? { ...t, isReserved: isReserving } : t
-        )
-      );
-
+      })).unwrap();
       alert(isReserving ? 'Table reserved successfully!' : 'Reservation cancelled!');
-      
-      // Fetch fresh data from server
-      await fetchTables();
+      dispatch(clearSuccess());
     } catch (err) {
       console.error('Error updating table:', err.message || err);
       alert('Failed to update table');
-      fetchTables();
     }
   };
 
   const handleClearTable = async (table, e) => {
     e.stopPropagation();
-    
     if (!window.confirm(`Clear ${table.tableName}? This will remove all orders.`)) {
       return;
     }
-
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      await axios.put(
-        `${API_BASE_URL}/tables/${table._id}`,
-        {
+      await dispatch(updateTable({
+        id: table._id,
+        data: {
           tableName: table.tableName,
           capacity: table.capacity,
           spaceType: table.spaceType,
@@ -152,98 +120,67 @@ const SpaceManagement = () => {
           orderedMenu: [],
           totalBill: 0,
           isReserved: false
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
         }
-      );
-
+      })).unwrap();
       alert('Table cleared successfully!');
-      fetchTables();
+      dispatch(clearSuccess());
     } catch (err) {
       console.error('Error clearing table:', err.message || err);
       alert('Failed to clear table');
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const errors = getFormErrors();
     if (Object.keys(errors).length > 0) {
       alert(Object.values(errors).join('\n'));
       return;
     }
-
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      await axios.post(
-        `${API_BASE_URL}/tables`,
-        {
-          tableName: formData.tableName,
-          capacity: formData.capacity,
-          spaceType: activeTab
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
+      const payload = {
+        tableName: formData.tableName,
+        capacity: formData.capacity,
+        spaceType: formData.spaceType || 'Tables'
+      };
+      await dispatch(createTable(payload)).unwrap();
+      await dispatch(fetchTables());
       alert('Table created successfully!');
       setShowAddForm(false);
       resetForm();
-      fetchTables();
+      dispatch(clearSuccess());
     } catch (err) {
-      console.error('Error creating table:', err.message || err);
-      alert('Failed to create table');
-    } finally {
-      setLoading(false);
+      console.error('Error creating space:', err.message || err);
+      alert('Failed to create space');
     }
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    
     const errors = getFormErrors();
     if (Object.keys(errors).length > 0) {
       alert(Object.values(errors).join('\n'));
       return;
     }
-
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      
-      await axios.put(
-        `${API_BASE_URL}/tables/${editingTable._id}`,
-        {
-          tableName: formData.tableName,
-          capacity: formData.capacity,
-          spaceType: activeTab
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
+      const payload = {
+        tableName: formData.tableName,
+        capacity: formData.capacity,
+        spaceType: formData.spaceType || 'Tables'
+      };
+      await dispatch(updateTable({
+        id: editingTable._id,
+        data: payload
+      })).unwrap();
+      await dispatch(fetchTables());
       alert('Table updated successfully!');
       setShowEditForm(false);
       setEditingTable(null);
       resetForm();
-      fetchTables();
+      dispatch(clearSuccess());
     } catch (err) {
-      console.error('Error updating table:', err.message || err);
-      alert('Failed to update table');
-    } finally {
-      setLoading(false);
+      console.error('Error updating space:', err.message || err);
+      alert('Failed to update space');
     }
   };
 
@@ -251,7 +188,8 @@ const SpaceManagement = () => {
     setEditingTable(table);
     setFormData({
       tableName: table.tableName,
-      capacity: table.capacity
+      capacity: table.capacity,
+      spaceType: table.spaceType || 'Tables'
     });
     setShowEditForm(true);
   };
@@ -262,29 +200,21 @@ const SpaceManagement = () => {
     }
 
     try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      await axios.delete(
-        `${API_BASE_URL}/tables/${tableId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
+      await dispatch(deleteTable(tableId)).unwrap();
+      await dispatch(fetchTables());
       alert('Table deleted successfully!');
-      fetchTables();
+      dispatch(clearSuccess());
     } catch (err) {
       console.error('Error deleting table:', err.message || err);
       alert('Failed to delete table');
-    } finally {
-      setLoading(false);
     }
   };
 
   const resetForm = () => {
     setFormData({
       tableName: '',
-      capacity: ''
+      capacity: '',
+      spaceType: 'Tables'
     });
   };
 
@@ -344,6 +274,8 @@ const SpaceManagement = () => {
         </div>
       </div>
 
+      {/* Error Message */}
+      {errorMessage}
       {/* Management Content */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">

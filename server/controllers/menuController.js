@@ -291,7 +291,9 @@ exports.uploadExcel = async (req, res) => {
       return newCat.save();
     };
 
-    for (const row of rows) {
+
+    // Helper to process a single row
+    const processRow = async (row) => {
       const catName = (row.Category || 'Uncategorized').toString().trim();
       const subName = row.Subcategory ? row.Subcategory.toString().trim() : null;
       const itemName = row.ItemName ? row.ItemName.toString().trim() : null;
@@ -303,29 +305,22 @@ exports.uploadExcel = async (req, res) => {
       if (imageUrl && !imageUrl.startsWith('http://res.cloudinary.com') && !imageUrl.startsWith('https://res.cloudinary.com') && !imageUrl.startsWith('data:image')) {
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
           try {
-            console.log(`📥 Fetching image from URL for ${itemName}:`, imageUrl);
             const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
             const buffer = Buffer.from(response.data);
             const ext = imageUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)?.[1] || 'jpg';
             const filename = `excel_${Date.now()}_${itemName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
-            
             try {
               const result = await uploadBufferToCloudinary(buffer, filename);
               imageUrl = result.secure_url;
-              console.log(`✅ Uploaded fetched image for ${itemName}:`, imageUrl);
             } catch (cloudinaryErr) {
-              console.error(`Failed to upload fetched image for ${itemName}:`, cloudinaryErr.message);
               uploadErrors.push(`Image upload failed for ${itemName}: ${cloudinaryErr.message}`);
-              imageUrl = null; // Don't save broken URL
+              imageUrl = null;
             }
           } catch (fetchErr) {
-            console.error(`Failed to fetch image URL for ${itemName}:`, fetchErr.message);
             uploadErrors.push(`Image fetch failed for ${itemName}: ${fetchErr.message}`);
             imageUrl = null;
           }
         } else {
-          // File path or invalid URL - skip it
-          console.warn(`⚠️ Skipping invalid ImageUrl for ${itemName}:`, imageUrl);
           imageUrl = null;
         }
       }
@@ -334,35 +329,28 @@ exports.uploadExcel = async (req, res) => {
       if (row.ImageBase64 && !imageUrl) {
         try {
           const base64Data = row.ImageBase64.toString().trim();
-          // Check if it's valid base64
           if (base64Data.startsWith('data:image')) {
             const base64String = base64Data.split(',')[1];
             const buffer = Buffer.from(base64String, 'base64');
             const ext = base64Data.match(/data:image\/([^;]+)/)?.[1] || 'jpg';
             const filename = `excel_${Date.now()}_${itemName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${ext}`;
-            
             try {
               const result = await uploadBufferToCloudinary(buffer, filename);
               imageUrl = result.secure_url;
             } catch (cloudinaryErr) {
-              console.error(`Failed to upload image for ${itemName}:`, cloudinaryErr.message);
               uploadErrors.push(`Image upload failed for ${itemName}: ${cloudinaryErr.message}`);
             }
           } else if (/^[A-Za-z0-9+/=]+$/.test(base64Data)) {
-            // Pure base64 without header, assume jpg
             const buffer = Buffer.from(base64Data, 'base64');
             const filename = `excel_${Date.now()}_${itemName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.jpg`;
-            
             try {
               const result = await uploadBufferToCloudinary(buffer, filename);
               imageUrl = result.secure_url;
             } catch (cloudinaryErr) {
-              console.error(`Failed to upload image for ${itemName}:`, cloudinaryErr.message);
               uploadErrors.push(`Image upload failed for ${itemName}: ${cloudinaryErr.message}`);
             }
           }
         } catch (err) {
-          console.error(`Error processing ImageBase64 for ${itemName}:`, err.message);
           uploadErrors.push(`Image processing error for ${itemName}: ${err.message}`);
         }
       }
@@ -386,6 +374,13 @@ exports.uploadExcel = async (req, res) => {
         });
         await item.save();
       }
+    };
+
+    // Batch process rows in parallel (limit concurrency)
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+      const batch = rows.slice(i, i + BATCH_SIZE);
+      await Promise.allSettled(batch.map(processRow));
     }
 
     const message = uploadErrors.length > 0 

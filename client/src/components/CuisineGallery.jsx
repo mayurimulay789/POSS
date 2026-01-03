@@ -1,64 +1,46 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCuisineGallery } from '../store/slices/cuisineGallerySlice';
 import axios from 'axios';
-import API_BASE_URL from '../config/apiConfig';
 
 const CuisineGallery = () => {
+  const dispatch = useDispatch();
+  const cuisineGallery = useSelector(state => state.cuisineGallery);
+  const { loading } = cuisineGallery;
   const [cuisineBackground, setCuisineBackground] = useState(null);
   const [cuisineCards, setCuisineCards] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedCuisineImage, setSelectedCuisineImage] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Default data
+  const defaultGalleryData = {
+    heading: 'Our Cuisine Gallery',
+    subheading: 'Experience the Flavors',
+    description: 'Explore our delicious culinary creations'
+  };
+
   useEffect(() => {
-    const fetchCuisineImages = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/hotel-images/public`);
-        const images = Array.isArray(res.data) ? res.data : [];
-        
-        // Find background image
-        let cuisineBg = images.find(
-          (img) =>
-            img.isCuisineGallery === true ||
-            img.isCuisineGallery === 'true' ||
-            img.isCuisineGallery === 1 ||
-            img.isCuisineGallery === '1'
-        );
-        
-        // Find card images
-        const cardImages = images.filter(
-          (img) =>
-            img.isCuisineCard === true ||
-            img.isCuisineCard === 'true' ||
-            img.isCuisineCard === 1 ||
-            img.isCuisineCard === '1'
-        );
+    dispatch(fetchCuisineGallery());
+    axios.get(`${import.meta.env.VITE_API_URL}/hotel-images/cuisine-gallery`)
+      .then(res => setCuisineBackground(res.data))
+      .catch(() => setCuisineBackground(null));
+    
+    // Fetch cuisine gallery images
+    axios.get(`${import.meta.env.VITE_API_URL}/hotel-images?category=cuisine&showInCuisineGallery=true`)
+      .then(res => setCuisineCards(res.data.data || []))
+      .catch(() => setCuisineCards([]));
+  }, [dispatch]);
 
-        // Fallback: if no explicit background but card images exist, use first card as background
-        if (!cuisineBg && cardImages.length > 0) {
-          cuisineBg = cardImages[0];
-        }
-
-        setCuisineBackground(cuisineBg || null);
-        setSelectedCuisineImage(cuisineBg || null);
-        setCuisineCards(cardImages);
-      } catch (err) {
-        console.error('Failed to load cuisine images:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCuisineImages();
-  }, []);
+  const galleryContent = cuisineGallery?.data || defaultGalleryData;
 
   return (
     <section 
       id="gallery"
       className="py-20 md:py-32 relative bg-cover bg-center bg-fixed"
       style={{
-        backgroundImage: selectedCuisineImage 
-          ? `url(${selectedCuisineImage.url})`
-          : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)'
+        backgroundImage: cuisineBackground 
+          ? `url(${cuisineBackground.url})`
+          : 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
+        backgroundAttachment: 'fixed'
       }}
     >
       {/* Background Selection Checkbox */}
@@ -71,14 +53,16 @@ const CuisineGallery = () => {
             Discover Our Menu
           </p> */}
           <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
-            Our Cuisine Gallery
+            {galleryContent.heading}
           </h2>
           <div className="flex justify-center mb-6">
             <div className="w-24 h-1 bg-[#FF9800]"></div>
           </div>
-          {/* <p className="text-gray-300 max-w-2xl mx-auto text-lg">
-            Explore our exquisite collection of culinary masterpieces, crafted with passion and presented with elegance
-          </p> */}
+          {galleryContent.subheading && (
+            <p className="text-gray-300 max-w-2xl mx-auto text-lg">
+              {galleryContent.subheading}
+            </p>
+          )}
         </div>
 
         {/* Scrolling Cards Container */}
