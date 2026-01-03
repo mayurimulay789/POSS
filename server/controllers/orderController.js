@@ -148,6 +148,12 @@ exports.updateOrder = async (req, res) => {
       });
     }
 
+
+    const { orderId, tableId, paymentMethod,discountApplied,systemChargeTax,systemChargeAmmount,optionalcharge } = req.body;
+    console.log("req body",req.body);
+
+    
+
     const order = await Order.findById(req.params.id);
     
     if (!order) {
@@ -156,16 +162,57 @@ exports.updateOrder = async (req, res) => {
         message: 'Order not found'
       });
     }
+    
+    // discounapplied comes in percentage so converting it to amount
+
+ if(systemChargeTax !== undefined && systemChargeAmmount !== undefined && discountApplied !== undefined){
+
+    order.finalAmount = 0; // reset final amount before recalculation
+
+    const
+
+    discountAmount = (order.totalBill * discountApplied) / 100;
+    order.discountApplied = discountApplied || 0;
+    
+    order.finalAmount = order.totalBill - discountAmount;
+
+    order.finalAmount += optionalcharge || 0;
+    order.optionalcharge = optionalcharge || 0;
+
+
+    order.taxAmount= (order.finalAmount * systemChargeTax) / 100;
+    order.taxAmount += systemChargeAmmount;
+
+    order.finalAmount += order.taxAmount;
+
+    console.log('final amount calculation details:', {
+      totalBill: order.totalBill,
+      discountApplied,
+      discountAmount,
+      optionalcharge: order.optionalcharge,
+      systemChargeTax,
+      systemChargeAmmount,
+      taxAmount: order.taxAmount,
+      finalAmount: order.finalAmount
+    });
+    
+  }
+
+
 
     // Update order fields
     Object.keys(req.body).forEach(key => {
       if (req.body[key] !== undefined) {
         order[key] = req.body[key];
+        console.log(`[UPDATE ORDER] Updated ${key} to`, req.body[key]);
       }
     });
 
+
+
     await order.save();
 
+    console.log("order after save",order);
     // If order is marked as completed, update table status to available
     if (order.status === 'completed' && order.tableId) {
       console.log(`[UPDATE ORDER] Completing order ${order._id}`);
@@ -211,6 +258,8 @@ exports.updateOrder = async (req, res) => {
       'Expires': '0'
     });
 
+
+    console.log("final order after update",order);
     res.status(200).json({
       success: true,
       message: 'Order updated successfully',
@@ -328,8 +377,6 @@ exports.getOrdersSummary = async (req, res) => {
   }
 };
 
-// Cancel/Delete an order
-// Cancel an order and clear the table
 exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.orderId || req.params.id;

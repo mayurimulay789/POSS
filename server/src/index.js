@@ -82,7 +82,6 @@ const authRoutes = require("../routes/auth");
 const employeeRoute = require("../routes/EmployeeRoute");
 const permissionRoutes = require("../routes/rolePermissionRoutes");
 const menuRoutes = require("../routes/menuRoutes");
-const spaceRoutes = require("../routes/spaceRoutes");
 const tableRoutes = require("../routes/tableRoutes");
 const orderRoutes = require("../routes/orderRoutes");
 const hotelImageRoutes = require("../routes/hotelImageRoutes");
@@ -105,7 +104,6 @@ app.use("/api/employee", employeeRoute);
 app.use("/api/role-permissions", permissionRoutes);
 
 app.use('/api/menu', menuRoutes);
-app.use('/api/space', spaceRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/hotel-images', hotelImageRoutes);
