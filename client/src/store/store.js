@@ -17,6 +17,9 @@ import billingReducer from './slices/billingSlice';
 import tableReducer from './slices/tableSlice';
 import menuReducer from './slices/menuSlice';
 import hotelImageReducer from './slices/hotelImageSlice';
+import cuisineCardsReducer from './slices/cuisineCardsSlice';
+import logoReducer from './slices/logoSlice';
+import footerReducer from './slices/footerSlice';
 
 export const store = configureStore({
   reducer: {
@@ -38,7 +41,10 @@ export const store = configureStore({
     billing: billingReducer,
     table: tableReducer,
     menu: menuReducer,
-    hotelImage: hotelImageReducer
+    hotelImage: hotelImageReducer,
+    cuisineCards: cuisineCardsReducer,
+    logo: logoReducer,
+    footer: footerReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

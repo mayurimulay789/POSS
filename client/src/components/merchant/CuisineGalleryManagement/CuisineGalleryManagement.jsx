@@ -1,68 +1,122 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchCuisineGallery, updateCuisineGallery } from '../../../store/slices/cuisineGallerySlice';
+import { 
+  fetchAllCuisineGalleries, 
+  createCuisineGallery,
+  updateCuisineGallery,
+  deleteCuisineGallery,
+  toggleCuisineGalleryStatus
+} from '../../../store/slices/cuisineGallerySlice';
 
 const CuisineGalleryManagement = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.auth);
-  const { cuisineGallery } = useSelector(state => state.cuisineGallery);
+  const { galleries, loading, error, success } = useSelector(state => state.cuisineGallery);
 
-  // Form states
-  const [heading, setHeading] = useState('');
-  const [subheading, setSubheading] = useState('');
-  const [description, setDescription] = useState('');
+  // Form state
+  const [form, setForm] = useState({
+    heading: '',
+    subheading: ''
+  });
+  const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState(null);
   const [localError, setLocalError] = useState('');
-  const [localSuccess, setLocalSuccess] = useState('');
-
-  const loading = cuisineGallery?.loading || false;
-  const error = cuisineGallery?.error || null;
-  const success = cuisineGallery?.success || false;
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchCuisineGallery()).unwrap().catch(err => {
-      console.log('No existing cuisine gallery found');
-    });
+    dispatch(fetchAllCuisineGalleries());
   }, [dispatch]);
 
   useEffect(() => {
-    if (cuisineGallery?.data) {
-      const data = cuisineGallery.data;
-      setHeading(data.heading || '');
-      setSubheading(data.subheading || '');
-      setDescription(data.description || '');
+    if (success) {
+      setTimeout(() => {
+        dispatch(fetchAllCuisineGalleries());
+      }, 100);
     }
-  }, [cuisineGallery]);
+  }, [success, dispatch]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError('');
-    setLocalSuccess('');
-
-    const payload = {
-      heading,
-      subheading,
-      description
-    };
-
     try {
-      await dispatch(updateCuisineGallery(payload)).unwrap();
-      setLocalSuccess('Cuisine gallery updated successfully!');
-      setTimeout(() => setLocalSuccess(''), 3000);
+      if (editMode && editId) {
+        await dispatch(updateCuisineGallery({ id: editId, data: form })).unwrap();
+        setToastMessage('Cuisine gallery updated successfully!');
+      } else {
+        await dispatch(createCuisineGallery(form)).unwrap();
+        setToastMessage('Cuisine gallery created successfully!');
+      }
+      
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      
+      // Reset form
+      setForm({ heading: '', subheading: '' });
+      setEditMode(false);
+      setEditId(null);
     } catch (err) {
       setLocalError(err?.message || 'Error saving cuisine gallery');
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  const handleEdit = (gallery) => {
+    setForm({
+      heading: gallery.heading || '',
+      subheading: gallery.subheading || ''
+    });
+    setEditMode(true);
+    setEditId(gallery._id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setForm({ heading: '', subheading: '' });
+    setEditMode(false);
+    setEditId(null);
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteId(id);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId) {
+      try {
+        await dispatch(deleteCuisineGallery(deleteId)).unwrap();
+        setToastMessage('Cuisine gallery deleted successfully!');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } catch (err) {
+        setLocalError(err?.message || 'Error deleting cuisine gallery');
+      }
+    }
+    setShowDeleteModal(false);
+    setDeleteId(null);
+  };
+
+  const handleToggleStatus = async (id) => {
+    try {
+      await dispatch(toggleCuisineGalleryStatus(id)).unwrap();
+      setToastMessage('Status updated successfully!');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+      // Refetch all galleries to get updated status
+      await dispatch(fetchAllCuisineGalleries());
+    } catch (err) {
+      setLocalError(err?.message || 'Error toggling status');
+    }
+  };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Cuisine Gallery Management</h1>
 
       {(error || localError) && (
@@ -71,61 +125,170 @@ const CuisineGalleryManagement = () => {
         </div>
       )}
 
-      {(success || localSuccess) && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-          {success || localSuccess}
+      {showToast && (
+        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-lg animate-fade-in">
+          {toastMessage}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Gallery Content</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Heading *</label>
-              <input
-                type="text"
-                value={heading}
-                onChange={(e) => setHeading(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-lg"
-                placeholder="Our Cuisine Gallery"
-              />
-            </div>
+      {/* Create/Edit Form */}
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
+        <h2 className="text-xl font-semibold mb-4">
+          {editMode ? 'Edit Cuisine Gallery' : 'Create New Cuisine Gallery'}
+        </h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Heading *</label>
+            <input
+              type="text"
+              name="heading"
+              value={form.heading}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Our Cuisine Gallery"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-2">Subheading</label>
+            <input
+              type="text"
+              name="subheading"
+              value={form.subheading}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Explore our delicious dishes"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : editMode ? 'Update' : 'Create'}
+            </button>
+            {editMode && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-semibold"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Subheading</label>
-              <input
-                type="text"
-                value={subheading}
-                onChange={(e) => setSubheading(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
-                placeholder="Explore our delicious dishes"
-              />
-            </div>
+      {/* Galleries List */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-xl font-semibold mb-4">All Cuisine Galleries</h2>
+        
+        {loading && galleries.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-lg">Loading...</div>
+          </div>
+        ) : galleries.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No cuisine galleries found. Create your first one above!
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Heading
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Subheading
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {galleries.map((gallery) => (
+                  <tr key={gallery._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{gallery.heading}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-500">{gallery.subheading || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        gallery.isActive 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {gallery.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(gallery.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                      <button
+                        onClick={() => handleEdit(gallery)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleStatus(gallery._id)}
+                        className="text-yellow-600 hover:text-yellow-900"
+                      >
+                        {gallery.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(gallery._id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-            {/* <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows="4"
-                className="w-full px-3 py-2 border rounded-lg"
-                placeholder="A brief description of your cuisine gallery..."
-              />
-            </div> */}
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this cuisine gallery? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
-
-        <button
-          type="submit"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-          disabled={loading}
-        >
-          {loading ? 'Saving...' : 'Save Cuisine Gallery'}
-        </button>
-      </form>
+      )}
     </div>
   );
 };

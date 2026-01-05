@@ -23,7 +23,7 @@ const contactUsSchema = new mongoose.Schema({
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: false
   },
   lastUpdatedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -35,9 +35,9 @@ const contactUsSchema = new mongoose.Schema({
 
 // Ensure only one active contact exists
 contactUsSchema.pre('save', async function() {
-  if (this.isActive) {
+  if (this.isModified('isActive') && this.isActive === true) {
     await this.constructor.updateMany(
-      { _id: { $ne: this._id } },
+      { _id: { $ne: this._id }, isActive: true },
       { $set: { isActive: false } }
     );
   }

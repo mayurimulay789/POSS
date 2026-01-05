@@ -39,6 +39,9 @@ const CuisineGalleryManagement = lazy(() => import('./pages/CuisineGalleryManage
 const HotelImages = lazy(() => import('./pages/HotelImages'));
 const AttendanceManagement = lazy(() => import('./pages/AttendanceManagement'));
 const MerchantAttendanceDashboard = lazy(() => import('./pages/MerchantAttendanceDashboard'));
+const LogoManagement = lazy(() => import('./pages/LogoManagement'));
+const FooterManagement = lazy(() => import('./pages/FooterManagement'));
+const LandingPageManagement = lazy(() => import('./pages/LandingPageManagement'));
 
 // Public components
 const HomePage = lazy(() => import('./pages/Home'));
@@ -221,6 +224,9 @@ function App() {
                 <Route path="cuisine-gallery-management" element={<CuisineGalleryManagement />} />
                 <Route path="attendance" element={<AttendanceManagement />} />
                 <Route path="attendance-dashboard" element={<MerchantAttendanceDashboard />} />
+                <Route path="logo-management" element={<LogoManagement />} />
+                <Route path="footer-management" element={<FooterManagement />} />
+                <Route path="landing-page-management" element={<LandingPageManagement />} />
               </Route>
 
               {/* Catch all route */}

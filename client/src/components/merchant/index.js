@@ -9,3 +9,5 @@ export { default as AboutUsManagement } from './AboutUsManagement/AboutUsManagem
 export { default as ContactUsManagement } from './ContactUsManagement/ContactUsManagement';
 export { default as WelcomeSectionManagement } from './WelcomeSectionManagement/WelcomeSectionManagement';
 export { default as CuisineGalleryManagement } from './CuisineGalleryManagement/CuisineGalleryManagement';
+export { default as LogoManagement } from './LogoManagement/LogoManagement';
+export { default as FooterManagement } from './FooterManagement/FooterManagement';

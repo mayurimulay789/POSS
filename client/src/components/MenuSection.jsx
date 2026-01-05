@@ -39,20 +39,20 @@ const MenuSection = () => {
         
         {/* Header */}
         <div className="text-center mb-4">
-          <span className="uppercase tracking-[0.3em] text-sm text-[#FF9800] font-semibold">Experience</span>
-          <h2 className="text-5xl md:text-6xl font-serif mt-4 mb-6 italic text-white">Our Menu</h2>
+          <span className="uppercase tracking-[0.3em] text-sm text-[#D32B36] font-semibold">Experience</span>
+          <h2 className="text-5xl md:text-6xl font-serif mt-4 mb-6 italic  text-[#F1A722]">Our Menu</h2>
           <div className="w-24 h-[2px] bg-[#FF9800] mx-auto mb-8"></div>
           
           {/* Category Filter */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8">
+          <div className="flex flex-wrap justify-center gap-3 md:gap-4">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`text-sm md:text-base transition-all duration-200 rounded-full px-4 py-2 border ${
+                className={`text-sm md:text-base transition-all duration-300 rounded-lg px-6 py-2.5 font-semibold ${
                   activeCategory === cat
-                    ? 'bg-[#FF9800] text-white border-[#FF9800] shadow-sm'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#FF9800] hover:text-[#FF9800]'
+                    ? 'bg-[#F1A722] text-[#0A2F46] shadow-lg scale-105'
+                    : 'bg-[#14AAAB] text-white hover:bg-[#F1A722] hover:text-[#0A2F46]'
                 }`}
               >
                 {cat}
@@ -67,17 +67,17 @@ const MenuSection = () => {
             filteredItems.map((item) => (
               <div key={item._id} className="group cursor-default">
                 <div className="flex justify-between items-baseline gap-4">
-                  <h3 className="text-lg font-serif font-medium text-white group-hover:text-[#FF9800] transition-colors">
+                  <h3 className="text-lg font-serif font-medium text-white group-hover:text-[#F1A722] transition-colors">
                     {item.name}
                   </h3>
                   {/* Price Leader Dots */}
-                  <div className="flex-1 border-b border-dotted border-gray-500 relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-white">
+                  <div className="flex-1 border-b border-dotted border-[#14AAAB] relative top-[-4px]"></div>
+                  <span className="text-lg font-serif text-[#F1A722]">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>
                 {item.description && (
-                  <p className="text-slate-300 text-sm mt-2 italic max-w-[85%] leading-relaxed">
+                  <p className="text-white/80 text-sm mt-2 italic max-w-[85%] leading-relaxed">
                     {item.description}
                   </p>
                 )}

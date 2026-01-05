@@ -13,14 +13,9 @@ const cuisineGallerySchema = new mongoose.Schema(
       trim: true,
       maxlength: [200, 'Subheading cannot be more than 200 characters']
     },
-    description: {
-      type: String,
-      trim: true,
-      maxlength: [500, 'Description cannot be more than 500 characters']
-    },
     isActive: {
       type: Boolean,
-      default: true
+      default: false
     }
   },
   {
@@ -29,11 +24,12 @@ const cuisineGallerySchema = new mongoose.Schema(
 );
 
 // Pre-save hook to ensure only one active record
-cuisineGallerySchema.pre('save', async function(next) {
-  if (this.isActive) {
-    await mongoose.model('CuisineGallery').updateMany(
-      { _id: { $ne: this._id } },
-      { isActive: false }
+cuisineGallerySchema.pre('save', async function() {
+  // Only enforce single active if this document is being set to active
+  if (this.isModified('isActive') && this.isActive === true) {
+    await this.constructor.updateMany(
+      { _id: { $ne: this._id }, isActive: true },
+      { $set: { isActive: false } }
     );
   }
 });

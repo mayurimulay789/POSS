@@ -11,6 +11,12 @@ const FIXED_PERMISSIONS = {
   REPORTS_ANALYTICS: 'reports_analytics',
   EMPLOYEE_MANAGEMENT: 'employee_management',
   CUSTOMER_MANAGEMENT: 'customer_management',
+  HOTEL_IMAGES: 'hotel_images',
+  LANDING_PAGE_MANAGEMENT: 'landing_page_management',
+  ABOUT_US_MANAGEMENT: 'about_us_management',
+  CUISINE_GALLERY_MANAGEMENT: 'cuisine_gallery_management',
+  WELCOME_SECTION_MANAGEMENT: 'welcome_section_management',
+  CONTACT_US_MANAGEMENT: 'contact_us_management'
 };
 
 const rolePermissionSchema = new mongoose.Schema({
