@@ -198,7 +198,7 @@ const AttendanceHistory = ({
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-900">
-                      {formatTime(record.startTime)}
+                      {record.startTime}
                     </span>
                   </div>
                 </td>
@@ -206,7 +206,7 @@ const AttendanceHistory = ({
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-900">
-                      {record.endTime ? formatTime(record.endTime) : '--:--'}
+                      {record.endTime ? record.endTime : '--:--'}
                     </span>
                   </div>
                 </td>

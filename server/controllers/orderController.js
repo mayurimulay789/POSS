@@ -149,7 +149,8 @@ exports.updateOrder = async (req, res) => {
     }
 
 
-    const { orderId, tableId, paymentMethod,discountApplied,systemChargeTax,systemChargeAmmount,optionalcharge } = req.body;
+    const { orderId, tableId, paymentMethod,systemChargeTax,systemChargeAmmount,optionalcharge } = req.body;
+    let { discountApplied } = req.body;
     console.log("req body",req.body);
 
     
@@ -169,9 +170,10 @@ exports.updateOrder = async (req, res) => {
 
     order.finalAmount = 0; // reset final amount before recalculation
 
-    const
+    
 
     discountAmount = (order.totalBill * discountApplied) / 100;
+    req.body.discountApplied = discountAmount;
     order.discountApplied = discountApplied || 0;
     
     order.finalAmount = order.totalBill - discountAmount;
@@ -207,6 +209,8 @@ exports.updateOrder = async (req, res) => {
         console.log(`[UPDATE ORDER] Updated ${key} to`, req.body[key]);
       }
     });
+
+    
 
 
 
@@ -277,7 +281,7 @@ exports.updateOrder = async (req, res) => {
 // Complete an order
 exports.completeOrder = async (req, res) => {
   try {
-    const { orderId, tableId, paymentMethod } = req.body;
+    const { orderId, tableId, paymentMethod, } = req.body;
     
     let order;
     

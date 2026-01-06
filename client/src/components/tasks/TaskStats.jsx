@@ -54,7 +54,7 @@ const TaskStats = ({ stats, user }) => {
               </p>
             </div>
             <div className={`p-2 ${stat.bgColor} rounded-full`}>
-              <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" className={stat.iconColor} />
+              <stat.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.iconColor}`} />
             </div>
           </div>
         </div>

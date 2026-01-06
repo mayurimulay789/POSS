@@ -15,9 +15,11 @@ const BillingManagement = () => {
   const [selectedPayment, setSelectedPayment] = useState({});
   const [discountVisible, setDiscountVisible] = useState({});
   const [discounts, setDiscounts] = useState({});
-  const [optionalcharge, setOptionalcharge] = useState({});
+  // const [optionalcharge, setOptionalcharge] = useState({});
   const [optionalChargesVisible, setOptionalChargesVisible] = useState({});
     const [selectedOptionalCharges, setSelectedOptionalCharges] = useState({});
+
+
 
 
    const {
@@ -58,6 +60,7 @@ const BillingManagement = () => {
       return charge.value;
     }
   };
+  
 
 
   const calculateOptionalChargesTotal = (orderId, orderTotal) => {
@@ -153,70 +156,226 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
       
 
     const printWindow = window.open('', '', 'width=800,height=600');
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Bill - ${order.tableName}</title>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-          .bill-details { margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-          th { background-color: #f2f2f2; font-weight: bold; }
-          .total { font-weight: bold; font-size: 18px; text-align: right; margin-top: 20px; padding: 10px; border-top: 2px solid #000; }
-          .payment-info { margin-top: 20px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; }
-          @media print { button { display: none; } }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>Restaurant Bill</h1>
-          <p>Date: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
-        </div>
-        <div class="bill-details">
-          <p><strong>Table:</strong> ${order.tableName}</p>
-          <p><strong>Space Type:</strong> ${order.spaceType}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Subtotal</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(order.items || order.orderedMenu || []).map(item => `
-              <tr>
-                <td>${item.name}</td>
-                <td>${item.quantity}</td>
-                <td>₹${item.price?.toFixed(2) || '0.00'}</td>
-                <td>₹${((item.price || 0) * item.quantity).toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-        <div class="payment-info">
-          <p><strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}</p>
-          <p><strong>Tax Amount:</strong> ₹${order.taxAmount?.toFixed(2) || '0.00'}</p>
-          <p><strong>Discount Applied:</strong> ₹${order.discountApplied?.toFixed(2) || '0.00'}</p>
-  
-          <p><strong>Optional Charges:</strong> ₹${order.optionalcharge?.toFixed(2) || '0.00'}</p>
-        </div>
-        <div class="total">
-          <p>Total Billsss: ₹${order.totalBill?.toFixed(2) || '0.00'}</p>
-          <p>Final Amount: ₹${order.finalAmount?.toFixed(2) || '0.00'}</p>
-        </div>
-        <div style="text-align: center; margin-top: 30px;">
-          <p style="font-size: 12px; color: #666;">Thank you for your visit!</p>
-          <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 4px; margin-top: 10px;">Print Bill</button>
-        </div>
-      </body>
-      </html>
-    `);
+       printWindow.document.write(`
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Bill - ${order.tableName}</title>
+    <style>
+      body { 
+        font-family: Arial, sans-serif; 
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+      }
+      .header { 
+        text-align: center; 
+        margin-bottom: 30px; 
+        border-bottom: 2px solid #000; 
+        padding-bottom: 15px;
+      }
+      .restaurant-name {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 5px;
+      }
+      .restaurant-address {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 10px;
+      }
+      .bill-details { 
+        margin-bottom: 25px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        border: 1px solid #ddd;
+      }
+      .bill-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+      }
+      th { 
+        background-color: #2c3e50; 
+        color: white;
+        font-weight: bold;
+        padding: 12px 8px;
+        text-align: left;
+        border: 1px solid #444;
+      }
+      td { 
+        padding: 10px 8px; 
+        border: 1px solid #ddd;
+        text-align: left;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      .subtotal-row {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
+      .discount-row {
+        background-color: #f8f9fa;
+        color: #27ae60;
+      }
+      .tax-row {
+        background-color: #f8f9fa;
+      }
+      .charges-row {
+        background-color: #f8f9fa;
+      }
+      .total-row {
+        background-color: #2c3e50;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+      }
+      .final-row {
+        background-color: #27ae60;
+        color: white;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .empty-row {
+        background-color: white;
+        border: none;
+      }
+      .section-title {
+        background-color: #34495e;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        padding: 8px;
+        font-size: 16px;
+        border: 1px solid #34495e;
+      }
+      .payment-method {
+        background-color: #e8f4fc;
+        font-weight: bold;
+      }
+      .thank-you {
+        text-align: center;
+        margin-top: 30px;
+        padding: 20px;
+        border-top: 2px dashed #ddd;
+        color: #666;
+      }
+      .thank-you h2 {
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+      .print-btn {
+        padding: 12px 30px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        margin: 20px auto;
+        display: block;
+        font-weight: bold;
+      }
+      .print-btn:hover {
+        background-color: #45a049;
+      }
+      @media print { 
+        .print-btn { display: none; } 
+        body { padding: 10px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="restaurant-name">Discount Feast</div>
+      <div class="restaurant-address">123 Restaurant Street, Pune, Maharashtra - 411017</div>
+    </div>
+
+    <div class="bill-details">
+      <div class="bill-info">
+        <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+        <div><strong>Time:</strong> ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+      </div>
+      <div class="bill-info">
+        <div><strong>Table No:</strong> ${order.tableName}</div>
+        <div><strong>Payment Method:</strong> ${paymentMethod.toUpperCase()}</div>
+         
+        
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 40%;">Item Description</th>
+          <th style="width: 15%; text-align: center;">Qty</th>
+          <th style="width: 20%; text-align: right;">Price (₹)</th>
+          <th style="width: 25%; text-align: right;">Amount (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Order Items -->
+        ${(order.items || order.orderedMenu || []).map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td style="text-align: center;">${item.quantity}</td>
+            <td style="text-align: right;">₹${item.price?.toFixed(2) || '0.00'}</td>
+            <td style="text-align: right;">₹${((item.price || 0) * item.quantity).toFixed(2)}</td>
+          </tr>
+        `).join('')}
+        
+        <!-- Subtotal -->
+        <tr class="subtotal-row">
+          <td colspan="3" style="text-align: right;"><strong>Sub Total:</strong></td>
+          <td style="text-align: right;"><strong>₹${order.totalBill?.toFixed(2) || '0.00'}</strong></td>
+        </tr>
+        
+        <!-- Discount Row -->
+        <tr class="discount-row">
+          <td colspan="3" style="text-align: right;">Discount:</td>
+          <td style="text-align: right;">- ₹${order.discountApplied?.toFixed(2) || '0.00'}</td>
+        </tr>
+        
+        <!-- Optional Charges -->
+        <tr class="charges-row">
+          <td colspan="3" style="text-align: right;">Optional Charges:</td>
+          <td style="text-align: right;">+ ₹${order.optionalcharge?.toFixed(2) || '0.00'}</td>
+        </tr>
+        
+        <!-- Tax Amount -->
+        <tr class="tax-row">
+          <td colspan="3" style="text-align: right;">CGST & SGST:</td>
+          <td style="text-align: right;">+ ₹${order.taxAmount?.toFixed(2) || '0.00'}</td>
+        </tr>
+        
+    
+        <!-- Final Amount -->
+        <tr class="final-row" style='margin-top:10px;'>
+          <td colspan="3" style="text-align: right; ">TOTAL:</td>
+          <td style="text-align: right;">₹${order.finalAmount?.toFixed(2) || order.totalBill?.toFixed(2) || '0.00'}</td>
+        </tr>        
+        <!-- Final Amount -->
+        <tr class="final-row" style='margin-top:10px;'>
+          <td colspan="3" style="text-align: right; ">TOTAL:</td>
+          <td style="text-align: right;">₹${order.finalAmount?.toFixed(2) || order.totalBill?.toFixed(2) || '0.00'}</td>
+        </tr>        
+      </tbody>
+    </table>
+  </body>
+  </html>
+`);
     printWindow.document.close();
   };
 
