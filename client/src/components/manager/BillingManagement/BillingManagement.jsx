@@ -448,7 +448,7 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
                     </div>
                     <div className="mb-2">
                       <p className="text-xs text-gray-500">
-                        {new Date(order.createdAt || Date.now()).toLocaleDateString()} {new Date(order.createdAt || Date.now()).toLocaleTimeString()}
+                        {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString()}
                       </p>
                     </div>
                     <div className="mb-3">
