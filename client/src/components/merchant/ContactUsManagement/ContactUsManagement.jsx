@@ -22,6 +22,7 @@ const ContactUsManagement = () => {
   const [editId, setEditId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     dispatch(fetchAllContactUs());
@@ -35,13 +36,103 @@ const ContactUsManagement = () => {
     }
   }, [success, dispatch]);
 
+  // Validation functions
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return 'Email is required';
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    if (email.length > 100) return 'Email must be less than 100 characters';
+    return '';
+  };
+
+  const validateContactNo = (contactNo) => {
+    const phoneRegex = /^[+]?[\d\s\-()]{10,20}$/;
+    if (!contactNo) return 'Contact number is required';
+    if (!phoneRegex.test(contactNo)) return 'Please enter a valid phone number (10-20 digits)';
+    return '';
+  };
+
+  const validateAddress = (address) => {
+    if (!address) return 'Address is required';
+    if (address.length < 10) return 'Address must be at least 10 characters';
+    if (address.length > 500) return 'Address must be less than 500 characters';
+    return '';
+  };
+
+  const validateGoogleMapLocation = (url) => {
+    if (!url) return ''; // Optional field
+    const googleMapsRegex = /^https:\/\/(www\.)?google\.com\/maps\/(embed|place)/;
+    if (!googleMapsRegex.test(url)) {
+      return 'Please enter a valid Google Maps embed or place URL';
+    }
+    return '';
+  };
+
+  const validateForm = () => {
+    const errors = {
+      email: validateEmail(form.email),
+      contactNo: validateContactNo(form.contactNo),
+      address: validateAddress(form.address),
+      googleMapLocation: validateGoogleMapLocation(form.googleMapLocation)
+    };
+
+    // Remove empty errors
+    Object.keys(errors).forEach(key => {
+      if (!errors[key]) delete errors[key];
+    });
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    
+    // Clear validation error for this field on change
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = '';
+    
+    switch(name) {
+      case 'email':
+        error = validateEmail(value);
+        break;
+      case 'contactNo':
+        error = validateContactNo(value);
+        break;
+      case 'address':
+        error = validateAddress(value);
+        break;
+      case 'googleMapLocation':
+        error = validateGoogleMapLocation(value);
+        break;
+      default:
+        break;
+    }
+    
+    if (error) {
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+    
     try {
       if (editMode) {
         await dispatch(updateContactUs({ id: editId, data: form })).unwrap();
@@ -64,6 +155,7 @@ const ContactUsManagement = () => {
     });
     setEditMode(false);
     setEditId(null);
+    setValidationErrors({});
   };
 
   const handleEdit = (contact) => {
@@ -164,9 +256,14 @@ const ContactUsManagement = () => {
                   name="email" 
                   value={form.email} 
                   onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none" 
+                  onBlur={handleBlur}
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none ${
+                    validationErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 />
+                {validationErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">⚠️ {validationErrors.email}</p>
+                )}
               </div>
               <div>
                 <label className="block font-semibold mb-2 text-gray-700">Contact Number *</label>
@@ -175,9 +272,15 @@ const ContactUsManagement = () => {
                   name="contactNo" 
                   value={form.contactNo} 
                   onChange={handleChange}
-                  required
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none" 
+                  onBlur={handleBlur}
+                  placeholder="+1234567890 or (123) 456-7890"
+                  className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none ${
+                    validationErrors.contactNo ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 />
+                {validationErrors.contactNo && (
+                  <p className="mt-1 text-sm text-red-600">⚠️ {validationErrors.contactNo}</p>
+                )}
               </div>
             </div>
 
@@ -188,9 +291,18 @@ const ContactUsManagement = () => {
                 name="googleMapLocation" 
                 value={form.googleMapLocation} 
                 onChange={handleChange}
+                onBlur={handleBlur}
                 placeholder="https://www.google.com/maps/embed?..."
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-sm" 
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-sm ${
+                  validationErrors.googleMapLocation ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.googleMapLocation && (
+                <p className="mt-1 text-sm text-red-600">⚠️ {validationErrors.googleMapLocation}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                💡 Tip: Go to Google Maps → Share → Embed a map → Copy HTML src URL
+              </p>
             </div>
 
             <div>
@@ -199,17 +311,26 @@ const ContactUsManagement = () => {
                 name="address" 
                 value={form.address} 
                 onChange={handleChange}
-                required
+                onBlur={handleBlur}
                 rows="3"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none resize-none"
+                placeholder="Enter complete address (minimum 10 characters)"
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none resize-none ${
+                  validationErrors.address ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.address && (
+                <p className="mt-1 text-sm text-red-600">⚠️ {validationErrors.address}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                {form.address.length}/500 characters
+              </p>
             </div>
 
             <div className="flex gap-3">
               <button 
                 type="submit" 
-                className="flex-1 py-3 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 transition-colors shadow-md"
-                disabled={loading}
+                className="flex-1 py-3 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || Object.keys(validationErrors).length > 0}
               >
                 {loading ? 'Saving...' : editMode ? '💾 Update Contact Info' : '➕ Add Contact Info'}
               </button>

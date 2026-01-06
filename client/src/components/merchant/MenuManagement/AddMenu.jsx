@@ -1,8 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import API_BASE_URL from '../../../config/apiConfig';
 
 const AddMenu = () => {
+  const { user } = useSelector(state => state.auth);
+  const role = user?.role;
+
+  // Check if user has permission to add menu items
+  if (role === 'supervisor' || role === 'staff') {
+    return (
+      <div className="p-6 text-center">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            You do not have permission to add menu items.
+          </p>
+          <p className="text-sm text-gray-500">
+            Only merchants and managers can add or modify menu items and categories.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const [categories, setCategories] = useState([]);
   const [catName, setCatName] = useState(''); // top-level category name
   const [itemForm, setItemForm] = useState({ name: '', description: '', price: '', category: '', image: null });

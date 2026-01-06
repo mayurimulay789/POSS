@@ -343,7 +343,7 @@ const SpaceManagement = () => {
                   </p>
 
                   {/* Bill if booked */}
-                  {table.totalBill && table.orderedMenu && table.orderedMenu.length > 0 && (
+                  {table.totalBill > 0 && table.orderedMenu && table.orderedMenu.length > 0 && (
                     <p className="text-xs font-bold text-gray-800 mb-2 bg-gray-100 rounded px-2 py-1">
                       Bill: ₹{table.totalBill.toFixed(2)}
                     </p>
@@ -434,7 +434,7 @@ const SpaceManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity (1-100) *
+                  Capacity (1-10) *
                 </label>
                 <input
                   type="number"
@@ -443,12 +443,12 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
-                  max="100"
+                  max="10"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
-                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
-                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                {formData.capacity && (parseInt(formData.capacity) > 10 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
               <div className="flex gap-2 justify-end">
@@ -499,7 +499,7 @@ const SpaceManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity (1-100) *
+                  Capacity (1-10) *
                 </label>
                 <input
                   type="number"
@@ -508,12 +508,12 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
-                  max="100"
+                  max="10"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
-                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
-                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                {formData.capacity && (parseInt(formData.capacity) > 10 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
               <div className="flex gap-2 justify-end">

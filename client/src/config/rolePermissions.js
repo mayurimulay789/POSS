@@ -136,10 +136,24 @@ export const SIDEBAR_ITEMS = {
 
 // Get sidebar items for a specific role based on their permissions
 export const getSidebarItemsForRole = (rolePermissions = []) => {
-  const items = Object.values(SIDEBAR_ITEMS).filter(item =>
-    // Include if no permission required, else check role permissions
-    !item.permission || rolePermissions.includes(item.permission)
-  );
+  const items = Object.values(SIDEBAR_ITEMS)
+    .filter(item =>
+      // Include if no permission required, else check role permissions
+      !item.permission || rolePermissions.includes(item.permission)
+    )
+    .map(item => {
+      // If item has subitems, filter those as well
+      if (item.subItems && item.subItems.length > 0) {
+        const filteredSubItems = item.subItems.filter(subItem =>
+          !subItem.permission || rolePermissions.includes(subItem.permission)
+        );
+        return {
+          ...item,
+          subItems: filteredSubItems
+        };
+      }
+      return item;
+    });
   
   console.log('getSidebarItemsForRole - Filtered items:', items.map(i => i.label));
   return items;
