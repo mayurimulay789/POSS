@@ -37,7 +37,7 @@ export const SIDEBAR_ITEMS = {
         label: 'Menu List',
         icon: '📝',
         permission: FIXED_PERMISSIONS.MENU_MANAGEMENT,
-      }
+      },
     ]
   },
   billing: {
@@ -105,31 +105,43 @@ export const SIDEBAR_ITEMS = {
     path: '/landing-page',
     label: 'Landing Page Management',
     icon: '🌐',
-    permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT, // Only for merchant
+    permission: FIXED_PERMISSIONS.LANDING_PAGE_MANAGEMENT,
     subItems: [
       {
         path: '/about-us-management',
         label: 'About Us',
         icon: 'ℹ️',
-        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+        permission: FIXED_PERMISSIONS.ABOUT_US_MANAGEMENT,
       },
       {
         path: '/contact-us-management',
         label: 'Contact Us',
         icon: '📞',
-        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+        permission: FIXED_PERMISSIONS.CONTACT_US_MANAGEMENT,
       },
       {
         path: '/welcome-section-management',
         label: 'Welcome Section',
         icon: '🏨',
-        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+        permission: FIXED_PERMISSIONS.WELCOME_SECTION_MANAGEMENT,
       },
       {
         path: '/cuisine-gallery-management',
         label: 'Cuisine Gallery',
         icon: '🍽️',
-        permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT,
+        permission: FIXED_PERMISSIONS.CUISINE_GALLERY_MANAGEMENT,
+      },
+      {
+        path: '/logo-management',
+        label: 'Logo Management',
+        icon: '🖼️',
+        permission: FIXED_PERMISSIONS.LOGO_MANAGEMENT,
+      }
+      ,{
+        path: '/footer-management',
+        label: 'Footer Management',
+        icon: '🔻',
+        permission: FIXED_PERMISSIONS.FOOTER_MANAGEMENT,
       }
     ]
   }

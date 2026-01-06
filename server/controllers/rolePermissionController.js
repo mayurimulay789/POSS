@@ -6,18 +6,24 @@ const DEFAULT_ROLE_PERMISSIONS = {
   merchant: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'charges_management','hotel_images'
+
+    'reports_analytics', 'employee_management', 'charges_management','customer_management', 'hotel_images',
+    'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ],
   manager: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'charges_management','hotel_images'
+
+    'reports_analytics', 'employee_management', 'customer_management', 'hotel_images','charges_management',
+    'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ],
   supervisor: [
-    'order_management', 'billing_management', 'space_management', 'task_management','customer_management'
+    'order_management', 'billing_management', 'space_management', 'task_management', 'customer_management',
+    'hotel_images', 'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ],
   staff: [
-    'order_management', 'billing_management', 'space_management','customer_management'
+    'order_management', 'billing_management', 'space_management', 'customer_management',
+    'hotel_images', 'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ]
 };
 
@@ -90,6 +96,7 @@ const updateRolePermissions = async (req, res) => {
 
     // Validate each permission
     const validPermissions = Object.values(FIXED_PERMISSIONS);
+    console.log("Valid permissions:", validPermissions);
     const invalidPermissions = permissions.filter(p => !validPermissions.includes(p));
     
     if (invalidPermissions.length > 0) {

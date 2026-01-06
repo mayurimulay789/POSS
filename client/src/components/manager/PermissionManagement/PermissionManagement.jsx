@@ -127,11 +127,31 @@ const PermissionManagement = () => {
   const permissionGroups = [
     {
       category: 'Operations',
-      permissions: ['menu_management', 'order_management', 'billing_management']
+      permissions: [
+        'menu_management',
+        'order_management',
+        'billing_management'
+      ]
     },
     {
-      category: 'Management', 
-      permissions: ['space_management', 'task_management', 'expense_management','customer_management']
+      category: 'Management',
+      permissions: [
+        'space_management',
+        'task_management',
+        'expense_management',
+        'customer_management',
+        'hotel_images'
+      ]
+    },
+    {
+      category: 'Landing Page',
+      permissions: [
+        'landing_page_management',
+        'about_us_management',
+        'cuisine_gallery_management',
+        'welcome_section_management',
+        'contact_us_management'
+      ]
     },
     {
       category: 'Analytics',

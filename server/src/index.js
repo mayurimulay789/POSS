@@ -97,6 +97,10 @@ const aboutUsRoutes = require('../routes/aboutUsRoutes');
 const contactUsRoutes = require('../routes/contactUsRoutes');
 const welcomeSectionRoutes = require('../routes/welcomeSectionRoutes');
 const cuisineGalleryRoutes = require('../routes/cuisineGalleryRoutes');
+const logoRoutes = require('../routes/logoRoutes');
+const footerRoutes = require('../routes/footerRoutes');
+app.use('/api/settings/logo', logoRoutes);
+app.use('/api/footer', footerRoutes);
 
 // ========== USE ROUTES ==========
 app.use("/api/auth", authRoutes);

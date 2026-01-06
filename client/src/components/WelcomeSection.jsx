@@ -8,14 +8,6 @@ const WelcomeSection = () => {
   const welcomeSection = useSelector(state => state.welcomeSection);
   const [welcomeImage, setWelcomeImage] = React.useState(null);
   const [imgLoading, setImgLoading] = React.useState(true);
-  const loading = welcomeSection?.loading || false;
-
-  // Default fallback content
-  const defaultContent = {
-    hotelName: 'POS Restaurant',
-    tagline: 'Experience Culinary Excellence',
-    description: 'India Restaurant has been serving delightful experiences through the art of cooking for four decades. A cozy, relaxing space combined with flavourful dishes makes it a first choice for every foodie in town. It provides a wide range of items to choose from and lets everyone indulge in an experience of pleasing their taste buds.\n\nWe provides a wide range of cuisines and dishes to choose from so that every foodie in town has their best experience here.\n\nWe are known to be the best Mughlai eatery in Kolkata. We have always won the hearts of our customers with appetizing dishes and friendly behaviour. It is the best choice for everyone who wants to enjoy the best quality food at reasonable prices.'
-  };
 
   useEffect(() => {
     dispatch(fetchWelcomeSection());
@@ -26,57 +18,78 @@ const WelcomeSection = () => {
       .finally(() => setImgLoading(false));
   }, [dispatch]);
 
-  const content = welcomeSection?.data || defaultContent;
+  const content = welcomeSection?.data;
+
+  if (!content) {
+    return (
+      <section className="relative py-20 bg-[#0A2F46] overflow-hidden">
+        <div className="container mx-auto px-6 text-center">
+          <div className="text-6xl mb-4">🏨</div>
+          <p className="text-white text-xl">Welcome Section Coming Soon</p>
+          <p className="text-white/70 text-sm mt-2">Content will be available shortly</p>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-16 md:py-20 bg-gradient-to-r from-[#0A3D4D] to-[#134A5C]">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-            {/* Left side - Text (Centered) */}
-            <div className="text-center space-y-6">
-              <p className="text-[#FF9800] text-sm uppercase tracking-wider font-medium">
+    <section className="relative py-20 bg-[#0A2F46] overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#14AAAB] opacity-5 rounded-bl-full"></div>
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#F1A722] opacity-5 rounded-tr-full"></div>
+      
+      <div className="container mx-auto px-6 lg:px-16">
+        <div className="flex flex-col lg:flex-row items-center gap-16">
+          
+          {/* LEFT: TEXT CONTENT */}
+          <div className="w-full lg:w-3/5 space-y-8">
+            <div className="inline-block">
+              <span className="text-[#D32B36] text-xs font-bold tracking-[0.4em] uppercase">
                 Welcome To
-              </p>
-              
-              <h2 className="text-5xl md:text-6xl font-serif font-bold text-white leading-tight">
+              </span>
+              <h2 className="text-6xl md:text-5xl font-serif text-[#F1A722] italic mt-2 leading-none font-bold">
                 {content.hotelName}
               </h2>
-              
-              {/* Decorative divider */}
-              <div className="flex justify-center">
-                <div className="w-16 h-1 bg-[#FF9800]"></div>
+              <div className="flex items-center gap-4 mt-6">
+                <div className="h-[2px] w-16 bg-[#F1A722]"></div>
+                <p className="text-[#14AAAB] font-semibold tracking-wide text-lg md:text-xl">
+                  {content.tagline}
+                </p>
               </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-[#F1A722] hidden md:block"></div>
               
-              <p className="text-[#FF9800] text-lg font-medium italic">
-                {content.tagline}
-              </p>
-              
-              <div className="space-y-5 text-gray-200 text-sm leading-relaxed max-w-md mx-auto">
+              <div className="text-white text-lg leading-relaxed font-normal text-justify">
                 {content.description.split('\n\n').map((para, idx) => (
-                  <p key={idx}>{para}</p>
+                  <p key={idx} className="mb-6 last:mb-0 first-letter:text-5xl first-letter:text-[#F1A722] first-letter:font-bold first-letter:mr-2 first-letter:float-left first-letter:leading-none">
+                    {para}
+                  </p>
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Right side - Image */}
-            <div className="flex justify-center">
-              {!imgLoading && welcomeImage ? (
-                <div className="w-full max-w-md h-full md:h-[500px] rounded-lg overflow-hidden shadow-lg">
+          {/* RIGHT: IMAGE SECTION */}
+          <div className="w-full lg:w-2/5 relative">
+            <div className="relative z-10 rounded-xl overflow-hidden shadow-2xl border-4 border-[#14AAAB]">
+               {!imgLoading && welcomeImage ? (
                   <img 
                     src={welcomeImage.url}
-                    alt={welcomeImage.alt || 'Restaurant Interior'}
-                    className="w-full h-full object-cover"
+                    alt="Interior" 
+                    className="w-full aspect-[3/4] object-cover"
                   />
-                </div>
-              ) : (
-                <div className="w-full max-w-md h-full md:h-[500px] rounded-lg overflow-hidden shadow-lg bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-600 text-sm">Select a Welcome image in Hotel Images and click Save.</span>
-                </div>
-              )}
+                ) : (
+                  <div className="w-full aspect-[3/4] bg-gray-200 animate-pulse" />
+                )}
             </div>
+            
+            <div className="absolute -bottom-6 -right-6 w-full h-full border-4 border-[#F1A722] rounded-xl -z-10"></div>
           </div>
+
         </div>
-      </section>
+      </div>
+    </section>
   );
 };
 

@@ -41,6 +41,9 @@ const HotelImages = lazy(() => import('./pages/HotelImages'));
 const AttendanceManagement = lazy(() => import('./pages/AttendanceManagement'));
 const MerchantAttendanceDashboard = lazy(() => import('./pages/MerchantAttendanceDashboard'));
 const ChargesManagement = lazy(() => import('./pages/ChargeManagement'));
+const LogoManagement = lazy(() => import('./pages/LogoManagement'));
+const FooterManagement = lazy(() => import('./pages/FooterManagement'));
+const LandingPageManagement = lazy(() => import('./pages/LandingPageManagement'));
 
 // Public components
 const HomePage = lazy(() => import('./pages/Home'));
@@ -61,7 +64,8 @@ const MenuList = () => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       return user?.role;
-    } catch (e) {
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
       return null;
     }
   })();
@@ -224,6 +228,9 @@ function App() {
                 <Route path="attendance" element={<AttendanceManagement />} />
                 <Route path="attendance-dashboard" element={<MerchantAttendanceDashboard />} />
                 <Route path="charges" element={<ChargesManagement />} />
+                <Route path="logo-management" element={<LogoManagement />} />
+                <Route path="footer-management" element={<FooterManagement />} />
+                <Route path="landing-page-management" element={<LandingPageManagement />} />
               </Route>
 
               {/* Catch all route */}

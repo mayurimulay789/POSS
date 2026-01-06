@@ -37,7 +37,7 @@ const HotelImages = () => {
             <span>Add Images</span>
           </button>
         </div>
-        <p className="text-gray-600 mb-6">Manage and view hotel images here. This is a standalone tab and not tied to other operations.</p>
+        {/* <p className="text-gray-600 mb-6">Manage and view hotel images here. This is a standalone tab and not tied to other operations.</p> */}
 
         {/* Hidden file input to trigger on button click */}
         <input

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrders, createOrder, deleteOrder, cancelOrder } from '../../store/slices/orderSlice';
+import { fetchOrders, createOrder,cancelOrder } from '../../store/slices/orderSlice';
 import { useSelector as useTableSelector } from 'react-redux';
 import { fetchTables } from '../../store/slices/tableSlice';
 import { fetchMenuItems } from '../../store/slices/menuSlice';

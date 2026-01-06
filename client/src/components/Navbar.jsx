@@ -1,16 +1,28 @@
+  
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
 import { logoutUser } from '../store/slices/authSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchLogo } from '../store/slices/logoSlice';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const logoUrl = useSelector((state) => state.logo.logoUrl);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
+
+  // Fetch logo on initial mount
+  useEffect(() => {
+    dispatch(fetchLogo());
+  }, [dispatch]);
 
   useEffect(() => {
     const onScroll = () => setIsAtTop(window.scrollY < 60);
@@ -50,9 +62,7 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+
 
   const goHome = (e) => {
     // Prevent default if we're already on home to avoid re-render and just scroll
@@ -115,11 +125,11 @@ const Navbar = () => {
   };
 
   const showTransparent = location.pathname === '/' && isAtTop && !isMobileMenuOpen;
-  const textClass = showTransparent ? 'text-white drop-shadow-sm' : 'text-white';
-  const linkClass = `${textClass} hover:text-[#FF9800] transition font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
+  const textClass = showTransparent ? 'text-white' : 'text-white';
+  const linkClass = `${textClass} hover:text-[#F1A722] transition-all duration-300 font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
   const navBg = showTransparent
-    ? 'bg-gradient-to-b from-black/50 via-black/30 to-transparent shadow-none'
-    : 'bg-gradient-to-r from-[#0A3D4D] to-[#134A5C] shadow-md backdrop-blur';
+    ? 'bg-[#0A2F46]/95 shadow-none backdrop-blur-sm'
+    : 'bg-[#0A2F46] shadow-lg';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>
@@ -132,10 +142,14 @@ const Navbar = () => {
           <Link
             to="/"
             onClick={goHome}
-            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-sm' : 'text-white hover:text-[#FF9800]'}`}
+            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-lg' : 'text-white hover:text-[#F1A722]'}`}
           >
-            <span className="text-3xl">🍽️</span>
-            India Restaurant
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-48 w-auto object-contain mt-0" style={{ maxWidth: 480 }} />
+            ) : (
+              <span className="text-6xl mt-0" style={{ color: '#F1A722' }}>🍽️</span>
+            )}
+            {!logoUrl && 'India Restaurant'}
           </Link>
 
           {/* HAMBURGER (MOBILE ONLY) */}
@@ -169,7 +183,10 @@ const Navbar = () => {
 
                 <button
                   onClick={handleDashboardNavigation}
-                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
+
+                  // className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
+
+                  className="bg-[#F1A722] text-[#0A2F46] hover:bg-[#14AAAB] hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 shadow-md font-semibold"
                 >
                   <span>📊</span>
                   Dashboard
@@ -185,7 +202,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleLogout}
-                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
+                  className="border-2 border-white/80 text-white hover:bg-white hover:text-[#D32B36] px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 font-semibold"
                 >
                   <span>🚪</span>
                   Logout
@@ -220,7 +237,7 @@ const Navbar = () => {
 
                 <Link
                   to="/login"
-                  className="bg-amber-400 hover:bg-amber-500 text-white px-6 py-2 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl"
+                  className="bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-2 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl"
                 >
                   Login
                 </Link>
@@ -231,7 +248,7 @@ const Navbar = () => {
 
         {/* MOBILE DROPDOWN */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg pb-3">
+          <div className="md:hidden bg-white border-t border-[#14AAAB] shadow-lg pb-3">
 
             {isAuthenticated ? (
               <>
@@ -273,7 +290,7 @@ const Navbar = () => {
                       key={link.label}
                       to={link.to}
                       onClick={goHome}
-                      className="block px-4 py-3 text-gray-700 hover:text-amber-600 hover:bg-gray-50 border-b border-gray-100 font-medium"
+                      className="block px-4 py-3 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/30 font-medium"
                     >
                       {link.label}
                     </Link>
@@ -281,7 +298,7 @@ const Navbar = () => {
                     <button
                       key={link.label}
                       onClick={() => scrollToSection(link.anchor)}
-                      className="block w-full text-left px-4 py-3 text-gray-700 hover:text-amber-600 hover:bg-gray-50 border-b border-gray-100 font-medium"
+                      className="block w-full text-left px-4 py-3 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/30 font-medium"
                     >
                       {link.label}
                     </button>
@@ -290,7 +307,7 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block mx-4 my-3 text-center bg-amber-400 hover:bg-amber-500 text-white px-6 py-2 rounded-full transition-colors font-semibold shadow-lg hover:shadow-xl"
+                  className="block mx-4 my-3 text-center bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-2 rounded-full transition-colors font-semibold shadow-lg hover:shadow-xl"
                 >
                   Login
                 </Link>

@@ -13,8 +13,26 @@ welcomeSectionApi.interceptors.request.use((config) => {
 });
 
 const welcomeSectionAPI = {
+  // Get active welcome section (public)
   fetchWelcomeSection: async () => welcomeSectionApi.get('/'),
-  updateWelcomeSection: async (data) => welcomeSectionApi.post('/', data),
+  
+  // Get all welcome sections (protected)
+  fetchAllWelcomeSections: async () => welcomeSectionApi.get('/all'),
+  
+  // Get single welcome section by ID (protected)
+  fetchWelcomeSectionById: async (id) => welcomeSectionApi.get(`/${id}`),
+  
+  // Create new welcome section (protected)
+  createWelcomeSection: async (data) => welcomeSectionApi.post('/', data),
+  
+  // Update welcome section (protected)
+  updateWelcomeSection: async (id, data) => welcomeSectionApi.put(`/${id}`, data),
+  
+  // Delete welcome section (protected)
+  deleteWelcomeSection: async (id) => welcomeSectionApi.delete(`/${id}`),
+  
+  // Toggle active status (protected)
+  toggleWelcomeSectionStatus: async (id) => welcomeSectionApi.patch(`/${id}/toggle`),
 };
 
 export default welcomeSectionAPI;

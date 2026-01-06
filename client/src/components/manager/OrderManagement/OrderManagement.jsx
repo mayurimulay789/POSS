@@ -133,7 +133,7 @@ const OrderManagement = () => {
             <span className="text-2xl font-extrabold text-green-700">₹{order.totalBill}</span>
           </div>
           <div className="flex-1"></div>
-          {order.status !== 'served' && order.status !== 'cancelled' && (
+          {(order.status !== 'served' && order.status !== 'cancelled' && order.status !== 'completed' && order.status !== 'payment_pending') && (
             <button
               onClick={() => handleCancelOrder(order._id)}
               className="mt-4 w-full py-2 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 shadow"

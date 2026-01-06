@@ -7,7 +7,6 @@ const AboutUs = () => {
   const dispatch = useDispatch();
   const aboutUs = useSelector(state => state.aboutUs);
 
-  // Default fallback data
   const defaultData = {
     yearEstablished: '1985',
     mainTitle: 'About Us',
@@ -44,9 +43,9 @@ const AboutUs = () => {
 
   if (loading) {
     return (
-      <section id="AboutUs" className="relative overflow-hidden bg-slate-950 py-20 md:py-24 text-white">
+      <section id="AboutUs" className="relative overflow-hidden bg-[#0A2F46] py-20 md:py-24 text-white">
         <div className="flex justify-center items-center h-64">
-          <div className="text-lg">Loading...</div>
+          <div className="text-lg text-[#F1A722]">Loading...</div>
         </div>
       </section>
     );
@@ -58,29 +57,23 @@ const AboutUs = () => {
   const stats = data.stats || [];
 
   return (
-    <section id="AboutUs" className="relative overflow-hidden bg-slate-950 py-20 md:py-24 text-white">
-      <div className="absolute inset-0 opacity-80">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a3d4d] via-[#0f5063] to-[#062b36]" />
-        <div className="absolute -top-24 -left-12 h-72 w-72 rounded-full bg-amber-400/20 blur-3xl" />
-        <div className="absolute top-10 right-0 h-80 w-80 rounded-full bg-cyan-200/15 blur-3xl" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(255,255,255,0.08),transparent_32%),radial-gradient(circle_at_80%_8%,rgba(255,152,0,0.12),transparent_28%)]" />
-      </div>
+    <section id="AboutUs" className="relative overflow-hidden bg-[#0A2F46] py-20 md:py-24 text-white">
 
       <div className="relative mx-auto max-w-6xl px-4">
         <div className="flex flex-col gap-4 text-center">
-          {/* Removed 'Since {data.yearEstablished}' badge as requested */}
-          <h2 className="text-4xl md:text-5xl font-semibold leading-tight">{data.mainTitle}</h2>
-          <p className="text-white/80 text-base md:text-lg max-w-3xl mx-auto">
+          <h2 className="text-5xl md:text-6xl font-serif mt-4 mb-6 italic text-[#F1A722]">{data.mainTitle}</h2>
+          <div className="w-24 h-[2px] bg-[#F1A722] mx-auto mb-4"></div>
+          <p className="text-white/90 text-base md:text-lg max-w-3xl mx-auto">
             {data.mainDescription}
           </p>
         </div>
 
         <div className="mt-12 grid items-start gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur">
+          <div className="space-y-6 rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-8 backdrop-blur">
             <div className="grid gap-4 md:grid-cols-2">
               {values.map((value, index) => (
-                <div key={index} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <CheckCircleIcon className="h-5 w-5 text-amber-300" />
+                <div key={index} className="flex items-start gap-3 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/50 px-4 py-3">
+                  <CheckCircleIcon className="h-5 w-5 text-[#F1A722]" />
                   <p className="text-sm text-white/90 leading-relaxed">{value.text || value}</p>
                 </div>
               ))}
@@ -88,9 +81,9 @@ const AboutUs = () => {
 
             <div className="grid gap-4 md:grid-cols-3">
               {stats.map((stat, index) => (
-                <div key={index} className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-center shadow-lg shadow-black/10">
-                  <p className="text-[11px] uppercase tracking-[0.22em] text-amber-200/90">{stat.label}</p>
-                  <p className="mt-2 text-3xl font-serif font-bold text-white">{stat.value}</p>
+                <div key={index} className="rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/30 p-4 text-center shadow-lg">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-[#14AAAB] font-bold">{stat.label}</p>
+                  <p className="mt-2 text-3xl font-serif font-bold text-[#F1A722]">{stat.value}</p>
                   <p className="mt-1 text-sm text-white/70">{stat.detail}</p>
                 </div>
               ))}
@@ -98,25 +91,25 @@ const AboutUs = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/15 via-white/5 to-white/0 p-7 backdrop-blur shadow-2xl shadow-black/25">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.14),transparent_32%)]" />
+            <div className="relative overflow-hidden rounded-3xl border-2 border-[#14AAAB] bg-[#134A5C]/40 p-7 backdrop-blur shadow-2xl shadow-black/25">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.05),transparent_32%)]" />
               <div className="relative space-y-4">
-                <p className="text-sm uppercase tracking-[0.18em] text-amber-200">House rhythm</p>
-                <h3 className="text-2xl font-semibold">{data.rhythmTitle}</h3>
+                <p className="text-sm uppercase tracking-[0.18em] text-[#F1A722] font-semibold">House rhythm</p>
+                <h3 className="text-2xl font-semibold text-white">{data.rhythmTitle}</h3>
                 <p className="text-white/80 leading-relaxed text-base">
                   {data.rhythmDescription}
                 </p>
-                <div className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/80">
+                <div className="rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/40 px-4 py-3 text-sm text-[#F1A722] italic font-medium">
                   {data.rhythmQuote}
                 </div>
               </div>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-              <p className="text-sm uppercase tracking-[0.2em] text-amber-200/90">Highlights</p>
+            <div className="rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-6 backdrop-blur">
+              <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-semibold">Highlights</p>
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {highlights.map((highlight, index) => (
-                  <div key={index} className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div key={index} className="flex items-start gap-4 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/20 px-4 py-3">
                     <div className="text-2xl">{highlight.icon}</div>
                     <div>
                       <p className="text-base font-semibold text-white">{highlight.title}</p>
