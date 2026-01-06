@@ -31,6 +31,7 @@ const AddMenu = () => {
       const token = localStorage.getItem('token');
       if (token) return { headers: { Authorization: `Bearer ${token}` } };
     } catch (e) {
+      console.error('Error getting auth headers', e);
       // ignore
     }
     return {};
@@ -199,6 +200,8 @@ const AddMenu = () => {
               onChange={e => setItemForm({ ...itemForm, price: e.target.value })} 
               placeholder="Price" 
               type="number" 
+              min="0"
+              step="1"
               className="w-full p-2 border rounded" 
             />
             <select 

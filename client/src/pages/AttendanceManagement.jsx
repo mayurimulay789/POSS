@@ -138,7 +138,10 @@ const AttendanceManagement = () => {
   };
 
   const handleFileUpload = (e) => {
+   
     const file = e.target.files[0];
+     console.log('File upload event:', e.files);
+   
     if (file) {
       if (!file.type.match('image.*')) {
         alert('Please select an image file');
