@@ -144,8 +144,16 @@ const AddMenu = () => {
       setToast('Item created successfully');
       window.dispatchEvent(new CustomEvent('menuUpdated'));
     } catch (err) {
-      console.error(err);
-      setToast('Failed to create item');
+      // Show specific error message from backend (e.g., duplicate item in category)
+      if (err.response?.status === 409) {
+        // 409 is an expected validation error (duplicate), don't log to console
+        setToast(err.response.data.message || 'Item already exists in this category');
+      } else {
+        // Log unexpected errors to console
+        console.error(err);
+        const errorMsg = err.response?.data?.message || 'Failed to create item';
+        setToast(errorMsg);
+      }
     } finally {
       setSubmitting(false);
     }

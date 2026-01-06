@@ -13,6 +13,7 @@ const WelcomeSectionManagement = () => {
   const { sections, loading, error, success } = useSelector(state => state.welcomeSection);
 
   // Form state
+  const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     hotelName: '',
     tagline: '',
@@ -25,6 +26,7 @@ const WelcomeSectionManagement = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     dispatch(fetchAllWelcomeSections());
@@ -38,14 +40,59 @@ const WelcomeSectionManagement = () => {
     }
   }, [success, dispatch]);
 
+  // Validation functions
+  const validateHotelName = (hotelName) => {
+    if (!hotelName) return 'Hotel name is required';
+    if (hotelName.length < 2) return 'Hotel name must be at least 2 characters';
+    if (hotelName.length > 100) return 'Hotel name must be less than 100 characters';
+    return '';
+  };
+
+  const validateTagline = (tagline) => {
+    if (!tagline) return 'Tagline is required';
+    if (tagline.length < 5) return 'Tagline must be at least 5 characters';
+    if (tagline.length > 150) return 'Tagline must be less than 150 characters';
+    return '';
+  };
+
+  const validateDescription = (description) => {
+    if (!description) return 'Description is required';
+    if (description.length < 10) return 'Description must be at least 10 characters';
+    if (description.length > 1000) return 'Description must be less than 1000 characters';
+    return '';
+  };
+
+  const validateForm = () => {
+    const errors = {
+      hotelName: validateHotelName(form.hotelName),
+      tagline: validateTagline(form.tagline),
+      description: validateDescription(form.description)
+    };
+    Object.keys(errors).forEach(key => {
+      if (!errors[key]) delete errors[key];
+    });
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLocalError('');
+    
+    if (!validateForm()) return;
+    
     try {
       if (editMode && editId) {
         await dispatch(updateWelcomeSection({ id: editId, data: form })).unwrap();
@@ -58,10 +105,12 @@ const WelcomeSectionManagement = () => {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       
-      // Reset form
+      // Reset form and close modal
       setForm({ hotelName: '', tagline: '', description: '' });
       setEditMode(false);
       setEditId(null);
+      setValidationErrors({});
+      setShowModal(false);
     } catch (err) {
       setLocalError(err?.message || 'Error saving welcome section');
     }
@@ -75,7 +124,15 @@ const WelcomeSectionManagement = () => {
     });
     setEditMode(true);
     setEditId(section._id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setShowModal(true);
+  };
+
+  const handleNewSection = () => {
+    setForm({ hotelName: '', tagline: '', description: '' });
+    setEditMode(false);
+    setEditId(null);
+    setValidationErrors({});
+    setShowModal(true);
   };
 
   const handleCancelEdit = () => {
@@ -118,180 +175,189 @@ const WelcomeSectionManagement = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Welcome Section Management</h1>
+    <div className="p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Welcome Section Management</h1>
+            <p className="text-sm text-gray-600 mt-1">Manage your welcome sections</p>
+          </div>
+          <button
+            onClick={handleNewSection}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+          >
+            + New Section
+          </button>
+        </div>
+      </div>
 
+      {/* Messages */}
       {(error || localError) && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
           {error || localError}
         </div>
       )}
 
       {showToast && (
-        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-lg animate-fade-in">
+        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-3 rounded shadow-lg">
           {toastMessage}
         </div>
       )}
 
-      {/* Create/Edit Form */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4">
-          {editMode ? 'Edit Welcome Section' : 'Create New Welcome Section'}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Hotel Name *</label>
-            <input
-              type="text"
-              name="hotelName"
-              value={form.hotelName}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter Hotel Name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Tagline *</label>
-            <input
-              type="text"
-              name="tagline"
-              value={form.tagline}
-              onChange={handleChange}
-              required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Short catchy tagline"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2">Welcome Description *</label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              required
-              rows="4"
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Full description..."
-            />
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : editMode ? 'Update' : 'Create'}
-            </button>
-            {editMode && (
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                className="px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 font-semibold"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </div>
-
-      {/* Sections List */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4">All Welcome Sections</h2>
-        
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading && sections.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-lg">Loading...</div>
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
           </div>
         ) : sections.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No welcome sections found. Create your first one above!
+          <div className="p-8 text-center text-gray-500">
+            No welcome sections found. Click "New Section" to create one.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hotel Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tagline
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sections.map((section) => (
-                  <tr key={section._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{section.hotelName}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500">{section.tagline}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        section.isActive 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {section.isActive ? 'Active' : 'Inactive'}
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hotel Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tagline</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {sections.map((section) => (
+                <tr key={section._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{section.hotelName}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{section.tagline}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {section.isActive ? (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(section.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      <button
-                        onClick={() => handleEdit(section)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleStatus(section._id)}
-                        className="text-yellow-600 hover:text-yellow-900"
-                      >
-                        {section.isActive ? 'Deactivate' : 'Activate'}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(section._id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                        Inactive
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(section.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button onClick={() => handleEdit(section)} className="text-blue-600 hover:text-blue-800 font-medium">
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(section._id)}
+                      className="text-yellow-600 hover:text-yellow-800 font-medium"
+                    >
+                      {section.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button onClick={() => handleDeleteClick(section._id)} className="text-red-600 hover:text-red-800 font-medium">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Form Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {editMode ? 'Edit Welcome Section' : 'New Welcome Section'}
+              </h2>
+            </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Hotel Name *</label>
+                <input
+                  type="text"
+                  name="hotelName"
+                  value={form.hotelName}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter Hotel Name"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    validationErrors.hotelName ? 'border-red-500' : ''
+                  }`}
+                />
+                {validationErrors.hotelName && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.hotelName}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tagline *</label>
+                <input
+                  type="text"
+                  name="tagline"
+                  value={form.tagline}
+                  onChange={handleChange}
+                  required
+                  placeholder="Short catchy tagline"
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    validationErrors.tagline ? 'border-red-500' : ''
+                  }`}
+                />
+                {validationErrors.tagline && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.tagline}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Welcome Description *</label>
+                <textarea
+                  name="description"
+                  value={form.description}
+                  onChange={handleChange}
+                  required
+                  rows="4"
+                  placeholder="Full description..."
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                    validationErrors.description ? 'border-red-500' : ''
+                  }`}
+                />
+                {validationErrors.description && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
+                )}
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  {loading ? 'Saving...' : editMode ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this welcome section? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Confirm Delete</h3>
+            <p className="text-gray-600 mb-4">Are you sure you want to delete this section? This action cannot be undone.</p>
+            <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cancel
               </button>

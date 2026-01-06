@@ -72,7 +72,7 @@ const MenuSection = () => {
                   </h3>
                   {/* Price Leader Dots */}
                   <div className="flex-1 border-b border-dotted border-[#14AAAB] relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-[#F1A722]">
+                  <span className="text-lg font-sans text-[#F1A722]">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>

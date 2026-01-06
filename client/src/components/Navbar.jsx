@@ -119,8 +119,8 @@ const Navbar = () => {
   const textClass = showTransparent ? 'text-white' : 'text-white';
   const linkClass = `${textClass} hover:text-[#F1A722] transition-all duration-300 font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
   const navBg = showTransparent
-    ? 'bg-[#0A2F46]/95 shadow-none backdrop-blur-sm'
-    : 'bg-[#0A2F46] shadow-lg';
+    ? 'bg-[#14AAAB]/70 shadow-none backdrop-blur-sm'
+    : 'bg-[#14AAAB]/90 shadow-lg';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>

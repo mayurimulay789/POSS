@@ -78,7 +78,7 @@ const MenuManagement = () => {
                   </h3>
                   {/* Price Leader Dots */}
                   <div className="flex-1 border-b border-dotted border-slate-200 relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-slate-900">
+                  <span className="text-lg font-sans text-slate-900">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>

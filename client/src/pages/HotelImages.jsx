@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchHotelImages, uploadHotelImages, updateHotelImage, deleteHotelImage, clearSuccess, clearError } from '../store/slices/hotelImageSlice';
+import { fetchHotelImages, uploadHotelImages, updateHotelImage, deleteHotelImage, clearSuccess, clearError, optimisticUpdate } from '../store/slices/hotelImageSlice';
 
 const HotelImages = () => {
   const dispatch = useDispatch();
@@ -10,6 +10,7 @@ const HotelImages = () => {
   const fileInputRef = useRef(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const debounceTimers = useRef({});
 
   // Ensure images is always an array
   const imageList = items || [];
@@ -26,7 +27,48 @@ const HotelImages = () => {
   useEffect(() => {
     dispatch(fetchHotelImages());
   }, [dispatch]);
-  // All data is now managed via Redux thunks/selectors. No direct API calls here.
+
+  // Debounced update function to prevent excessive API calls
+  const debouncedUpdate = useCallback((id, data, delay = 800) => {
+    // Clear existing timer for this image
+    if (debounceTimers.current[id]) {
+      clearTimeout(debounceTimers.current[id]);
+    }
+
+    // Set new timer
+    debounceTimers.current[id] = setTimeout(() => {
+      dispatch(updateHotelImage({ id, data }))
+        .unwrap()
+        .catch(err => {
+          setToast('Failed to update image');
+          console.error('Update error:', err);
+        });
+      delete debounceTimers.current[id];
+    }, delay);
+  }, [dispatch]);
+
+  // Immediate update for checkboxes (with optimistic update)
+  const immediateUpdate = useCallback((id, data) => {
+    // Optimistically update UI immediately
+    dispatch(optimisticUpdate({ id, data }));
+    
+    // Then send to server
+    dispatch(updateHotelImage({ id, data }))
+      .unwrap()
+      .catch(err => {
+        // Revert on error by refetching
+        dispatch(fetchHotelImages());
+        setToast('Failed to update image');
+        console.error('Update error:', err);
+      });
+  }, [dispatch]);
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach(timer => clearTimeout(timer));
+    };
+  }, []);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -107,15 +149,7 @@ const HotelImages = () => {
                           className="h-4 w-4"
                           checked={!!img.isBanner}
                           onChange={(e) => {
-                            const val = e.target.checked;
-                            dispatch(updateHotelImage({
-                              id: img._id,
-                              data: { isBanner: val }
-                            }))
-                              .catch(err => {
-                                setToast('Failed to update image');
-                                console.error('Update error:', err);
-                              });
+                            immediateUpdate(img._id, { isBanner: e.target.checked });
                           }}
                         />
                         <span>Use in banner</span>
@@ -146,14 +180,10 @@ const HotelImages = () => {
                           checked={!!img.isWelcome}
                           onChange={(e) => {
                             const val = e.target.checked;
-                            dispatch(updateHotelImage({
-                              id: img._id,
-                              data: { isWelcome: val, isCuisineGallery: val ? false : img.isCuisineGallery }
-                            }))
-                              .catch(err => {
-                                setToast('Failed to update image');
-                                console.error('Update error:', err);
-                              });
+                            immediateUpdate(img._id, { 
+                              isWelcome: val, 
+                              isCuisineGallery: val ? false : img.isCuisineGallery 
+                            });
                           }}
                         />
                         <span>Use as welcome image</span>
@@ -169,14 +199,10 @@ const HotelImages = () => {
                           checked={!!img.isCuisineGallery}
                           onChange={(e) => {
                             const val = e.target.checked;
-                            dispatch(updateHotelImage({
-                              id: img._id,
-                              data: { isCuisineGallery: val, isWelcome: val ? false : img.isWelcome }
-                            }))
-                              .catch(err => {
-                                setToast('Failed to update image');
-                                console.error('Update error:', err);
-                              });
+                            immediateUpdate(img._id, { 
+                              isCuisineGallery: val, 
+                              isWelcome: val ? false : img.isWelcome 
+                            });
                           }}
                         />
                         <span>Cuisine gallery background</span>
@@ -191,15 +217,7 @@ const HotelImages = () => {
                           className="h-4 w-4 cursor-pointer"
                           checked={!!img.isCuisineCard}
                           onChange={(e) => {
-                            const val = e.target.checked;
-                            dispatch(updateHotelImage({
-                              id: img._id,
-                              data: { isCuisineCard: val }
-                            }))
-                              .catch(err => {
-                                setToast('Failed to update image');
-                                console.error('Update error:', err);
-                              });
+                            immediateUpdate(img._id, { isCuisineCard: e.target.checked });
                           }}
                         />
                         <span>Show in cuisine gallery</span>
@@ -214,15 +232,7 @@ const HotelImages = () => {
                           className="h-4 w-4 cursor-pointer"
                           checked={!!img.isLoginImage}
                           onChange={(e) => {
-                            const val = e.target.checked;
-                            dispatch(updateHotelImage({
-                              id: img._id,
-                              data: { isLoginImage: val }
-                            }))
-                              .catch(err => {
-                                setToast('Failed to update image');
-                                console.error('Update error:', err);
-                              });
+                            immediateUpdate(img._id, { isLoginImage: e.target.checked });
                           }}
                         />
                         <span>Use as login page image</span>
@@ -234,17 +244,9 @@ const HotelImages = () => {
                       <label className="block text-xs text-gray-500 mb-1">Banner heading</label>
                       <input
                         type="text"
-                        value={img.bannerHeading || ''}
+                        defaultValue={img.bannerHeading || ''}
                         onChange={(e) => {
-                          const v = e.target.value;
-                          dispatch(updateHotelImage({
-                            id: img._id,
-                            data: { bannerHeading: v }
-                          }))
-                            .catch(err => {
-                              setToast('Failed to update image');
-                              console.error('Update error:', err);
-                            });
+                          debouncedUpdate(img._id, { bannerHeading: e.target.value });
                         }}
                         placeholder="e.g., Come Join Us For A Magical Experience"
                         className="w-full border rounded px-2 py-1.5 text-sm"
@@ -253,8 +255,15 @@ const HotelImages = () => {
 
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded"
-                        onClick={() => dispatch(fetchHotelImages())}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                        onClick={() => {
+                          // Clear any pending updates for this image
+                          if (debounceTimers.current[img._id]) {
+                            clearTimeout(debounceTimers.current[img._id]);
+                            delete debounceTimers.current[img._id];
+                          }
+                          dispatch(fetchHotelImages());
+                        }}
                         disabled={saving}
                       >Reset</button>
                     </div>

@@ -62,7 +62,15 @@ const hotelImageSlice = createSlice({
   initialState,
   reducers: {
     clearSuccess: (state) => { state.success = false; },
-    clearError: (state) => { state.error = null; }
+    clearError: (state) => { state.error = null; },
+    // Optimistic update - immediately update UI before API call
+    optimisticUpdate: (state, action) => {
+      const { id, data } = action.payload;
+      const idx = state.items.findIndex(i => i._id === id);
+      if (idx > -1) {
+        state.items[idx] = { ...state.items[idx], ...data };
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -97,38 +105,38 @@ const hotelImageSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(updateHotelImage.pending, (state) => {
-        state.loading = true;
+        // Don't set loading to true - prevents full page re-render
         state.error = null;
         state.success = false;
       })
       .addCase(updateHotelImage.fulfilled, (state, action) => {
-        state.loading = false;
+        // Don't change loading state - optimistic update already handled UI
         const updated = action.payload.data || action.payload;
         const idx = state.items.findIndex(i => i._id === updated._id);
         if (idx > -1) state.items[idx] = updated;
         state.success = true;
       })
       .addCase(updateHotelImage.rejected, (state, action) => {
-        state.loading = false;
+        // Don't change loading state
         state.error = action.payload;
       })
       .addCase(deleteHotelImage.pending, (state) => {
-        state.loading = true;
+        // Don't set loading during delete
         state.error = null;
         state.success = false;
       })
       .addCase(deleteHotelImage.fulfilled, (state, action) => {
-        state.loading = false;
+        // Don't change loading state
         const deletedId = action.payload.data?._id || action.payload._id;
         state.items = state.items.filter(i => i._id !== deletedId);
         state.success = true;
       })
       .addCase(deleteHotelImage.rejected, (state, action) => {
-        state.loading = false;
+        // Don't change loading state
         state.error = action.payload;
       });
   }
 });
 
-export const { clearSuccess, clearError } = hotelImageSlice.actions;
+export const { clearSuccess, clearError, optimisticUpdate } = hotelImageSlice.actions;
 export default hotelImageSlice.reducer;

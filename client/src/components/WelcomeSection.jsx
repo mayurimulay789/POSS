@@ -14,7 +14,13 @@ const WelcomeSection = () => {
     setImgLoading(true);
     axios.get(`${import.meta.env.VITE_API_URL}/hotel-images/welcome`)
       .then(res => setWelcomeImage(res.data))
-      .catch(() => setWelcomeImage(null))
+      .catch(err => {
+        // Silently handle 404 - no welcome image uploaded yet
+        if (err.response?.status !== 404) {
+          console.error('Error fetching welcome image:', err);
+        }
+        setWelcomeImage(null);
+      })
       .finally(() => setImgLoading(false));
   }, [dispatch]);
 
