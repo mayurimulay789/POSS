@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   XCircle, 
   Loader,
@@ -86,8 +86,6 @@ export const CustomerForm = ({
   onChange,
   errors = {},
   onValidate,
-  isEdit = false,
-  selectedCustomer = null
 }) => {
   const handleChange = (field, value) => {
     const updatedData = { ...formData, [field]: value };
@@ -283,6 +281,7 @@ export const CreateCustomerModal = ({
       phone: true,
       membership_id: true
     });
+    crossOriginIsolated.log(touched);
     
     const formErrors = validateForm();
     
@@ -291,10 +290,6 @@ export const CreateCustomerModal = ({
     } else {
       setErrors(formErrors);
     }
-  };
-
-  const handleBlur = (field) => {
-    setTouched({ ...touched, [field]: true });
   };
 
   const handleFormChange = (updatedData) => {
@@ -463,6 +458,8 @@ export const EditCustomerModal = ({
       phone: true,
       membership_id: true
     });
+
+    console.log(touched);
     
     const formErrors = validateForm();
     

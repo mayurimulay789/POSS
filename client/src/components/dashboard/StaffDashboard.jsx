@@ -22,12 +22,10 @@ const StaffDashboard = () => {
 
   const {
     overview,
-    customerStats,
     taskStats,
     performance,
     todaySummary,
     recentActivity = [],
-    quickStats = {}
   } = data;
 
   return (
@@ -188,25 +186,6 @@ const StaffDashboard = () => {
             No recent activity
           </div>
         )}
-      </div>
-
-      {/* Quick Stats */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center p-4 bg-blue-50 rounded-lg">
-            <div className="text-xl font-bold text-blue-600">{quickStats?.streakDays || 0}</div>
-            <div className="text-sm text-gray-600">Day Streak</div>
-          </div>
-          <div className="text-center p-4 bg-yellow-50 rounded-lg">
-            <div className="text-xl font-bold text-yellow-600">{quickStats?.rating || 0}/5</div>
-            <div className="text-sm text-gray-600">Rating</div>
-          </div>
-          <div className="text-center p-4 bg-green-50 rounded-lg">
-            <div className="text-xl font-bold text-green-600">{quickStats?.rewards || 0}</div>
-            <div className="text-sm text-gray-600">Reward Points</div>
-          </div>
-        </div>
       </div>
     </div>
   );

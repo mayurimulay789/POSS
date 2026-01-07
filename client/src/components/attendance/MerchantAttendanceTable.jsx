@@ -24,7 +24,7 @@ const MerchantAttendanceTable = ({
   onViewDetails,
   onExport 
 }) => {
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
@@ -116,14 +116,6 @@ const MerchantAttendanceTable = ({
         {config.text}
       </span>
     );
-  };
-
-  const formatTime = (time) => {
-    if (!time) return '--:--';
-    return new Date(time).toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   const formatDate = (date) => {
@@ -350,13 +342,13 @@ const MerchantAttendanceTable = ({
             >
               Clear
             </button>
-            <button
+            {/* <button
               onClick={onExport}
               className="bg-green-600 text-white hover:bg-green-700 px-4 py-2 rounded-lg text-sm flex items-center"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
-            </button>
+            </button> */}
           </div>
         </div>
       </div>

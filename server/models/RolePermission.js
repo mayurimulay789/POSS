@@ -8,7 +8,7 @@ const FIXED_PERMISSIONS = {
   SPACE_MANAGEMENT: 'space_management',
   TASK_MANAGEMENT: 'task_management',
   EXPENSE_MANAGEMENT: 'expense_management',
-  REPORTS_ANALYTICS: 'reports_analytics',
+  // REPORTS_ANALYTICS: 'reports_analytics',
   EMPLOYEE_MANAGEMENT: 'employee_management',
   CUSTOMER_MANAGEMENT: 'customer_management',
   CHARGES_MANAGEMENT: 'charges_management',

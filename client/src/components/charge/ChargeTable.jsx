@@ -19,7 +19,6 @@ import {
 const ChargeTable = ({
   charges,
   loading,
-  user,
   formatDate,
   onEditClick,
   onDeleteClick,

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import Webcam from 'react-webcam';
 import {
   startShift,
   endShift,
@@ -16,13 +15,8 @@ import { selectCurrentUser } from '../store/slices/authSlice';
 import {
   CheckCircle,
   AlertCircle,
-  Camera,
   Clock,
   Calendar,
-  BarChart3,
-  X,
-  Upload,
-  Download,
   History,
   Play,
   StopCircle,
@@ -53,7 +47,6 @@ const AttendanceManagement = () => {
   const [isStartingShift, setIsStartingShift] = useState(false);
   const [selfieImage, setSelfieImage] = useState(null);
   const [selfieFile, setSelfieFile] = useState(null);
-  const [activeTab, setActiveTab] = useState('today');
   const [showEndConfirmation, setShowEndConfirmation] = useState(false);
   const [shiftDuration, setShiftDuration] = useState('00:00:00');
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -67,35 +60,7 @@ const AttendanceManagement = () => {
     dispatch(getMyAttendance(filters));
   }, [dispatch]);
 
-  // Update shift duration timer if there's an active shift
-  useEffect(() => {
-    let interval;
-    
-    if (currentShift && currentShift.startTime) {
-      // Calculate initial duration
-      updateShiftDuration();
-      
-      // Update every second
-      interval = setInterval(updateShiftDuration, 1000);
-    }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [currentShift]);
-
-  // Clear error/success messages
-  useEffect(() => {
-    if (error || success) {
-      const timer = setTimeout(() => {
-        dispatch(clearError());
-        dispatch(clearSuccess());
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [error, success, dispatch]);
-
-  const updateShiftDuration = () => {
+   const updateShiftDuration = () => {
     if (!currentShift?.startTime) return;
     
     const startTime = new Date(currentShift.startTime);
@@ -109,6 +74,34 @@ const AttendanceManagement = () => {
     const formatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     setShiftDuration(formatted);
   };
+
+  // Update shift duration timer if there's an active shift
+  useEffect(() => {
+    let interval;
+    
+    if (currentShift && currentShift.startTime) {
+      // Update every second (includes initial calculation)
+      interval = setInterval(updateShiftDuration, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currentShift]);
+
+
+  // Clear error/success messages
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        dispatch(clearError());
+        dispatch(clearSuccess());
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success, dispatch]);
+
+ 
 
   const handleStartShiftClick = () => {
     setIsStartingShift(true);
@@ -132,35 +125,34 @@ const AttendanceManagement = () => {
       
       // Convert base64 to file
       const blob = dataURLtoBlob(imageSrc);
-      const file = new File([blob], `selfie_${Date.now()}.jpg`, { type: 'image/jpeg' });
+      const timestamp = new Date().getTime();
+      const file = new File([blob], `selfie_${timestamp}.jpg`, { type: 'image/jpeg' });
       setSelfieFile(file);
     }
   };
 
-  const handleFileUpload = (e) => {
-   
-    const file = e.target.files[0];
-     console.log('File upload event:', e.files);
-   
-    if (file) {
-      if (!file.type.match('image.*')) {
-        alert('Please select an image file');
-        return;
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelfieImage(e.target.result);
-      };
-      reader.readAsDataURL(file);
-      setSelfieFile(file);
+ const handleFileUpload = (fileOrEvent) => {
+  const file = fileOrEvent?.target?.files?.[0] || fileOrEvent;
+  
+  if (file && file instanceof File) {
+    if (!file.type.match('image.*')) {
+      alert('Please select an image file');
+      return;
     }
-  };
+    
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelfieImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+    setSelfieFile(file);
+  }
+};
 
   const dataURLtoBlob = (dataURL) => {
     const byteString = atob(dataURL.split(',')[1]);
@@ -260,11 +252,6 @@ const AttendanceManagement = () => {
       minute: '2-digit',
       second: '2-digit'
     });
-  };
-
-  const handleExportAttendance = () => {
-    // Implement export functionality
-    alert('Export feature coming soon!');
   };
 
   if (!user) {

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import {
   getAllCharges,
   getSystemCharges,
@@ -44,7 +43,6 @@ const LoadingFallback = () => (
 
 const ChargeManagement = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   
   const {
@@ -52,7 +50,6 @@ const ChargeManagement = () => {
     systemCharges,
     optionalCharges,
     systemChargesSummary,
-    currentCharge,
     loading,
     error,
     success,
@@ -310,6 +307,7 @@ const ChargeManagement = () => {
         minute: '2-digit'
       });
     } catch (error) {
+      console.error('Error formatting date:', error);
       return 'Invalid date';
     }
   }, []);
@@ -340,6 +338,15 @@ const ChargeManagement = () => {
       return filteredCharges;
     }
   }, [canManageCharges, activeTab, systemCharges, optionalCharges, charges]);
+
+    if (user?.role !== 'merchant' && user?.role !== 'manager') {
+    return (
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+        <p className="text-gray-600">Only merchants and manager can access charges management.</p>
+      </div>
+    );
+  }
 
   return (
     <main role="main">

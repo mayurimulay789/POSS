@@ -72,7 +72,7 @@ const BaseSidebar = ({
       task_management: '✅',
       expense_management: '💸',
       customer_management: '🧑‍🤝‍🧑',
-      reports_analytics: '📈',
+      // reports_analytics: '📈',
       employee_management: '👥',
       permission_management: '🔐',
       charges_management: '💲',
@@ -192,7 +192,7 @@ const BaseSidebar = ({
     management: normalizedSidebarItems.filter(i =>
       ['/hotel-images', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
-    analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
+    analytics: normalizedSidebarItems.filter(i => i.path === '/'),
     administration: normalizedSidebarItems.filter(i =>
       ['/employees', '/permission-management', '/landing-page', '/charges','/attendance-dashboard','/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'].includes(i.path)
     )
@@ -276,7 +276,7 @@ const BaseSidebar = ({
             {renderGroup('main', groupedItems.main)}
             {renderGroup('operations', groupedItems.operations, 'Operations')}
             {renderGroup('management', groupedItems.management, 'Management')}
-            {renderGroup('analytics', groupedItems.analytics, 'Analytics')}
+            {/* {renderGroup('analytics', groupedItems.analytics, 'Analytics')} */}
             {renderGroup('administration', groupedItems.administration, 'Administration')}
           </>
         )}

@@ -26,8 +26,6 @@ const SupervisorDashboard = () => {
     teamStats,
     taskStats,
     dailyStats,
-    performanceMetrics,
-    quickActions = []
   } = data;
 
   return (
@@ -151,31 +149,6 @@ const SupervisorDashboard = () => {
           <div className="text-center p-4 bg-yellow-50 rounded-lg">
             <div className="text-2xl font-bold text-yellow-600">{dailyStats?.tasksCreated || 0}</div>
             <div className="text-sm text-gray-600">Tasks Created</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Performance Metrics */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Metrics</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="text-center p-4">
-            <div className="text-3xl font-bold text-gray-800">
-              {performanceMetrics?.taskCompletionRate || '0%'}
-            </div>
-            <div className="text-sm text-gray-600">Task Completion Rate</div>
-          </div>
-          <div className="text-center p-4">
-            <div className="text-3xl font-bold text-gray-800">
-              {performanceMetrics?.customerSatisfaction || '0%'}
-            </div>
-            <div className="text-sm text-gray-600">Customer Satisfaction</div>
-          </div>
-          <div className="text-center p-4">
-            <div className="text-3xl font-bold text-gray-800">
-              {performanceMetrics?.expenseEfficiency || 'Good'}
-            </div>
-            <div className="text-sm text-gray-600">Expense Efficiency</div>
           </div>
         </div>
       </div>

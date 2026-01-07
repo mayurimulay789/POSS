@@ -7,7 +7,7 @@ import BarChartComponent from './common/BarChartComponent';
 import PieChartComponent from './common/PieChartComponent';
 
 const MerchantDashboard = () => {
-  const { data, loading, refreshDashboard } = useDashboard();
+  const { data, refreshDashboard } = useDashboard();
 
   const generateCustomerGrowthData = () => {
     if (!data) return [];
@@ -80,7 +80,7 @@ const MerchantDashboard = () => {
     );
   }
 
-  const { customerStats,orderStats, employeeStats, financialStats, taskStats, recentActivity = [], trends = {} } = data;
+  const { customerStats,orderStats, employeeStats, financialStats, taskStats, recentActivity = [] } = data;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] mx-auto">

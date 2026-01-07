@@ -105,10 +105,6 @@ const AttendanceCalendar = ({
     if (onMonthChange) onMonthChange(newMonth, newYear);
   };
 
-  const handleExport = () => {
-    alert('Export feature coming soon...');
-  };
-
   const days = generateCalendarDays();
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -144,12 +140,7 @@ const AttendanceCalendar = ({
             >
               <Filter className="w-4 h-4" />
             </button>
-            <button
-              onClick={handleExport}
-              className="p-1.5 border border-gray-300 rounded-lg"
-            >
-              <Download className="w-4 h-4" />
-            </button>
+           
           </div>
         </div>
 
@@ -283,16 +274,6 @@ const AttendanceCalendar = ({
           <div>
             {/* <h2 className="text-xl font-semibold text-gray-800">Attendance Calendar</h2> */}
             <p className="text-gray-600">View monthly attendance for employees</p>
-          </div>
-          
-          <div className="flex space-x-3 mt-4 md:mt-0">
-            <button
-              onClick={handleExport}
-              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </button>
           </div>
         </div>
 

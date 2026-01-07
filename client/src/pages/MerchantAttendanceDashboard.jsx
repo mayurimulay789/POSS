@@ -5,10 +5,8 @@ import {
   getTeamAttendance,
   getAttendanceAnalytics,
   approveAttendance,
-  exportAttendance,
   clearError,
   clearSuccess,
-  setFilters,
   getAttendanceCalendar,
   getMerchantUsers,
   selectAllAttendance,
@@ -17,8 +15,6 @@ import {
   selectMerchantAttendanceLoading,
   selectMerchantAttendanceError,
   selectMerchantAttendanceSuccess,
-  selectMerchantAttendanceStats,
-  selectMerchantAttendanceFilters,
   selectCalendarData,
   selectMerchantUsers,
   selectCalendarLoading
@@ -56,8 +52,6 @@ const MerchantAttendanceDashboard = () => {
   const loading = useSelector(selectMerchantAttendanceLoading);
   const error = useSelector(selectMerchantAttendanceError);
   const success = useSelector(selectMerchantAttendanceSuccess);
-  const stats = useSelector(selectMerchantAttendanceStats);
-  const filters = useSelector(selectMerchantAttendanceFilters);
   const calendarData = useSelector(selectCalendarData);
   const merchantUsers = useSelector(selectMerchantUsers);
   const calendarLoading = useSelector(selectCalendarLoading);
@@ -211,8 +205,8 @@ const MerchantAttendanceDashboard = () => {
       console.error('Export failed:', error);
       // Fallback: Try direct download approach
       try {
-        const token = localStorage.getItem('token');
-        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+  
         
         const queryParams = new URLSearchParams({
           format: 'csv',
@@ -249,7 +243,7 @@ const MerchantAttendanceDashboard = () => {
       setExportLoading(true);
       
       const token = localStorage.getItem('token');
-      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
       
       // Create a simple export with current filters
       const params = new URLSearchParams();
@@ -304,10 +298,7 @@ const MerchantAttendanceDashboard = () => {
     setSelectedDate(date);
   };
 
-  const handleApplyFilters = (newFilters) => {
-    dispatch(setFilters(newFilters));
-    loadData();
-  };
+
 
   const handleCalendarMonthChange = (month, year) => {
     setCalendarMonth(month);

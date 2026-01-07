@@ -266,25 +266,6 @@ const ManagerDashboard = () => {
       ];
     };
   
-    const generateExpenseDistributionData = () => {
-      if (!data) return [];
-      const paymentMethods = data.financialStats?.expensesByPaymentMethod || {};
-      return Object.entries(paymentMethods).map(([method, amountObj]) => ({
-        name: method.charAt(0).toUpperCase() + method.slice(1).replace('_', ' '),
-        amount: typeof amountObj === 'object' ? amountObj.amount || 0 : amountObj || 0,
-      }));
-    };
-  
-    const generateMembershipDistributionData = () => {
-      if (!data) return [];
-      const breakdown = data.customerStats?.membershipStats?.membershipBreakdown || {};
-      return Object.entries(breakdown)
-        .map(([type, count]) => ({
-          name: type.charAt(0).toUpperCase() + type.slice(1),
-          value: count,
-        }))
-        .filter(item => item.name !== 'None');
-    };
 
 
   const generateTaskStatusData = () => {
@@ -323,9 +304,7 @@ const ManagerDashboard = () => {
     customerStats,
     orderStats,
     teamStats,
-    taskStats,
     expenseStats,
-    upcomingDeadlines = []
   } = data;
 
   return (

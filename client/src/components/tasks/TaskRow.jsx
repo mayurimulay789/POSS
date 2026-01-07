@@ -99,6 +99,7 @@ const TaskRow = ({
               )}
               
               {canEdit && (
+  
                 <button
                   onClick={() => onEdit(task)}
                   className="flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded text-sm hover:bg-blue-100"
@@ -107,6 +108,7 @@ const TaskRow = ({
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
                 </button>
+
               )}
               
               {canDelete && (

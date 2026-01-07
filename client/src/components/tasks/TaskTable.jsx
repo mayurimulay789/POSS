@@ -83,7 +83,7 @@ const DesktopRow = ({
             </button>
           )}
           
-          {canEdit && (
+          {canEdit && task.status!='completed' && (
             <button
               onClick={() => onEdit(task)}
               className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
@@ -93,7 +93,7 @@ const DesktopRow = ({
             </button>
           )}
           
-          {canDelete && (
+          {canDelete && task.status!='completed' && (
             <button
               onClick={() => onDelete(task)}
               className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"

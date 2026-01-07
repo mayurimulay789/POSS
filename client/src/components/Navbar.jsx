@@ -274,6 +274,15 @@ const Navbar = () => {
                   Dashboard
                 </button>
 
+               <button
+                  onClick={handleAttendanceNavigation}
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50"
+                >
+                  <span>📅</span>
+                  Attendance
+                </button>
+
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50"

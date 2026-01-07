@@ -8,8 +8,15 @@ export const useDashboard = () => {
   const { data, loading, error, role, lastFetched } = useSelector((state) => state.dashboard);
   const { user } = useSelector((state) => state.auth);
 
+  // const loadDashboard = useCallback(() => {
+  //   if (user?.role) {
+  //     dispatch(fetchDashboardData(user.role));
+  //   }
+  // }, [dispatch, user?.role]);
+
   const loadDashboard = useCallback(() => {
     if (user?.role) {
+      console.log("Loading dashboard for role:", user.role);
       dispatch(fetchDashboardData(user.role));
     }
   }, [dispatch, user?.role]);

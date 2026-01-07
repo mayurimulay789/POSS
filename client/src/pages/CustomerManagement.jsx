@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import {
   createCustomer,
   getCustomers,
@@ -30,19 +29,16 @@ import {
 
 const CustomerManagement = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   const {
     customers,
     myCustomers,
-    currentCustomer,
     loading,
     error,
     success,
     pagination,
     filters,
     stats,
-    listStats
   } = useSelector((state) => state.customers);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -233,6 +229,7 @@ const CustomerManagement = () => {
         minute: '2-digit'
       });
     } catch (error) {
+      console.error(error);
       return 'Invalid date';
     }
   };

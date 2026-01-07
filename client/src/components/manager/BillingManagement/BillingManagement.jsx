@@ -356,7 +356,8 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
         
         <!-- Tax Amount -->
         <tr class="tax-row">
-          <td colspan="3" style="text-align: right;">CGST & SGST:</td>
+          <td colspan="3" style="text-align: right;">CGST & SGST (${systemChargesSummary?.totalSystemChargeRate || 0}%)</td>
+
           <td style="text-align: right;">+ ₹${order.taxAmount?.toFixed(2) || '0.00'}</td>
         </tr>
         
@@ -547,7 +548,7 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
                       ) : (
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="block text-sm font-semibold text-gray-700">Discount</label>
+                            <label className="block text-sm font-semibold text-gray-700">Discount (%)</label>
                             <button
                               type="button"
                               onClick={() => {
