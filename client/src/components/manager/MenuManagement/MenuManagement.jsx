@@ -15,6 +15,7 @@ import API_BASE_URL from '../../../config/apiConfig';
 const MenuManagement = () => {
   const dispatch = useDispatch();
   const { items, loading } = useSelector(state => state.menu);
+  const [categories, setCategories] = useState([]);
   const [catName, setCatName] = useState('');
   const [parentCat, setParentCat] = useState('');
 
@@ -40,7 +41,17 @@ const MenuManagement = () => {
 
   useEffect(() => {
     dispatch(fetchMenuItems());
+    fetchCategories();
   }, [dispatch]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/menu/categories`);
+      setCategories(response.data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
 
   useEffect(() => {
     if (!toast) return;
@@ -82,7 +93,7 @@ const MenuManagement = () => {
       await axios.post(`${API_BASE_URL}/menu/categories`, { name: trimmedName, parent: parentTarget });
       setCatName('');
       setParentCat('');
-      fetchData();
+      fetchCategories();
       window.dispatchEvent(new CustomEvent('menuUpdated'));
     } catch (err) {
       console.error(err);
@@ -131,7 +142,7 @@ const MenuManagement = () => {
       setItemForm({ name: '', description: '', price: '', category: '', image: null });
       setEditingItemId(null);
       setToast(editingItemId ? 'Item updated' : 'Item created');
-      fetchData();
+      dispatch(fetchMenuItems());
       window.dispatchEvent(new CustomEvent('menuUpdated'));
     } catch (err) {
       console.error(err);
@@ -161,7 +172,7 @@ const MenuManagement = () => {
       const msg = (res && res.data && res.data.message) ? res.data.message : 'File uploaded successfully';
       setExcelStatus(msg);
       setExcelFile(null);
-      fetchData();
+      dispatch(fetchMenuItems());
       window.dispatchEvent(new CustomEvent('menuUpdated'));
       setTimeout(() => setExcelStatus(null), 4000);
     } catch (err) {
@@ -174,7 +185,7 @@ const MenuManagement = () => {
 
   return (
     <div ref={topRef} className="p-4">
-      <h1 className="text-2xl font-bold text-gray-800 mb-3">Menu Management — Manager</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-3">Menu Management </h1>
       {toast && <div className="mb-3 p-2 bg-red-100 text-green-800 rounded">{toast}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -271,7 +282,7 @@ const MenuManagement = () => {
                           console.log('Delete response', res && res.data);
                           const msg = res && res.data && res.data.message ? res.data.message : 'Item deleted';
                           setToast(msg);
-                          fetchData();
+                          dispatch(fetchMenuItems());
                         } catch (err) {
                           console.error('Delete error', err, err && err.response && err.response.data);
                           const reason = err && err.response && err.response.data && err.response.data.message ? err.response.data.message : (err.message || 'Delete failed');

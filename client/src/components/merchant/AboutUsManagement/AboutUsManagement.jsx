@@ -227,17 +227,17 @@ const AboutUsManagement = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-4 md:p-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-start mb-2">
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-2">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">About Us Management</h1>
-            <p className="text-sm text-gray-600 mt-1">Manage your about us page content</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">About Us Management</h1>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage your about us page content</p>
           </div>
           <button
             onClick={handleEdit}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
           >
             Edit About Us
           </button>
@@ -246,97 +246,138 @@ const AboutUsManagement = () => {
 
       {/* Messages */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+        <div className="mb-4 p-2 sm:p-3 bg-red-100 text-red-700 rounded-lg text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+        <div className="mb-4 p-2 sm:p-3 bg-green-100 text-green-700 rounded-lg text-sm">
           About Us updated successfully!
         </div>
       )}
 
       {/* Summary Card */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+      {loading ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+        </div>
+      ) : !data || Object.keys(data).length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500 text-sm">
+          No about us content found. Click "Edit About Us" to add content.
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Preview</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Highlights</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Values</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">About Us Page</div>
+                      <div className="text-xs text-gray-500">Main content</div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4">
+                      <div className="text-sm text-gray-900 max-w-xs">
+                        <p className="truncate mb-1"><span className="font-medium">Main:</span> {form.mainDescription || 'Not set'}</p>
+                        <p className="truncate text-xs text-gray-600"><span className="font-medium">Rhythm:</span> {form.rhythmTitle || 'Not set'}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                        {form.highlights.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                        {form.values.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                        {form.stats.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={handleEdit}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        ) : !data || Object.keys(data).length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No about us content found. Click "Edit About Us" to add content.
+
+          {/* Mobile Card View */}
+          <div className="md:hidden bg-white rounded-lg shadow p-4 space-y-3">
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Section</p>
+              <p className="text-sm text-gray-900 font-medium">About Us Page</p>
+              <p className="text-xs text-gray-500">Main content</p>
+            </div>
+            
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Content Preview</p>
+              <p className="text-sm text-gray-900 truncate"><span className="font-medium">Main:</span> {form.mainDescription || 'Not set'}</p>
+              <p className="text-xs text-gray-600 truncate"><span className="font-medium">Rhythm:</span> {form.rhythmTitle || 'Not set'}</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                {form.highlights.length} Highlights
+              </span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                {form.values.length} Values
+              </span>
+              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                {form.stats.length} Stats
+              </span>
+            </div>
+            
+            <div className="pt-2 border-t">
+              <button
+                onClick={handleEdit}
+                className="w-full px-3 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors"
+              >
+                Edit About Us
+              </button>
+            </div>
           </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Preview</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Highlights</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Values</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              <tr className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">About Us Page</div>
-                  <div className="text-xs text-gray-500">Main content</div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs">
-                    <p className="truncate mb-1"><span className="font-medium">Main:</span> {form.mainDescription || 'Not set'}</p>
-                    <p className="truncate text-xs text-gray-600"><span className="font-medium">Rhythm:</span> {form.rhythmTitle || 'Not set'}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
-                    {form.highlights.length} items
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
-                    {form.values.length} items
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
-                    {form.stats.length} items
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={handleEdit}
-                    className="text-blue-600 hover:text-blue-900 mr-3"
-                  >
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full my-8">
-            <div className="p-6 border-b bg-white sticky top-0 z-10">
-              <h2 className="text-xl font-semibold text-gray-800">Edit About Us Content</h2>
-              <p className="text-sm text-gray-600 mt-1">Update all sections of your About Us page</p>
+            <div className="p-4 sm:p-6 border-b bg-white sticky top-0 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Edit About Us Content</h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">Update all sections of your About Us page</p>
             </div>
             <form onSubmit={handleSubmit} className="max-h-[calc(90vh-8rem)] overflow-y-auto">
-              <div className="p-6 space-y-6">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                 {/* Main Text Sections */}
-                <div className="bg-gray-50 p-4 rounded-lg space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2">Main Text Content</h3>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-3 sm:space-y-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2">Main Text Content</h3>
                   
                   {/* Main Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Main Description *</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Main Description *</label>
                     <textarea
                       name="mainDescription"
                       value={form.mainDescription}
@@ -344,7 +385,7 @@ const AboutUsManagement = () => {
                       required
                       rows="4"
                       placeholder="Main description of your restaurant (20-2000 characters)"
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                      className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                         validationErrors.mainDescription ? 'border-red-500' : ''
                       }`}
                     />
@@ -354,10 +395,10 @@ const AboutUsManagement = () => {
                     <p className="text-xs text-gray-500 mt-1">{form.mainDescription.length}/2000</p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                     {/* Rhythm Title */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Rhythm Title *</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Title *</label>
                       <input
                         type="text"
                         name="rhythmTitle"
@@ -365,7 +406,7 @@ const AboutUsManagement = () => {
                         onChange={handleChange}
                         required
                         placeholder="e.g., Experience the Rhythm of Flavors"
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                           validationErrors.rhythmTitle ? 'border-red-500' : ''
                         }`}
                       />
@@ -376,7 +417,7 @@ const AboutUsManagement = () => {
 
                     {/* Rhythm Quote */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Rhythm Quote *</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Quote *</label>
                       <input
                         type="text"
                         name="rhythmQuote"
@@ -384,7 +425,7 @@ const AboutUsManagement = () => {
                         onChange={handleChange}
                         required
                         placeholder="A memorable quote (10-500 characters)"
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                        className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                           validationErrors.rhythmQuote ? 'border-red-500' : ''
                         }`}
                       />
@@ -396,7 +437,7 @@ const AboutUsManagement = () => {
 
                   {/* Rhythm Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Rhythm Description *</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Description *</label>
                     <textarea
                       name="rhythmDescription"
                       value={form.rhythmDescription}
@@ -404,7 +445,7 @@ const AboutUsManagement = () => {
                       required
                       rows="3"
                       placeholder="Description for rhythm section (20-1000 characters)"
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                      className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
                         validationErrors.rhythmDescription ? 'border-red-500' : ''
                       }`}
                     />
@@ -415,10 +456,10 @@ const AboutUsManagement = () => {
                 </div>
 
                 {/* Highlights Section */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Highlights * (Current: {form.highlights.length})</h3>
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Highlights * (Current: {form.highlights.length})</h3>
                   {validationErrors.highlights && (
-                    <p className="text-sm text-red-600 mb-2">{validationErrors.highlights}</p>
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.highlights}</p>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                     {form.highlights.map((highlight, index) => (
@@ -439,13 +480,13 @@ const AboutUsManagement = () => {
                     ))}
                   </div>
                   <div className="space-y-2 border-2 border-dashed border-blue-300 p-3 rounded bg-white">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Add New Highlight</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Add New Highlight</p>
                     <input
                       type="text"
                       value={newHighlight.title}
                       onChange={e => setNewHighlight({ ...newHighlight, title: e.target.value })}
                       placeholder="Title (e.g., Best Chefs)"
-                      className={`w-full px-3 py-2 border rounded ${validationErrors.newHighlight?.title ? 'border-red-500' : ''}`}
+                      className={`w-full px-3 py-2 text-sm border rounded ${validationErrors.newHighlight?.title ? 'border-red-500' : ''}`}
                     />
                     {validationErrors.newHighlight?.title && (
                       <p className="text-xs text-red-600">{validationErrors.newHighlight.title}</p>
@@ -455,7 +496,7 @@ const AboutUsManagement = () => {
                       onChange={e => setNewHighlight({ ...newHighlight, description: e.target.value })}
                       placeholder="Description"
                       rows="2"
-                      className={`w-full px-3 py-2 border rounded ${validationErrors.newHighlight?.description ? 'border-red-500' : ''}`}
+                      className={`w-full px-3 py-2 text-sm border rounded ${validationErrors.newHighlight?.description ? 'border-red-500' : ''}`}
                     />
                     {validationErrors.newHighlight?.description && (
                       <p className="text-xs text-red-600">{validationErrors.newHighlight.description}</p>
@@ -478,7 +519,7 @@ const AboutUsManagement = () => {
                     <button
                       type="button"
                       onClick={handleAddHighlight}
-                      className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-medium"
+                      className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs sm:text-sm font-medium"
                     >
                       + Add Highlight
                     </button>
@@ -486,10 +527,10 @@ const AboutUsManagement = () => {
                 </div>
 
                 {/* Values Section */}
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Core Values * (Current: {form.values.length})</h3>
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Core Values * (Current: {form.values.length})</h3>
                   {validationErrors.values && (
-                    <p className="text-sm text-red-600 mb-2">{validationErrors.values}</p>
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.values}</p>
                   )}
                   <div className="flex flex-wrap gap-2 mb-3">
                     {form.values.map((value, index) => (
@@ -505,18 +546,18 @@ const AboutUsManagement = () => {
                       </span>
                     ))}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
                       value={newValue}
                       onChange={e => setNewValue(e.target.value)}
                       placeholder="Add a core value (e.g., Quality, Integrity)"
-                      className={`flex-1 px-3 py-2 border rounded ${validationErrors.newValue ? 'border-red-500' : ''}`}
+                      className={`flex-1 px-3 py-2 text-sm border rounded ${validationErrors.newValue ? 'border-red-500' : ''}`}
                     />
                     <button
                       type="button"
                       onClick={handleAddValue}
-                      className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"
+                      className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium text-sm"
                     >
                       Add
                     </button>
@@ -527,10 +568,10 @@ const AboutUsManagement = () => {
                 </div>
 
                 {/* Statistics Section */}
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Statistics * (Current: {form.stats.length})</h3>
+                <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Statistics * (Current: {form.stats.length})</h3>
                   {validationErrors.stats && (
-                    <p className="text-sm text-red-600 mb-2">{validationErrors.stats}</p>
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.stats}</p>
                   )}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
                     {form.stats.map((stat, index) => (
@@ -588,7 +629,7 @@ const AboutUsManagement = () => {
                     <button
                       type="button"
                       onClick={handleAddStat}
-                      className="md:col-span-3 px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm font-medium"
+                      className="md:col-span-3 px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs sm:text-sm font-medium"
                     >
                       + Add Statistic
                     </button>
@@ -596,18 +637,18 @@ const AboutUsManagement = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50 sticky bottom-0">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t bg-gray-50 sticky bottom-0">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+                  className="w-full sm:w-auto px-6 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium order-2 sm:order-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  className="w-full sm:w-auto px-6 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium order-1 sm:order-2"
                 >
                   {loading ? 'Saving...' : 'Save All Changes'}
                 </button>

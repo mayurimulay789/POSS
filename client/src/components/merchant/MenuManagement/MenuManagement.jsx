@@ -43,30 +43,25 @@ const MenuManagement = () => {
   };
 
   useEffect(() => {
-    fetchData();
-    const handler = () => fetchData();
-    window.addEventListener('menuUpdated', handler);
-    return () => window.removeEventListener('menuUpdated', handler);
-  }, []);
+    dispatch(fetchMenuItems());
+    fetchCategories();
+  }, [dispatch]);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/menu/categories`);
+      const data = await response.json();
+      setCategories(data || []);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
 
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 3000);
     return () => clearTimeout(t);
   }, [toast]);
-
-  const fetchData = async () => {
-    try {
-      const [catRes, itemRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/menu/categories`).then(r => r.json()),
-        fetch(`${API_BASE_URL}/menu/items`).then(r => r.json())
-      ]);
-      setCategories(catRes || []);
-      // Using Redux state instead of local state
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   // Build auth headers if token exists in localStorage
   const getAuthHeaders = () => {
@@ -107,7 +102,7 @@ const MenuManagement = () => {
       if (response.ok) {
         setCatName('');
         setParentCat('');
-        fetchData();
+        fetchCategories();
         window.dispatchEvent(new CustomEvent('menuUpdated'));
       } else {
         const data = await response.json();
@@ -170,7 +165,7 @@ const MenuManagement = () => {
         setItemForm({ name: '', description: '', price: '', category: '', image: null });
         setEditingItemId(null);
         setToast(editingItemId ? 'Item updated' : 'Item created');
-        fetchData();
+        dispatch(fetchMenuItems());
         window.dispatchEvent(new CustomEvent('menuUpdated'));
       } else {
         const errorData = await response.json();
@@ -204,7 +199,7 @@ const MenuManagement = () => {
         const data = await response.json();
         setExcelStatus(data?.message || 'File uploaded successfully');
         setExcelFile(null);
-        fetchData();
+        dispatch(fetchMenuItems());
         window.dispatchEvent(new CustomEvent('menuUpdated'));
         setTimeout(() => setExcelStatus(null), 4000);
       } else {
@@ -229,7 +224,7 @@ const MenuManagement = () => {
       if (response.ok) {
         const data = await response.json();
         setToast(data?.message || 'Item deleted');
-        fetchData();
+        dispatch(fetchMenuItems());
       } else {
         setToast('Failed to delete item');
       }

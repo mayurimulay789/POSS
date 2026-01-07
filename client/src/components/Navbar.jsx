@@ -1,7 +1,3 @@
-  // Toggle mobile menu open/close
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((prev) => !prev);
-  };
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { logoutUser } from '../store/slices/authSlice';
@@ -17,6 +13,11 @@ const Navbar = () => {
   const logoUrl = useSelector((state) => state.logo.logoUrl);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
+
+  // Toggle mobile menu open/close
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
 
   // Fetch logo on initial mount
   useEffect(() => {

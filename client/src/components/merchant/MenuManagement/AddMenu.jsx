@@ -16,9 +16,9 @@ const AddMenu = () => {
           <p className="text-gray-600 mb-4">
             You do not have permission to add menu items.
           </p>
-          <p className="text-sm text-gray-500">
+          {/* <p className="text-sm text-gray-500">
             Only merchants and managers can add or modify menu items and categories.
-          </p>
+          </p> */}
         </div>
       </div>
     );
@@ -187,7 +187,7 @@ const AddMenu = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Menu — Merchant</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Menu </h1>
       {toast && <div className="mb-4 p-2 bg-red-300 text-black-800 rounded">{toast}</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Step 1: Create Category */}

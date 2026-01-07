@@ -61,7 +61,15 @@ const tableSlice = createSlice({
   initialState,
   reducers: {
     clearSuccess: (state) => { state.success = false; },
-    clearError: (state) => { state.error = null; }
+    clearError: (state) => { state.error = null; },
+    // Optimistic update - immediately update UI before API call
+    optimisticUpdateTable: (state, action) => {
+      const { id, data } = action.payload;
+      const idx = state.items.findIndex(i => i._id === id);
+      if (idx > -1) {
+        state.items[idx] = { ...state.items[idx], ...data };
+      }
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -100,7 +108,10 @@ const tableSlice = createSlice({
         state.loading = false;
         const updated = action.payload.data || action.payload;
         const idx = state.items.findIndex(s => s._id === updated._id);
-        if (idx > -1) state.items[idx] = updated;
+        // Merge server response with existing state to prevent overwriting optimistic updates
+        if (idx > -1) {
+          state.items[idx] = { ...state.items[idx], ...updated };
+        }
         state.success = true;
       })
       .addCase(updateTable.rejected, (state, action) => {
@@ -125,5 +136,5 @@ const tableSlice = createSlice({
   }
 });
 
-export const { clearSuccess, clearError } = tableSlice.actions;
+export const { clearSuccess, clearError, optimisticUpdateTable } = tableSlice.actions;
 export default tableSlice.reducer;

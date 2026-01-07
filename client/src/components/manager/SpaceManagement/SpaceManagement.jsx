@@ -1,7 +1,7 @@
 // ...existing code...
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError } from '../../../store/slices/tableSlice';
+import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError, optimisticUpdateTable } from '../../../store/slices/tableSlice';
 import { MdTableRestaurant } from 'react-icons/md';
 
 const SpaceManagement = () => {
@@ -84,23 +84,29 @@ const SpaceManagement = () => {
     e.stopPropagation();
     try {
       const isReserving = !table.isReserved;
+      const updateData = {
+        tableName: table.tableName,
+        capacity: table.capacity,
+        spaceType: table.spaceType,
+        status: table.status || 'available',
+        orderedMenu: table.orderedMenu || [],
+        totalBill: table.totalBill || 0,
+        isReserved: isReserving
+      };
+      
+      // Optimistic update
+      dispatch(optimisticUpdateTable({ id: table._id, data: updateData }));
+      
       await dispatch(updateTable({
         id: table._id,
-        data: {
-          tableName: table.tableName,
-          capacity: table.capacity,
-          spaceType: table.spaceType,
-          status: table.status || 'available',
-          orderedMenu: table.orderedMenu || [],
-          totalBill: table.totalBill || 0,
-          isReserved: isReserving
-        }
+        data: updateData
       })).unwrap();
-      alert(isReserving ? 'Table reserved successfully!' : 'Reservation cancelled!');
+      
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error updating table:', err.message || err);
-      alert('Failed to update table');
+      // Revert on error
+      dispatch(fetchTables());
     }
   };
 
@@ -110,23 +116,29 @@ const SpaceManagement = () => {
       return;
     }
     try {
+      const updateData = {
+        tableName: table.tableName,
+        capacity: table.capacity,
+        spaceType: table.spaceType,
+        status: 'available',
+        orderedMenu: [],
+        totalBill: 0,
+        isReserved: false
+      };
+      
+      // Optimistic update
+      dispatch(optimisticUpdateTable({ id: table._id, data: updateData }));
+      
       await dispatch(updateTable({
         id: table._id,
-        data: {
-          tableName: table.tableName,
-          capacity: table.capacity,
-          spaceType: table.spaceType,
-          status: 'available',
-          orderedMenu: [],
-          totalBill: 0,
-          isReserved: false
-        }
+        data: updateData
       })).unwrap();
-      alert('Table cleared successfully!');
+      
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error clearing table:', err.message || err);
-      alert('Failed to clear table');
+      // Revert on error
+      dispatch(fetchTables());
     }
   };
 
@@ -144,7 +156,6 @@ const SpaceManagement = () => {
         spaceType: formData.spaceType || 'Tables'
       };
       await dispatch(createTable(payload)).unwrap();
-      await dispatch(fetchTables());
       alert('Table created successfully!');
       setShowAddForm(false);
       resetForm();
@@ -172,7 +183,6 @@ const SpaceManagement = () => {
         id: editingTable._id,
         data: payload
       })).unwrap();
-      await dispatch(fetchTables());
       alert('Table updated successfully!');
       setShowEditForm(false);
       setEditingTable(null);
@@ -201,7 +211,6 @@ const SpaceManagement = () => {
 
     try {
       await dispatch(deleteTable(tableId)).unwrap();
-      await dispatch(fetchTables());
       alert('Table deleted successfully!');
       dispatch(clearSuccess());
     } catch (err) {

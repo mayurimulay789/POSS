@@ -113,7 +113,10 @@ const hotelImageSlice = createSlice({
         // Don't change loading state - optimistic update already handled UI
         const updated = action.payload.data || action.payload;
         const idx = state.items.findIndex(i => i._id === updated._id);
-        if (idx > -1) state.items[idx] = updated;
+        // Merge server response with existing state to prevent overwriting optimistic updates
+        if (idx > -1) {
+          state.items[idx] = { ...state.items[idx], ...updated };
+        }
         state.success = true;
       })
       .addCase(updateHotelImage.rejected, (state, action) => {

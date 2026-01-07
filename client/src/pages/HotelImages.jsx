@@ -63,6 +63,27 @@ const HotelImages = () => {
       });
   }, [dispatch]);
 
+  // Handle exclusive selection (only one image can have this property)
+  const handleExclusiveSelection = useCallback(async (currentId, property, isChecked) => {
+    if (!isChecked) {
+      // If unchecking, just update current image
+      immediateUpdate(currentId, { [property]: false });
+      return;
+    }
+
+    // If checking, first uncheck all other images with this property
+    const otherImages = imageList.filter(img => img._id !== currentId && img[property]);
+    
+    // Uncheck all other images first
+    for (const img of otherImages) {
+      dispatch(optimisticUpdate({ id: img._id, data: { [property]: false } }));
+      await dispatch(updateHotelImage({ id: img._id, data: { [property]: false } })).unwrap().catch(() => {});
+    }
+
+    // Then check the current image
+    immediateUpdate(currentId, { [property]: true });
+  }, [imageList, dispatch, immediateUpdate]);
+
   // Cleanup debounce timers on unmount
   useEffect(() => {
     return () => {
@@ -71,14 +92,14 @@ const HotelImages = () => {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold text-gray-800">Hotel Images</h1>
+    <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Hotel Images</h1>
           {canEdit && (
             <button
               onClick={handleAddImagesClick}
-              className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base whitespace-nowrap"
             >
               <span>➕</span>
               <span>Add Images</span>
@@ -86,7 +107,7 @@ const HotelImages = () => {
           )}
         </div>
         {!canEdit && (
-          <p className="text-gray-600 mb-4 text-sm">View only - You can see hotel images but cannot modify them.</p>
+          <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">View only - You can see hotel images but cannot modify them.</p>
         )}
 
         {/* Hidden file input to trigger on button click */}
@@ -122,31 +143,31 @@ const HotelImages = () => {
           />
         )}
         {(toast || error) && (
-          <div className={`mb-4 p-2 rounded ${error ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          <div className={`mb-3 sm:mb-4 p-2 text-sm rounded ${error ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
             {error || toast}
           </div>
         )}
 
         {loading ? (
-          <div>Loading...</div>
+          <div className="text-sm">Loading...</div>
         ) : imageList.length === 0 ? (
-          <div className="flex items-center justify-center h-40 border-2 border-dashed border-gray-300 rounded-lg text-gray-500">
+          <div className="flex items-center justify-center h-32 sm:h-40 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-xs sm:text-sm">
             No images yet. Click "Add Images" to upload.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {imageList.map(img => (
               <div key={img._id} className="border rounded-lg overflow-hidden">
-                <img src={img.url} alt={img.alt || img.title || 'Hotel image'} className="w-full h-40 object-cover" />
+                <img src={img.url} alt={img.alt || img.title || 'Hotel image'} className="w-full h-32 sm:h-40 object-cover" />
                 
                 {canEdit ? (
                   // Full edit controls for merchant and manager
-                  <div className="p-3 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                  <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-4 w-4"
+                          className="h-3 w-3 sm:h-4 sm:w-4"
                           checked={!!img.isBanner}
                           onChange={(e) => {
                             immediateUpdate(img._id, { isBanner: e.target.checked });
@@ -155,7 +176,7 @@ const HotelImages = () => {
                         <span>Use in banner</span>
                       </label>
                       <button
-                        className="px-3 py-1 bg-red-600 text-white rounded disabled:opacity-60"
+                        className="px-2 sm:px-3 py-1 bg-red-600 text-white rounded disabled:opacity-60 text-xs sm:text-sm"
                         disabled={saving}
                         onClick={() => {
                           if (!confirm('Delete this image?')) return;
@@ -172,49 +193,41 @@ const HotelImages = () => {
                       >Delete</button>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 cursor-pointer"
+                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isWelcome}
                           onChange={(e) => {
-                            const val = e.target.checked;
-                            immediateUpdate(img._id, { 
-                              isWelcome: val, 
-                              isCuisineGallery: val ? false : img.isCuisineGallery 
-                            });
+                            handleExclusiveSelection(img._id, 'isWelcome', e.target.checked);
                           }}
                         />
                         <span>Use as welcome image</span>
                       </label>
-                      {img.isWelcome && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Selected</span>}
+                      {img.isWelcome && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 cursor-pointer"
+                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isCuisineGallery}
                           onChange={(e) => {
-                            const val = e.target.checked;
-                            immediateUpdate(img._id, { 
-                              isCuisineGallery: val, 
-                              isWelcome: val ? false : img.isWelcome 
-                            });
+                            handleExclusiveSelection(img._id, 'isCuisineGallery', e.target.checked);
                           }}
                         />
                         <span>Cuisine gallery background</span>
                       </label>
-                      {img.isCuisineGallery && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Selected</span>}
+                      {img.isCuisineGallery && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 cursor-pointer"
+                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isCuisineCard}
                           onChange={(e) => {
                             immediateUpdate(img._id, { isCuisineCard: e.target.checked });
@@ -222,22 +235,22 @@ const HotelImages = () => {
                         />
                         <span>Show in cuisine gallery</span>
                       </label>
-                      {img.isCuisineCard && <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Active</span>}
+                      {img.isCuisineCard && <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 sm:py-1 rounded">Active</span>}
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+                    <div className="flex items-center justify-between gap-2">
+                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-4 w-4 cursor-pointer"
+                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isLoginImage}
                           onChange={(e) => {
-                            immediateUpdate(img._id, { isLoginImage: e.target.checked });
+                            handleExclusiveSelection(img._id, 'isLoginImage', e.target.checked);
                           }}
                         />
                         <span>Use as login page image</span>
                       </label>
-                      {img.isLoginImage && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Selected</span>}
+                      {img.isLoginImage && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
                     </div>
 
                     <div>
@@ -249,13 +262,13 @@ const HotelImages = () => {
                           debouncedUpdate(img._id, { bannerHeading: e.target.value });
                         }}
                         placeholder="e.g., Come Join Us For A Magical Experience"
-                        className="w-full border rounded px-2 py-1.5 text-sm"
+                        className="w-full border rounded px-2 py-1.5 text-xs sm:text-sm"
                       />
                     </div>
 
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        className="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
+                        className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-xs sm:text-sm"
                         onClick={() => {
                           // Clear any pending updates for this image
                           if (debounceTimers.current[img._id]) {
@@ -270,8 +283,8 @@ const HotelImages = () => {
                   </div>
                 ) : (
                   // Read-only view for supervisor and staff
-                  <div className="p-3 space-y-2">
-                    <div className="flex flex-wrap gap-2">
+                  <div className="p-2 sm:p-3 space-y-2">
+                    <div className="flex flex-wrap gap-1 sm:gap-2">
                       {img.isBanner && (
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Banner</span>
                       )}
