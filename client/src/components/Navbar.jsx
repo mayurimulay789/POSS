@@ -137,23 +137,23 @@ const Navbar = () => {
             className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-lg' : 'text-white hover:text-[#F1A722]'}`}
           >
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-48 w-auto object-contain mt-0" style={{ maxWidth: 480 }} />
+              <img src={logoUrl} alt="Logo" className="h-32 sm:h-40 md:h-48 w-auto object-contain mt-0" style={{ maxWidth: '280px', maxHeight: '140px' }} />
             ) : (
-              <span className="text-6xl mt-0" style={{ color: '#F1A722' }}>🍽️</span>
+              <span className="text-4xl sm:text-5xl md:text-6xl mt-0" style={{ color: '#F1A722' }}>🍽️</span>
             )}
-            {!logoUrl && 'India Restaurant'}
+            {!logoUrl && <span className="text-base sm:text-lg md:text-xl">India Restaurant</span>}
           </Link>
 
           {/* HAMBURGER (MOBILE ONLY) */}
           <button
             onClick={toggleMobileMenu}
-            className={`md:hidden p-2 rounded focus:outline-none focus:ring-2 ${showTransparent ? 'text-white' : 'text-white'}`}
+            className={`md:hidden p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F1A722] transition-all ${showTransparent ? 'text-white bg-black/20 hover:bg-black/30' : 'text-white bg-[#0A2F46]/30 hover:bg-[#0A2F46]/50'}`}
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-between">
-              <span className={`w-full h-0.5 bg-current transition ${isMobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`} />
-              <span className={`w-full h-0.5 bg-current transition ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
-              <span className={`w-full h-0.5 bg-current transition ${isMobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`} />
+              <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2.5' : ''}`} />
+              <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'}`} />
+              <span className={`w-full h-0.5 bg-current transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`} />
             </div>
           </button>
 
@@ -227,7 +227,7 @@ const Navbar = () => {
 
         {/* MOBILE DROPDOWN */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-[#14AAAB] shadow-lg pb-3">
+          <div className="md:hidden bg-white border-t-2 border-[#14AAAB] shadow-2xl pb-3 animate-slideDown">
 
             {isAuthenticated ? (
               <>
@@ -269,7 +269,7 @@ const Navbar = () => {
                       key={link.label}
                       to={link.to}
                       onClick={goHome}
-                      className="block px-4 py-3 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/30 font-medium"
+                      className="block px-5 py-3.5 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/20 font-medium transition-all"
                     >
                       {link.label}
                     </Link>
@@ -277,7 +277,7 @@ const Navbar = () => {
                     <button
                       key={link.label}
                       onClick={() => scrollToSection(link.anchor)}
-                      className="block w-full text-left px-4 py-3 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/30 font-medium"
+                      className="block w-full text-left px-5 py-3.5 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/20 font-medium transition-all"
                     >
                       {link.label}
                     </button>
@@ -286,7 +286,7 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block mx-4 my-3 text-center bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-2 rounded-full transition-colors font-semibold shadow-lg hover:shadow-xl"
+                  className="block mx-4 my-4 text-center bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl"
                 >
                   Login
                 </Link>

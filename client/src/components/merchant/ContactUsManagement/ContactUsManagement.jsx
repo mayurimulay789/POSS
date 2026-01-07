@@ -49,9 +49,9 @@ const ContactUsManagement = () => {
   };
 
   const validateContactNo = (contactNo) => {
-    const phoneRegex = /^[+]?[\d\s\-()]{10,20}$/;
+    const phoneRegex = /^[0-9]{10}$/;
     if (!contactNo) return 'Contact number is required';
-    if (!phoneRegex.test(contactNo)) return 'Please enter a valid phone number (10-20 digits)';
+    if (!phoneRegex.test(contactNo)) return 'Contact number must be exactly 10 digits';
     return '';
   };
 
@@ -62,11 +62,27 @@ const ContactUsManagement = () => {
     return '';
   };
 
+  const validateGoogleMapLocation = (url) => {
+    // Optional field, but if provided must be valid URL
+    if (!url || url.trim() === '') return '';
+    
+    const urlRegex = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+    if (!urlRegex.test(url)) return 'Please enter a valid URL';
+    
+    // Check if it's a Google Maps URL
+    if (!url.includes('google.com/maps') && !url.includes('goo.gl/maps')) {
+      return 'Please enter a valid Google Maps URL';
+    }
+    
+    return '';
+  };
+
   const validateForm = () => {
     const errors = {
       email: validateEmail(form.email),
       contactNo: validateContactNo(form.contactNo),
-      address: validateAddress(form.address)
+      address: validateAddress(form.address),
+      googleMapLocation: validateGoogleMapLocation(form.googleMapLocation)
     };
     Object.keys(errors).forEach(key => {
       if (!errors[key]) delete errors[key];
@@ -77,13 +93,49 @@ const ContactUsManagement = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    
+    // For contact number, only allow digits and limit to 10 characters
+    if (name === 'contactNo') {
+      const numericValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+      setForm(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+    
+    // Clear error for this field when user starts typing
     if (validationErrors[name]) {
       setValidationErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
       });
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = '';
+    
+    // Validate on blur
+    switch(name) {
+      case 'email':
+        error = validateEmail(value);
+        break;
+      case 'contactNo':
+        error = validateContactNo(value);
+        break;
+      case 'address':
+        error = validateAddress(value);
+        break;
+      case 'googleMapLocation':
+        error = validateGoogleMapLocation(value);
+        break;
+      default:
+        break;
+    }
+    
+    if (error) {
+      setValidationErrors(prev => ({ ...prev, [name]: error }));
     }
   };
 
@@ -329,8 +381,14 @@ const ContactUsManagement = () => {
                   name="email"
                   value={form.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="example@email.com"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 ${
+                    validationErrors.email 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'focus:ring-green-500'
+                  }`}
                 />
                 {validationErrors.email && <p className="text-red-600 text-xs mt-1">{validationErrors.email}</p>}
               </div>
@@ -341,8 +399,16 @@ const ContactUsManagement = () => {
                   name="contactNo"
                   value={form.contactNo}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  maxLength="10"
+                  pattern="[0-9]{10}"
+                  placeholder="Enter 10-digit number"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 ${
+                    validationErrors.contactNo 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'focus:ring-green-500'
+                  }`}
                 />
                 {validationErrors.contactNo && <p className="text-red-600 text-xs mt-1">{validationErrors.contactNo}</p>}
               </div>
@@ -352,9 +418,15 @@ const ContactUsManagement = () => {
                   name="address"
                   value={form.address}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   required
                   rows="3"
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  placeholder="Enter complete address (minimum 10 characters)"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 ${
+                    validationErrors.address 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'focus:ring-green-500'
+                  }`}
                 ></textarea>
                 {validationErrors.address && <p className="text-red-600 text-xs mt-1">{validationErrors.address}</p>}
               </div>
@@ -365,9 +437,15 @@ const ContactUsManagement = () => {
                   name="googleMapLocation"
                   value={form.googleMapLocation}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="https://www.google.com/maps/..."
-                  className="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 ${
+                    validationErrors.googleMapLocation 
+                      ? 'border-red-500 focus:ring-red-500' 
+                      : 'focus:ring-green-500'
+                  }`}
                 />
+                {validationErrors.googleMapLocation && <p className="text-red-600 text-xs mt-1">{validationErrors.googleMapLocation}</p>}
               </div>
               <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sticky bottom-0 bg-white">
                 <button

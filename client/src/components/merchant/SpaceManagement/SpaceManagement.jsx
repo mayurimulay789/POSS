@@ -7,15 +7,7 @@ const SpaceManagement = () => {
   const dispatch = useDispatch();
   const { items: tables = [], loading, error, success } = useSelector(state => state.table);
 
-  // Error display (if error exists in Redux state)
-  let errorMessage = null;
-  if (error) {
-    errorMessage = (
-      <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        {error}
-      </div>
-    );
-  }
+  const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState('Tables');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -34,6 +26,12 @@ const SpaceManagement = () => {
   
   // The interval and cleanup logic have been removed from here
 }, [dispatch]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -145,7 +143,7 @@ const SpaceManagement = () => {
     e.preventDefault();
     const errors = getFormErrors();
     if (Object.keys(errors).length > 0) {
-      alert(Object.values(errors).join('\n'));
+      setToast(Object.values(errors).join('\n'));
       return;
     }
     try {
@@ -155,13 +153,18 @@ const SpaceManagement = () => {
         spaceType: formData.spaceType || 'Tables'
       };
       await dispatch(createTable(payload)).unwrap();
-      alert('Table created successfully!');
+      setToast('Table created successfully!');
       setShowAddForm(false);
       resetForm();
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error creating space:', err.message || err);
-      alert('Failed to create space');
+      const errorMessage = err.message || err;
+      if (errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('duplicate')) {
+        setToast('Table name already exists in this space. Please use a different name.');
+      } else {
+        setToast(errorMessage || 'Failed to create space');
+      }
     }
   };
 
@@ -182,14 +185,14 @@ const SpaceManagement = () => {
         id: editingTable._id,
         data: payload
       })).unwrap();
-      alert('Table updated successfully!');
+      setToast('Table updated successfully!');
       setShowEditForm(false);
       setEditingTable(null);
       resetForm();
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error updating space:', err.message || err);
-      alert('Failed to update space');
+      setToast('Failed to update space');
     }
   };
 
@@ -210,11 +213,11 @@ const SpaceManagement = () => {
 
     try {
       await dispatch(deleteTable(tableId)).unwrap();
-      alert('Table deleted successfully!');
+      setToast('Table deleted successfully!');
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error deleting table:', err.message || err);
-      alert('Failed to delete table');
+      setToast('Failed to delete table');
     }
   };
 
@@ -282,8 +285,17 @@ const SpaceManagement = () => {
         </div>
       </div>
 
-      {/* Error Message */}
-      {errorMessage}
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 p-4 rounded shadow-lg ${
+          toast.toLowerCase().includes('success') || toast.toLowerCase().includes('created') || toast.toLowerCase().includes('updated') || toast.toLowerCase().includes('deleted')
+            ? 'bg-green-100 border border-green-400 text-green-700'
+            : 'bg-red-100 border border-red-400 text-red-700'
+        }`}>
+          {toast}
+        </div>
+      )}
+      
       {/* Management Content */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
