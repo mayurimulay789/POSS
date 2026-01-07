@@ -1,22 +1,14 @@
 // ...existing code...
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError } from '../../../store/slices/tableSlice';
+import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError, optimisticUpdateTable } from '../../../store/slices/tableSlice';
 import { MdTableRestaurant } from 'react-icons/md';
 
 const SpaceManagement = () => {
   const dispatch = useDispatch();
   const { items: tables = [], loading, error, success } = useSelector(state => state.table);
 
-  // Error display (if error exists in Redux state)
-  let errorMessage = null;
-  if (error) {
-    errorMessage = (
-      <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-        {error}
-      </div>
-    );
-  }
+  const [toast, setToast] = useState(null);
   const [activeTab, setActiveTab] = useState('Tables');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -30,11 +22,17 @@ const SpaceManagement = () => {
   const tabs = ['Tables'];
 
   // Fetch tables when component mounts and set up auto-refresh
- useEffect(() => {
-  dispatch(fetchTables());
-  
-  // The interval and cleanup logic have been removed from here
-}, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchTables());
+    
+    // The interval and cleanup logic have been removed from here
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -84,23 +82,29 @@ const SpaceManagement = () => {
     e.stopPropagation();
     try {
       const isReserving = !table.isReserved;
+      const updateData = {
+        tableName: table.tableName,
+        capacity: table.capacity,
+        spaceType: table.spaceType,
+        status: table.status || 'available',
+        orderedMenu: table.orderedMenu || [],
+        totalBill: table.totalBill || 0,
+        isReserved: isReserving
+      };
+      
+      // Optimistic update
+      dispatch(optimisticUpdateTable({ id: table._id, data: updateData }));
+      
       await dispatch(updateTable({
         id: table._id,
-        data: {
-          tableName: table.tableName,
-          capacity: table.capacity,
-          spaceType: table.spaceType,
-          status: table.status || 'available',
-          orderedMenu: table.orderedMenu || [],
-          totalBill: table.totalBill || 0,
-          isReserved: isReserving
-        }
+        data: updateData
       })).unwrap();
-      alert(isReserving ? 'Table reserved successfully!' : 'Reservation cancelled!');
+      
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error updating table:', err.message || err);
-      alert('Failed to update table');
+      // Revert on error
+      dispatch(fetchTables());
     }
   };
 
@@ -110,23 +114,29 @@ const SpaceManagement = () => {
       return;
     }
     try {
+      const updateData = {
+        tableName: table.tableName,
+        capacity: table.capacity,
+        spaceType: table.spaceType,
+        status: 'available',
+        orderedMenu: [],
+        totalBill: 0,
+        isReserved: false
+      };
+      
+      // Optimistic update
+      dispatch(optimisticUpdateTable({ id: table._id, data: updateData }));
+      
       await dispatch(updateTable({
         id: table._id,
-        data: {
-          tableName: table.tableName,
-          capacity: table.capacity,
-          spaceType: table.spaceType,
-          status: 'available',
-          orderedMenu: [],
-          totalBill: 0,
-          isReserved: false
-        }
+        data: updateData
       })).unwrap();
-      alert('Table cleared successfully!');
+      
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error clearing table:', err.message || err);
-      alert('Failed to clear table');
+      // Revert on error
+      dispatch(fetchTables());
     }
   };
 
@@ -134,7 +144,7 @@ const SpaceManagement = () => {
     e.preventDefault();
     const errors = getFormErrors();
     if (Object.keys(errors).length > 0) {
-      alert(Object.values(errors).join('\n'));
+      setToast(Object.values(errors).join('\n'));
       return;
     }
     try {
@@ -144,14 +154,18 @@ const SpaceManagement = () => {
         spaceType: formData.spaceType || 'Tables'
       };
       await dispatch(createTable(payload)).unwrap();
-      await dispatch(fetchTables());
-      alert('Table created successfully!');
+      setToast('Table created successfully!');
       setShowAddForm(false);
       resetForm();
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error creating space:', err.message || err);
-      alert('Failed to create space');
+      const errorMessage = err.message || err;
+      if (errorMessage.toLowerCase().includes('already exists') || errorMessage.toLowerCase().includes('duplicate')) {
+        setToast('Table name already exists in this space. Please use a different name.');
+      } else {
+        setToast(errorMessage || 'Failed to create space');
+      }
     }
   };
 
@@ -172,15 +186,14 @@ const SpaceManagement = () => {
         id: editingTable._id,
         data: payload
       })).unwrap();
-      await dispatch(fetchTables());
-      alert('Table updated successfully!');
+      setToast('Table updated successfully!');
       setShowEditForm(false);
       setEditingTable(null);
       resetForm();
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error updating space:', err.message || err);
-      alert('Failed to update space');
+      setToast('Failed to update space');
     }
   };
 
@@ -201,12 +214,11 @@ const SpaceManagement = () => {
 
     try {
       await dispatch(deleteTable(tableId)).unwrap();
-      await dispatch(fetchTables());
-      alert('Table deleted successfully!');
+      setToast('Table deleted successfully!');
       dispatch(clearSuccess());
     } catch (err) {
       console.error('Error deleting table:', err.message || err);
-      alert('Failed to delete table');
+      setToast('Failed to delete table');
     }
   };
 
@@ -274,8 +286,17 @@ const SpaceManagement = () => {
         </div>
       </div>
 
-      {/* Error Message */}
-      {errorMessage}
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 p-4 rounded shadow-lg ${
+          toast.toLowerCase().includes('success') || toast.toLowerCase().includes('created') || toast.toLowerCase().includes('updated') || toast.toLowerCase().includes('deleted')
+            ? 'bg-green-100 border border-green-400 text-green-700'
+            : 'bg-red-100 border border-red-400 text-red-700'
+        }`}>
+          {toast}
+        </div>
+      )}
+      
       {/* Management Content */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-6">
@@ -343,7 +364,7 @@ const SpaceManagement = () => {
                   </p>
 
                   {/* Bill if booked */}
-                  {table.totalBill && table.orderedMenu && table.orderedMenu.length > 0 && (
+                  {table.totalBill > 0 && table.orderedMenu && table.orderedMenu.length > 0 && (
                     <p className="text-xs font-bold text-gray-800 mb-2 bg-gray-100 rounded px-2 py-1">
                       Bill: ₹{table.totalBill.toFixed(2)}
                     </p>
@@ -434,7 +455,7 @@ const SpaceManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity (1-100) *
+                  Capacity (1-10) *
                 </label>
                 <input
                   type="number"
@@ -443,12 +464,12 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
-                  max="100"
+                  max="10"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
-                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
-                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                {formData.capacity && (parseInt(formData.capacity) > 10 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
               <div className="flex gap-2 justify-end">
@@ -499,7 +520,7 @@ const SpaceManagement = () => {
               </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Capacity (1-100) *
+                  Capacity (1-10) *
                 </label>
                 <input
                   type="number"
@@ -508,12 +529,12 @@ const SpaceManagement = () => {
                   onChange={handleInputChange}
                   placeholder="Enter capacity"
                   min="1"
-                  max="100"
+                  max="10"
                   className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                   required
                 />
-                {formData.capacity && (parseInt(formData.capacity) > 100 || parseInt(formData.capacity) <= 0) && (
-                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 100</p>
+                {formData.capacity && (parseInt(formData.capacity) > 10 || parseInt(formData.capacity) <= 0) && (
+                  <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
               <div className="flex gap-2 justify-end">

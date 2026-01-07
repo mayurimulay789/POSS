@@ -139,6 +139,19 @@ exports.createItem = async (req, res) => {
 
     if (!name || !price || !category) return res.status(400).json({ message: 'Missing fields' });
 
+    // Check for duplicate item name in the same category
+    const trimmedName = name.trim();
+    const existingItem = await MenuItem.findOne({
+      name: { $regex: `^${trimmedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' },
+      category: category
+    });
+    
+    if (existingItem) {
+      return res.status(409).json({ 
+        message: 'An item with this name already exists in this category. Please use a different name.' 
+      });
+    }
+
     let imageUrl = req.body.imageUrl || null;
 
     if (req.file && req.file.buffer) {

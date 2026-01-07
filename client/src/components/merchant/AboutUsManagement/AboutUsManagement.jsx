@@ -1,177 +1,157 @@
 import React, { useState, useEffect } from 'react';
-// Simple Accordion Section component
-const AccordionSection = ({ title, helper, open, onToggle, children }) => (
-  <div className="mb-4 border rounded-lg bg-white shadow">
-    <button
-      type="button"
-      className="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none focus:ring font-semibold text-lg"
-      onClick={onToggle}
-    >
-      <span>{title}</span>
-      <span className="ml-2 text-gray-400">{open ? '▲' : '▼'}</span>
-    </button>
-    {open && (
-      <div className="px-6 pb-6 pt-2 border-t">
-        {helper && <div className="text-sm text-gray-500 mb-2">{helper}</div>}
-        {children}
-      </div>
-    )}
-  </div>
-);
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAboutUs, updateAboutUs, clearSuccess, clearError, setAboutUsField } from '../../../store/slices/aboutUsSlice';
+import { fetchAboutUs, updateAboutUs, clearSuccess, clearError } from '../../../store/slices/aboutUsSlice';
 
 const AboutUsManagement = () => {
   const dispatch = useDispatch();
-
   const aboutUs = useSelector(state => state.aboutUs);
   const { data, loading, error, success } = aboutUs;
-  const mainDescription = data?.mainDescription || '';
-  const rhythmTitle = data?.rhythmTitle || '';
-  const rhythmDescription = data?.rhythmDescription || '';
-  const rhythmQuote = data?.rhythmQuote || '';
-  const highlights = data?.highlights || [];
-  const values = data?.values || [];
-  const stats = data?.stats || [];
 
-  // Accordion open state for each section (MUST be before any conditional return)
-  const [openSection, setOpenSection] = useState('main');
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({
+    mainDescription: '',
+    rhythmTitle: '',
+    rhythmDescription: '',
+    rhythmQuote: '',
+    highlights: [],
+    values: [],
+    stats: []
+  });
+  const [validationErrors, setValidationErrors] = useState({});
 
-  // Local state only for new highlight/value/stat being added
+  // Temporary state for adding items
   const [newHighlight, setNewHighlight] = useState({ title: '', description: '', icon: '' });
   const [newValue, setNewValue] = useState('');
   const [newStat, setNewStat] = useState({ label: '', value: '', detail: '' });
-
-  // Validation states
-  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     dispatch(fetchAboutUs());
   }, [dispatch]);
 
-  // No need to sync local state with Redux for form fields anymore
+  useEffect(() => {
+    if (data && Object.keys(data).length > 0) {
+      setForm({
+        mainDescription: data.mainDescription || '',
+        rhythmTitle: data.rhythmTitle || '',
+        rhythmDescription: data.rhythmDescription || '',
+        rhythmQuote: data.rhythmQuote || '',
+        highlights: data.highlights || [],
+        values: data.values || [],
+        stats: data.stats || []
+      });
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (success) {
+      setShowModal(false);
+      setTimeout(() => {
+        dispatch(clearSuccess());
+      }, 3000);
+    }
+  }, [success, dispatch]);
 
   // Validation functions
-  const validateHighlight = (highlight) => {
-    const errors = {};
-    if (!highlight.title || !highlight.title.trim()) {
-      errors.title = 'Highlight title is required';
-    } else if (highlight.title.length < 3) {
-      errors.title = 'Title must be at least 3 characters';
-    } else if (highlight.title.length > 100) {
-      errors.title = 'Title cannot exceed 100 characters';
-    }
-
-    if (!highlight.description || !highlight.description.trim()) {
-      errors.description = 'Description is required';
-    } else if (highlight.description.length < 10) {
-      errors.description = 'Description must be at least 10 characters';
-    } else if (highlight.description.length > 500) {
-      errors.description = 'Description cannot exceed 500 characters';
-    }
-
-    if (!highlight.icon || !highlight.icon.trim()) {
-      errors.icon = 'Icon/emoji is required';
-    }
-
-    return errors;
-  };
-
-  const validateValue = (value) => {
-    if (!value || !value.trim()) {
-      return 'Value text is required';
-    }
-    if (value.length < 5) {
-      return 'Value must be at least 5 characters';
-    }
-    if (value.length > 300) {
-      return 'Value cannot exceed 300 characters';
-    }
+  const validateMainDescription = (desc) => {
+    if (!desc || !desc.trim()) return 'Main description is required';
+    if (desc.length < 20) return 'Main description must be at least 20 characters';
+    if (desc.length > 2000) return 'Main description cannot exceed 2000 characters';
     return '';
   };
 
-  const validateStat = (stat) => {
-    const errors = {};
-    if (!stat.label || !stat.label.trim()) {
-      errors.label = 'Label is required';
-    } else if (stat.label.length > 50) {
-      errors.label = 'Label cannot exceed 50 characters';
-    }
-
-    if (!stat.value || !stat.value.trim()) {
-      errors.value = 'Value is required';
-    } else if (stat.value.length > 50) {
-      errors.value = 'Value cannot exceed 50 characters';
-    }
-
-    if (!stat.detail || !stat.detail.trim()) {
-      errors.detail = 'Detail is required';
-    } else if (stat.detail.length < 5) {
-      errors.detail = 'Detail must be at least 5 characters';
-    } else if (stat.detail.length > 100) {
-      errors.detail = 'Detail cannot exceed 100 characters';
-    }
-
-    return errors;
+  const validateRhythmTitle = (title) => {
+    if (!title || !title.trim()) return 'Rhythm title is required';
+    if (title.length < 5) return 'Rhythm title must be at least 5 characters';
+    if (title.length > 200) return 'Rhythm title cannot exceed 200 characters';
+    return '';
   };
 
-  const validateMainFields = () => {
-    const errors = {};
+  const validateRhythmDescription = (desc) => {
+    if (!desc || !desc.trim()) return 'Rhythm description is required';
+    if (desc.length < 20) return 'Rhythm description must be at least 20 characters';
+    if (desc.length > 1000) return 'Rhythm description cannot exceed 1000 characters';
+    return '';
+  };
 
-    if (!mainDescription || !mainDescription.trim()) {
-      errors.mainDescription = 'Main description is required';
-    } else if (mainDescription.length < 20) {
-      errors.mainDescription = 'Main description must be at least 20 characters';
-    } else if (mainDescription.length > 2000) {
-      errors.mainDescription = 'Main description cannot exceed 2000 characters';
-    }
+  const validateRhythmQuote = (quote) => {
+    if (!quote || !quote.trim()) return 'Rhythm quote is required';
+    if (quote.length < 10) return 'Rhythm quote must be at least 10 characters';
+    if (quote.length > 500) return 'Rhythm quote cannot exceed 500 characters';
+    return '';
+  };
 
-    if (!rhythmTitle || !rhythmTitle.trim()) {
-      errors.rhythmTitle = 'Rhythm title is required';
-    } else if (rhythmTitle.length < 5) {
-      errors.rhythmTitle = 'Rhythm title must be at least 5 characters';
-    } else if (rhythmTitle.length > 200) {
-      errors.rhythmTitle = 'Rhythm title cannot exceed 200 characters';
-    }
+  const validateForm = () => {
+    const errors = {
+      mainDescription: validateMainDescription(form.mainDescription),
+      rhythmTitle: validateRhythmTitle(form.rhythmTitle),
+      rhythmDescription: validateRhythmDescription(form.rhythmDescription),
+      rhythmQuote: validateRhythmQuote(form.rhythmQuote)
+    };
 
-    if (!rhythmDescription || !rhythmDescription.trim()) {
-      errors.rhythmDescription = 'Rhythm description is required';
-    } else if (rhythmDescription.length < 20) {
-      errors.rhythmDescription = 'Rhythm description must be at least 20 characters';
-    } else if (rhythmDescription.length > 1000) {
-      errors.rhythmDescription = 'Rhythm description cannot exceed 1000 characters';
-    }
-
-    if (!rhythmQuote || !rhythmQuote.trim()) {
-      errors.rhythmQuote = 'Rhythm quote is required';
-    } else if (rhythmQuote.length < 10) {
-      errors.rhythmQuote = 'Rhythm quote must be at least 10 characters';
-    } else if (rhythmQuote.length > 500) {
-      errors.rhythmQuote = 'Rhythm quote cannot exceed 500 characters';
-    }
-
-    if (highlights.length === 0) {
+    if (form.highlights.length === 0) {
       errors.highlights = 'At least one highlight is required';
     }
-
-    if (values.length === 0) {
+    if (form.values.length === 0) {
       errors.values = 'At least one value is required';
     }
-
-    if (stats.length === 0) {
+    if (form.stats.length === 0) {
       errors.stats = 'At least one statistic is required';
     }
 
-    return errors;
+    Object.keys(errors).forEach(key => {
+      if (!errors[key]) delete errors[key];
+    });
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    try {
+      await dispatch(updateAboutUs(form)).unwrap();
+    } catch (err) {
+      console.error('Failed to save:', err);
+    }
+  };
+
+  const handleEdit = () => {
+    setValidationErrors({});
+    setShowModal(true);
+  };
+
+  // Highlight management
+  const validateHighlight = (highlight) => {
+    const errors = {};
+    if (!highlight.title || !highlight.title.trim()) {
+      errors.title = 'Title is required';
+    } else if (highlight.title.length < 3 || highlight.title.length > 100) {
+      errors.title = 'Title must be 3-100 characters';
+    }
+    if (!highlight.description || !highlight.description.trim()) {
+      errors.description = 'Description is required';
+    } else if (highlight.description.length < 10 || highlight.description.length > 500) {
+      errors.description = 'Description must be 10-500 characters';
+    }
+    if (!highlight.icon || !highlight.icon.trim()) {
+      errors.icon = 'Icon/emoji is required';
+    }
+    return errors;
+  };
 
   const handleAddHighlight = () => {
     const errors = validateHighlight(newHighlight);
@@ -179,13 +159,20 @@ const AboutUsManagement = () => {
       setValidationErrors({ newHighlight: errors });
       return;
     }
-    setHighlights([...highlights, newHighlight]);
+    setForm(prev => ({ ...prev, highlights: [...prev.highlights, newHighlight] }));
     setNewHighlight({ title: '', description: '', icon: '' });
     setValidationErrors({});
   };
 
   const handleRemoveHighlight = (index) => {
-    setHighlights(highlights.filter((_, i) => i !== index));
+    setForm(prev => ({ ...prev, highlights: prev.highlights.filter((_, i) => i !== index) }));
+  };
+
+  // Value management
+  const validateValue = (value) => {
+    if (!value || !value.trim()) return 'Value is required';
+    if (value.length < 5 || value.length > 300) return 'Value must be 5-300 characters';
+    return '';
   };
 
   const handleAddValue = () => {
@@ -194,15 +181,34 @@ const AboutUsManagement = () => {
       setValidationErrors({ newValue: error });
       return;
     }
-    const newArr = [...values, { text: newValue }];
-    dispatch(setAboutUsField({ field: 'values', value: newArr }));
+    setForm(prev => ({ ...prev, values: [...prev.values, { text: newValue }] }));
     setNewValue('');
     setValidationErrors({});
   };
 
   const handleRemoveValue = (index) => {
-    const newArr = values.filter((_, i) => i !== index);
-    dispatch(setAboutUsField({ field: 'values', value: newArr }));
+    setForm(prev => ({ ...prev, values: prev.values.filter((_, i) => i !== index) }));
+  };
+
+  // Stat management
+  const validateStat = (stat) => {
+    const errors = {};
+    if (!stat.label || !stat.label.trim()) {
+      errors.label = 'Label is required';
+    } else if (stat.label.length > 50) {
+      errors.label = 'Label cannot exceed 50 characters';
+    }
+    if (!stat.value || !stat.value.trim()) {
+      errors.value = 'Value is required';
+    } else if (stat.value.length > 50) {
+      errors.value = 'Value cannot exceed 50 characters';
+    }
+    if (!stat.detail || !stat.detail.trim()) {
+      errors.detail = 'Detail is required';
+    } else if (stat.detail.length < 5 || stat.detail.length > 100) {
+      errors.detail = 'Detail must be 5-100 characters';
+    }
+    return errors;
   };
 
   const handleAddStat = () => {
@@ -211,367 +217,446 @@ const AboutUsManagement = () => {
       setValidationErrors({ newStat: errors });
       return;
     }
-    const newArr = [...stats, newStat];
-    dispatch(setAboutUsField({ field: 'stats', value: newArr }));
+    setForm(prev => ({ ...prev, stats: [...prev.stats, newStat] }));
     setNewStat({ label: '', value: '', detail: '' });
     setValidationErrors({});
   };
 
   const handleRemoveStat = (index) => {
-    const newArr = stats.filter((_, i) => i !== index);
-    dispatch(setAboutUsField({ field: 'stats', value: newArr }));
+    setForm(prev => ({ ...prev, stats: prev.stats.filter((_, i) => i !== index) }));
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const errors = validateMainFields();
-    
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
-    }
-
-    const payload = {
-      mainDescription,
-      rhythmTitle,
-      rhythmDescription,
-      rhythmQuote,
-      highlights,
-      values,
-      stats
-    };
-    
-    setValidationErrors({});
-    dispatch(updateAboutUs(payload));
-    setTimeout(() => dispatch(clearSuccess('aboutUs')), 3000);
-  };
-
-  // ...existing code...
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      {/* Removed 'SINCE 2026' badge as requested */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">About Us Management</h1>
-
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-          <button onClick={() => dispatch(clearError('aboutUs'))} className="ml-2 underline">
-            Dismiss
+    <div className="p-3 sm:p-4 md:p-6">
+      {/* Header */}
+      <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-2">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">About Us Management</h1>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage your about us page content</p>
+          </div>
+          <button
+            onClick={handleEdit}
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm sm:text-base whitespace-nowrap"
+          >
+            Edit About Us
           </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      {error && (
+        <div className="mb-4 p-2 sm:p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+          {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+        <div className="mb-4 p-2 sm:p-3 bg-green-100 text-green-700 rounded-lg text-sm">
           About Us updated successfully!
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <AccordionSection
-          title="Main Description"
-          helper="This is the main text shown on your About Us page."
-          open={openSection === 'main'}
-          onToggle={() => setOpenSection(openSection === 'main' ? '' : 'main')}
-        >
-          <textarea
-            value={mainDescription}
-            onChange={e => dispatch(setAboutUsField({ field: 'mainDescription', value: e.target.value }))}
-            rows="4"
-            className={`w-full px-3 py-2 border rounded-lg ${validationErrors.mainDescription ? 'border-red-500' : ''}`}
-            placeholder="Main description... (20-2000 characters)"
-          />
-          {validationErrors.mainDescription && (
-            <p className="text-red-600 text-sm mt-1">{validationErrors.mainDescription}</p>
-          )}
-          <p className="text-gray-500 text-xs mt-1">{mainDescription.length}/2000 characters</p>
-        </AccordionSection>
+      {/* Summary Card */}
+      {loading ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+        </div>
+      ) : !data || Object.keys(data).length === 0 ? (
+        <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500 text-sm">
+          No about us content found. Click "Edit About Us" to add content.
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Preview</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Highlights</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Values</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  <tr className="hover:bg-gray-50">
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">About Us Page</div>
+                      <div className="text-xs text-gray-500">Main content</div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4">
+                      <div className="text-sm text-gray-900 max-w-xs">
+                        <p className="truncate mb-1"><span className="font-medium">Main:</span> {form.mainDescription || 'Not set'}</p>
+                        <p className="truncate text-xs text-gray-600"><span className="font-medium">Rhythm:</span> {form.rhythmTitle || 'Not set'}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                        {form.highlights.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                        {form.values.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                        {form.stats.length} items
+                      </span>
+                    </td>
+                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={handleEdit}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-        <AccordionSection
-          title={`Highlights (${highlights.length})`}
-          helper="Add fun highlights with emoji. These will be shown as features on your About Us page."
-          open={openSection === 'highlights'}
-          onToggle={() => setOpenSection(openSection === 'highlights' ? '' : 'highlights')}
-        >
-          {validationErrors.highlights && (
-            <p className="text-red-600 text-sm mb-3">{validationErrors.highlights}</p>
-          )}
-          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-            {highlights.map((highlight, index) => (
-              <div key={index} className="flex items-center bg-gray-50 p-3 rounded border border-gray-200 gap-3">
-                <span className="text-2xl mr-2">{highlight.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">{highlight.title}</div>
-                  <div className="text-sm text-gray-600 truncate">{highlight.description}</div>
+          {/* Mobile Card View */}
+          <div className="md:hidden bg-white rounded-lg shadow p-4 space-y-3">
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Section</p>
+              <p className="text-sm text-gray-900 font-medium">About Us Page</p>
+              <p className="text-xs text-gray-500">Main content</p>
+            </div>
+            
+            <div>
+              <p className="text-xs text-gray-500 uppercase font-medium mb-1">Content Preview</p>
+              <p className="text-sm text-gray-900 truncate"><span className="font-medium">Main:</span> {form.mainDescription || 'Not set'}</p>
+              <p className="text-xs text-gray-600 truncate"><span className="font-medium">Rhythm:</span> {form.rhythmTitle || 'Not set'}</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                {form.highlights.length} Highlights
+              </span>
+              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                {form.values.length} Values
+              </span>
+              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                {form.stats.length} Stats
+              </span>
+            </div>
+            
+            <div className="pt-2 border-t">
+              <button
+                onClick={handleEdit}
+                className="w-full px-3 py-2 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg font-medium transition-colors"
+              >
+                Edit About Us
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full my-8">
+            <div className="p-4 sm:p-6 border-b bg-white sticky top-0 z-10">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Edit About Us Content</h2>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">Update all sections of your About Us page</p>
+            </div>
+            <form onSubmit={handleSubmit} className="max-h-[calc(90vh-8rem)] overflow-y-auto">
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                {/* Main Text Sections */}
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-3 sm:space-y-4">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2">Main Text Content</h3>
+                  
+                  {/* Main Description */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Main Description *</label>
+                    <textarea
+                      name="mainDescription"
+                      value={form.mainDescription}
+                      onChange={handleChange}
+                      required
+                      rows="4"
+                      placeholder="Main description of your restaurant (20-2000 characters)"
+                      className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                        validationErrors.mainDescription ? 'border-red-500' : ''
+                      }`}
+                    />
+                    {validationErrors.mainDescription && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.mainDescription}</p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">{form.mainDescription.length}/2000</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    {/* Rhythm Title */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Title *</label>
+                      <input
+                        type="text"
+                        name="rhythmTitle"
+                        value={form.rhythmTitle}
+                        onChange={handleChange}
+                        required
+                        placeholder="e.g., Experience the Rhythm of Flavors"
+                        className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                          validationErrors.rhythmTitle ? 'border-red-500' : ''
+                        }`}
+                      />
+                      {validationErrors.rhythmTitle && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.rhythmTitle}</p>
+                      )}
+                    </div>
+
+                    {/* Rhythm Quote */}
+                    <div>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Quote *</label>
+                      <input
+                        type="text"
+                        name="rhythmQuote"
+                        value={form.rhythmQuote}
+                        onChange={handleChange}
+                        required
+                        placeholder="A memorable quote (10-500 characters)"
+                        className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                          validationErrors.rhythmQuote ? 'border-red-500' : ''
+                        }`}
+                      />
+                      {validationErrors.rhythmQuote && (
+                        <p className="mt-1 text-sm text-red-600">{validationErrors.rhythmQuote}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Rhythm Description */}
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Rhythm Description *</label>
+                    <textarea
+                      name="rhythmDescription"
+                      value={form.rhythmDescription}
+                      onChange={handleChange}
+                      required
+                      rows="3"
+                      placeholder="Description for rhythm section (20-1000 characters)"
+                      className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                        validationErrors.rhythmDescription ? 'border-red-500' : ''
+                      }`}
+                    />
+                    {validationErrors.rhythmDescription && (
+                      <p className="mt-1 text-sm text-red-600">{validationErrors.rhythmDescription}</p>
+                    )}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const newArr = highlights.filter((_, i) => i !== index);
-                    dispatch(setAboutUsField({ field: 'highlights', value: newArr }));
-                  }}
-                  className="ml-2 text-red-600 hover:text-red-800 font-bold text-lg px-2"
-                  title="Remove"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-3 border-t pt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Title</label>
-              <input
-                type="text"
-                value={newHighlight.title}
-                onChange={e => setNewHighlight({ ...newHighlight, title: e.target.value })}
-                placeholder="e.g. Best Chefs, Family Vibes..."
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.title ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newHighlight?.title && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newHighlight.title}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <textarea
-                value={newHighlight.description}
-                onChange={e => setNewHighlight({ ...newHighlight, description: e.target.value })}
-                placeholder="Short description for this highlight..."
-                rows="2"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.description ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newHighlight?.description && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newHighlight.description}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Pick an Emoji</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {["🍽️","🍕","🍔","🥗","🍜","🍛","🍣","🍰","☕","🥘","🎉","🏆","👨‍🍳","👩‍🍳","🌟","💡","❤️","😊","👍"].map((emoji) => (
-                  <button
-                    type="button"
-                    key={emoji}
-                    className={`text-2xl px-2 py-1 rounded hover:bg-blue-100 ${newHighlight.icon === emoji ? 'bg-blue-200 border border-blue-400' : ''}`}
-                    onClick={() => setNewHighlight({ ...newHighlight, icon: emoji })}
-                    aria-label={emoji}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-              <input
-                type="text"
-                value={newHighlight.icon}
-                onChange={e => setNewHighlight({ ...newHighlight, icon: e.target.value })}
-                placeholder="Or paste your own emoji..."
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newHighlight?.icon ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newHighlight?.icon && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newHighlight.icon}</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                const errors = validateHighlight(newHighlight);
-                if (Object.keys(errors).length > 0) {
-                  setValidationErrors({ newHighlight: errors });
-                  return;
-                }
-                const newArr = [...highlights, newHighlight];
-                dispatch(setAboutUsField({ field: 'highlights', value: newArr }));
-                setNewHighlight({ title: '', description: '', icon: '' });
-                setValidationErrors({});
-              }}
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mt-2"
-            >
-              Add Highlight
-            </button>
-          </div>
-        </AccordionSection>
 
-        <AccordionSection
-          title={`Values (${values.length})`}
-          helper="Add your core values. These will be shown as a list."
-          open={openSection === 'values'}
-          onToggle={() => setOpenSection(openSection === 'values' ? '' : 'values')}
-        >
-          {validationErrors.values && (
-            <p className="text-red-600 text-sm mb-3">{validationErrors.values}</p>
-          )}
-          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-            {values.map((value, index) => (
-              <div key={index} className="flex justify-between items-center bg-gray-100 p-3 rounded">
-                <span>{typeof value === 'object' ? value.text : value}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveValue(index)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-          <div className="flex gap-2 border-t pt-4">
-            <input
-              type="text"
-              value={newValue}
-              onChange={(e) => setNewValue(e.target.value)}
-              placeholder="Add new value (5-300 characters)..."
-              className={`flex-1 px-3 py-2 border rounded-lg ${validationErrors.newValue ? 'border-red-500' : ''}`}
-            />
-            <button
-              type="button"
-              onClick={handleAddValue}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >
-              Add
-            </button>
-          </div>
-          {validationErrors.newValue && (
-            <p className="text-red-600 text-xs mt-1">{validationErrors.newValue}</p>
-          )}
-        </AccordionSection>
-
-        <AccordionSection
-          title={`Statistics (${stats.length})`}
-          helper="Add some fun stats about your business."
-          open={openSection === 'stats'}
-          onToggle={() => setOpenSection(openSection === 'stats' ? '' : 'stats')}
-        >
-          {validationErrors.stats && (
-            <p className="text-red-600 text-sm mb-3">{validationErrors.stats}</p>
-          )}
-          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-            {stats.map((stat, index) => (
-              <div key={index} className="flex justify-between items-center bg-gray-100 p-3 rounded">
-                <div>
-                  <p className="font-semibold">{stat.label}</p>
-                  <p className="text-sm text-gray-600">{stat.value} - {stat.detail}</p>
+                {/* Highlights Section */}
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Highlights * (Current: {form.highlights.length})</h3>
+                  {validationErrors.highlights && (
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.highlights}</p>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                    {form.highlights.map((highlight, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-white rounded border">
+                        <span className="text-xl">{highlight.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{highlight.title}</p>
+                          <p className="text-xs text-gray-600 truncate">{highlight.description}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveHighlight(index)}
+                          className="text-red-600 hover:text-red-800 font-bold px-2"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-2 border-2 border-dashed border-blue-300 p-3 rounded bg-white">
+                    <p className="text-xs sm:text-sm font-medium text-gray-700 mb-2">Add New Highlight</p>
+                    <input
+                      type="text"
+                      value={newHighlight.title}
+                      onChange={e => setNewHighlight({ ...newHighlight, title: e.target.value })}
+                      placeholder="Title (e.g., Best Chefs)"
+                      className={`w-full px-3 py-2 text-sm border rounded ${validationErrors.newHighlight?.title ? 'border-red-500' : ''}`}
+                    />
+                    {validationErrors.newHighlight?.title && (
+                      <p className="text-xs text-red-600">{validationErrors.newHighlight.title}</p>
+                    )}
+                    <textarea
+                      value={newHighlight.description}
+                      onChange={e => setNewHighlight({ ...newHighlight, description: e.target.value })}
+                      placeholder="Description"
+                      rows="2"
+                      className={`w-full px-3 py-2 text-sm border rounded ${validationErrors.newHighlight?.description ? 'border-red-500' : ''}`}
+                    />
+                    {validationErrors.newHighlight?.description && (
+                      <p className="text-xs text-red-600">{validationErrors.newHighlight.description}</p>
+                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {["🍽️","🍕","🍔","🥗","🍜","🍛","🍣","🍰","☕","🥘","🎉","🏆","👨‍🍳","👩‍🍳","🌟","💡","❤️","😊","👍"].map((emoji) => (
+                        <button
+                          type="button"
+                          key={emoji}
+                          className={`text-xl px-2 py-1 rounded hover:bg-blue-100 ${newHighlight.icon === emoji ? 'bg-blue-200 border-2 border-blue-400' : 'border'}`}
+                          onClick={() => setNewHighlight({ ...newHighlight, icon: emoji })}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                    {validationErrors.newHighlight?.icon && (
+                      <p className="text-xs text-red-600">{validationErrors.newHighlight.icon}</p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleAddHighlight}
+                      className="w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs sm:text-sm font-medium"
+                    >
+                      + Add Highlight
+                    </button>
+                  </div>
                 </div>
+
+                {/* Values Section */}
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Core Values * (Current: {form.values.length})</h3>
+                  {validationErrors.values && (
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.values}</p>
+                  )}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {form.values.map((value, index) => (
+                      <span key={index} className="flex items-center gap-1 px-3 py-1 bg-white border-2 border-green-200 rounded-full text-sm">
+                        {typeof value === 'object' ? value.text : value}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveValue(index)}
+                          className="text-red-600 hover:text-red-800 ml-1 font-bold"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={newValue}
+                      onChange={e => setNewValue(e.target.value)}
+                      placeholder="Add a core value (e.g., Quality, Integrity)"
+                      className={`flex-1 px-3 py-2 text-sm border rounded ${validationErrors.newValue ? 'border-red-500' : ''}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddValue}
+                      className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {validationErrors.newValue && (
+                    <p className="text-xs text-red-600 mt-1">{validationErrors.newValue}</p>
+                  )}
+                </div>
+
+                {/* Statistics Section */}
+                <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-800 border-b pb-2 mb-3">Statistics * (Current: {form.stats.length})</h3>
+                  {validationErrors.stats && (
+                    <p className="text-xs sm:text-sm text-red-600 mb-2">{validationErrors.stats}</p>
+                  )}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                    {form.stats.map((stat, index) => (
+                      <div key={index} className="p-2 bg-white rounded border-2 border-purple-200 text-center relative">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveStat(index)}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs font-bold hover:bg-red-600"
+                        >
+                          ✕
+                        </button>
+                        <p className="text-lg font-bold text-purple-600">{stat.value}</p>
+                        <p className="text-xs font-medium truncate">{stat.label}</p>
+                        <p className="text-xs text-gray-600 truncate">{stat.detail}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 border-2 border-dashed border-purple-300 p-3 rounded bg-white">
+                    <div>
+                      <input
+                        type="text"
+                        value={newStat.label}
+                        onChange={e => setNewStat({ ...newStat, label: e.target.value })}
+                        placeholder="Label (e.g., Years)"
+                        className={`w-full px-3 py-2 border rounded text-sm ${validationErrors.newStat?.label ? 'border-red-500' : ''}`}
+                      />
+                      {validationErrors.newStat?.label && (
+                        <p className="text-xs text-red-600 mt-1">{validationErrors.newStat.label}</p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={newStat.value}
+                        onChange={e => setNewStat({ ...newStat, value: e.target.value })}
+                        placeholder="Value (e.g., 39+)"
+                        className={`w-full px-3 py-2 border rounded text-sm ${validationErrors.newStat?.value ? 'border-red-500' : ''}`}
+                      />
+                      {validationErrors.newStat?.value && (
+                        <p className="text-xs text-red-600 mt-1">{validationErrors.newStat.value}</p>
+                      )}
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        value={newStat.detail}
+                        onChange={e => setNewStat({ ...newStat, detail: e.target.value })}
+                        placeholder="Detail (e.g., Since 1985)"
+                        className={`w-full px-3 py-2 border rounded text-sm ${validationErrors.newStat?.detail ? 'border-red-500' : ''}`}
+                      />
+                      {validationErrors.newStat?.detail && (
+                        <p className="text-xs text-red-600 mt-1">{validationErrors.newStat.detail}</p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAddStat}
+                      className="md:col-span-3 px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs sm:text-sm font-medium"
+                    >
+                      + Add Statistic
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t bg-gray-50 sticky bottom-0">
                 <button
                   type="button"
-                  onClick={() => handleRemoveStat(index)}
-                  className="text-red-600 hover:text-red-800 font-semibold"
+                  onClick={() => setShowModal(false)}
+                  className="w-full sm:w-auto px-6 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-medium order-2 sm:order-1"
                 >
-                  ✕
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full sm:w-auto px-6 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium order-1 sm:order-2"
+                >
+                  {loading ? 'Saving...' : 'Save All Changes'}
                 </button>
               </div>
-            ))}
+            </form>
           </div>
-          <div className="space-y-3 border-t pt-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Label</label>
-              <input
-                type="text"
-                value={newStat.label}
-                onChange={(e) => setNewStat({ ...newStat, label: e.target.value })}
-                placeholder="e.g., Years perfecting"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newStat?.label ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newStat?.label && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newStat.label}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Value</label>
-              <input
-                type="text"
-                value={newStat.value}
-                onChange={(e) => setNewStat({ ...newStat, value: e.target.value })}
-                placeholder="e.g., 39+"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newStat?.value ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newStat?.value && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newStat.value}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Detail</label>
-              <input
-                type="text"
-                value={newStat.detail}
-                onChange={(e) => setNewStat({ ...newStat, detail: e.target.value })}
-                placeholder="e.g., Crafted since 1985"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.newStat?.detail ? 'border-red-500' : ''}`}
-              />
-              {validationErrors.newStat?.detail && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.newStat.detail}</p>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={handleAddStat}
-              className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-            >
-              Add Statistic
-            </button>
-          </div>
-        </AccordionSection>
-
-        <AccordionSection
-          title="Rhythm Section"
-          helper="Describe the unique rhythm or vibe of your place."
-          open={openSection === 'rhythm'}
-          onToggle={() => setOpenSection(openSection === 'rhythm' ? '' : 'rhythm')}
-        >
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Title</label>
-              <input
-                type="text"
-                value={rhythmTitle}
-                onChange={e => dispatch(setAboutUsField({ field: 'rhythmTitle', value: e.target.value }))}
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmTitle ? 'border-red-500' : ''}`}
-                placeholder="e.g., Paced for real conversations"
-              />
-              {validationErrors.rhythmTitle && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.rhythmTitle}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">{rhythmTitle.length}/200 characters</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <textarea
-                value={rhythmDescription}
-                onChange={e => dispatch(setAboutUsField({ field: 'rhythmDescription', value: e.target.value }))}
-                rows="3"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmDescription ? 'border-red-500' : ''}`}
-                placeholder="Describe the rhythm section... (20-1000 characters)"
-              />
-              {validationErrors.rhythmDescription && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.rhythmDescription}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">{rhythmDescription.length}/1000 characters</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Quote</label>
-              <textarea
-                value={rhythmQuote}
-                onChange={e => dispatch(setAboutUsField({ field: 'rhythmQuote', value: e.target.value }))}
-                rows="2"
-                className={`w-full px-3 py-2 border rounded-lg ${validationErrors.rhythmQuote ? 'border-red-500' : ''}`}
-                placeholder="e.g., 'We cook and host the way family does at home...'"
-              />
-              {validationErrors.rhythmQuote && (
-                <p className="text-red-600 text-xs mt-1">{validationErrors.rhythmQuote}</p>
-              )}
-              <p className="text-gray-500 text-xs mt-1">{rhythmQuote.length}/500 characters</p>
-            </div>
-          </div>
-        </AccordionSection>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold disabled:opacity-50 transition mt-6"
-        >
-          {loading ? 'Saving...' : 'Save About Us Content'}
-        </button>
-      </form>
+        </div>
+      )}
     </div>
   );
 };

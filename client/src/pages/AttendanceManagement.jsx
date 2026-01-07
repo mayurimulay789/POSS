@@ -276,15 +276,12 @@ const AttendanceManagement = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+        <div className="mb-2 sm:mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Attendance</h1>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Track your daily shifts and attendance
-              </p>
+              <h1 className="text-2xl sm:text-2xl font-bold text-gray-800 mb-2">Attendance Management</h1>
             </div>
-            <div className="mt-2 sm:mt-0 text-sm text-gray-500">
+            <div className="mt-2 sm:mt-0 text-sm text-gray-500 mb-1">
               <div className="flex items-center space-x-2">
                 <Calendar className="w-4 h-4" />
                 <span>{getCurrentDate()}</span>

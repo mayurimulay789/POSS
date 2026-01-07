@@ -66,24 +66,29 @@ const LoginForm = () => {
     dispatch(loginUser(formData));
   };
 
+  const handleClose = () => {
+    navigate('/');
+  };
+
   const displayMessage = localMessage || error || success;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A3D4D] via-[#134A5C] to-[#0A3D4D]">
-      <div className="max-w-4xl w-full min-h-[450px] bg-white shadow-2xl rounded-2xl overflow-hidden flex">
+      <div className="max-w-4xl w-full min-h-[450px] bg-white shadow-2xl rounded-2xl overflow-hidden flex relative">
+        {/* Close button */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          aria-label="Close"
+        >
+          <span className="text-2xl text-gray-500 hover:text-gray-700">✕</span>
+        </button>
+
         {/* Left side image */}
         <div
           className="hidden md:block md:w-1/2 bg-cover bg-center"
           style={{ backgroundImage: loginImage ? `url('${loginImage.url}')` : "url('/images/two.jpg')" }}
         >
-          <div className="h-full w-full flex flex-col items-center justify-center bg-black bg-opacity-40">
-            <h2 className="text-white text-3xl font-bold px-4 text-center">
-              Welcome Back
-            </h2>
-            <p className="text-white text-sm mt-2 px-4 text-center">
-              Please log in using your personal information to stay connected with us
-            </p>
-          </div>
         </div>
 
         {/* Right side form */}
@@ -119,7 +124,6 @@ const LoginForm = () => {
                 required
                 disabled={loading}
               />
-              {/* ✅ FIXED BUTTON - JSX attribute removed */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -133,7 +137,7 @@ const LoginForm = () => {
               </button>
             </div>
 
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center text-sm mb-2 ">
               <button
                 type="submit"
                 disabled={loading}

@@ -80,6 +80,15 @@ exports.createTable = async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating table:', error);
+    
+    // Check for duplicate key error (MongoDB error code 11000)
+    if (error.code === 11000 || error.message.includes('duplicate key')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Table name already exists in this space. Please use a different name.'
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error creating table',

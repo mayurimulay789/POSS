@@ -1,68 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
-// --- Validation helpers for future role upgrades ---
-function isDuplicateCategory(categories, newName) {
-  if (!newName) return false;
-  const norm = (str) => (str || '').trim().toLowerCase();
-  return categories.some(cat => norm(cat) === norm(newName));
-}
-
-function validateItemForm(item) {
-  if (!item.name || !item.name.trim()) return 'Item name is required';
-  if (!item.price || isNaN(item.price) || Number(item.price) <= 0) return 'Valid price is required';
-  if (!item.category) return 'Category is required';
-  return null;
-}
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMenuItems } from '../../../store/slices/menuSlice';
-import API_BASE_URL from '../../../config/apiConfig';
 
 const MenuManagement = () => {
   const dispatch = useDispatch();
-  const { items, loading } = useSelector(state => state.menu);
-  const [userRole, setUserRole] = useState(null);
+  const { items, loading, error } = useSelector(state => state.menu);
+  const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
-    // Get user role from localStorage or context
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    setUserRole(role);
-    
-    const loadMenu = async () => {
-      try {
-        setLoading(true);
-        const config = token ? { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
-        } : {};
-        
-        console.log('Token available:', !!token);
-        console.log('Fetching from:', `${API_BASE_URL}/menu/items`);
-        
-        const res = await axios.get(`${API_BASE_URL}/menu/items`, config);
-        setItems(Array.isArray(res.data) ? res.data : []);
-        console.log('Menu items loaded:', res.data);
-      } catch (err) {
-        console.error('Error loading menu:', err);
-        console.error('Error response:', err.response?.data);
-        console.error('Error status:', err.response?.status);
-        setError('Unable to load menu.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadMenu();
-  }, []);
+    dispatch(fetchMenuItems());
+  }, [dispatch]);
 
   const categories = useMemo(() => {
-    const cats = ['All', ...new Set(items.map(item => item.category?.name || 'Menu'))];
+    const cats = ['All', ...new Set((items || []).map(item => item.category?.name || 'Menu'))];
     return cats;
   }, [items]);
 
   const filteredItems = useMemo(() => {
-    if (activeCategory === 'All') return items;
-    return items.filter(item => (item.category?.name || 'Menu') === activeCategory);
+    if (activeCategory === 'All') return items || [];
+    return (items || []).filter(item => (item.category?.name || 'Menu') === activeCategory);
   }, [items, activeCategory]);
 
   if (loading) return (
@@ -71,17 +27,21 @@ const MenuManagement = () => {
     </div>
   );
 
+  if (error) return (
+    <div className="flex justify-center py-20 bg-slate-50">
+      <span className="text-red-500">{error}</span>
+    </div>
+  );
+
   return (
     <section className="bg-gradient-to-br from-slate-50 via-white to-slate-100 pt-4 pb-0 md:py-4 px-4 font-sans text-slate-900 min-h-screen">
       <div className="max-w-6xl mx-auto">
         
         {/* Permission Denied Message */}
-        {userRole && userRole !== 'merchant' && userRole !== 'manager' && (
-          <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-800 rounded-lg">
-            <p className="font-semibold">View Only Access</p>
-            <p className="text-sm mt-1">Only merchants and managers can add or modify food items and categories. You have view-only access.</p>
-          </div>
-        )}
+        {/* <div className="mb-6 p-4 bg-blue-100 border border-blue-400 text-blue-800 rounded-lg">
+          <p className="font-semibold">View Only Access</p>
+          <p className="text-sm mt-1">Only merchants and managers can add or modify food items and categories. You have view-only access.</p>
+        </div> */}
         
         {/* Header */}
         <div className="text-center mb-4">
@@ -118,7 +78,7 @@ const MenuManagement = () => {
                   </h3>
                   {/* Price Leader Dots */}
                   <div className="flex-1 border-b border-dotted border-slate-200 relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-slate-900">
+                  <span className="text-lg font-sans text-slate-900">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>

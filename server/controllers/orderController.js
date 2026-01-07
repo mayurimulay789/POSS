@@ -40,11 +40,12 @@ exports.createOrder = async (req, res) => {
       createdBy: req.user.id
     });
 
-    // Update the table to reflect the new order
+    // Update the table to reflect the new order and unreserve if it was reserved
     await Table.findByIdAndUpdate(tableId, {
       status: 'occupied',
       orderedMenu: items,
-      totalBill: totalBill
+      totalBill: totalBill,
+      isReserved: false // Unreserve the table when order is placed
     });
 
     // Prevent caching

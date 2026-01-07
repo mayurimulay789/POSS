@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 
 const AutoDots = ({ count, activeIndex, onJump }) => (
-  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+  <div className="absolute bottom-4 sm:bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-2 sm:gap-3 md:gap-4 z-20">
     {Array.from({ length: count }).map((_, i) => (
       <button
         key={i}
@@ -24,24 +24,24 @@ const NavButton = ({ dir = 'prev', onClick }) => (
   <button
     onClick={onClick}
     className={
-      'absolute top-1/2 -translate-y-1/2 z-20 p-4 text-white/40 hover:text-white transition-all duration-300 ' +
-      (dir === 'prev' ? 'left-4' : 'right-4')
+      'absolute top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 md:p-4 text-white/50 hover:text-white transition-all duration-300 bg-black/20 hover:bg-black/40 rounded-full backdrop-blur-sm ' +
+      (dir === 'prev' ? 'left-2 sm:left-4' : 'right-2 sm:right-4')
     }
     aria-label={dir === 'prev' ? 'Previous slide' : 'Next slide'}
   >
     {dir === 'prev' ? (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={0.75} stroke="currentColor" className="size-10 md:size-12">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 sm:size-8 md:size-10">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
     ) : (
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={0.75} stroke="currentColor" className="size-10 md:size-12">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 sm:size-8 md:size-10">
         <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
       </svg>
     )}
   </button>
 );
 
-const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]' }) => {
+const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[60vh] sm:h-[70vh] md:h-[85vh] lg:h-[90vh]' }) => {
   const dispatch = useDispatch();
   const { items: images = [], loading } = useSelector(state => state.hotelImage);
   const [active, setActive] = useState(0);
@@ -102,9 +102,9 @@ const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]
             <div className="absolute inset-0 bg-black/30" />
 
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center px-6 max-w-5xl">
+              <div className="text-center px-4 sm:px-6 max-w-5xl">
                 {/* Thin, Decent Heading */}
-                <h2 className="text-white text-3xl md:text-5xl lg:text-6xl font-light tracking-wide mb-10 leading-[1.3] drop-shadow-sm">
+                <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-light tracking-wide mb-6 sm:mb-8 md:mb-10 leading-[1.3] drop-shadow-lg px-2">
                   {s.title}
                 </h2>
 
@@ -112,7 +112,7 @@ const BannerCarousel = ({ autoPlayMs = 6000, heightClass = 'h-[80vh] md:h-[90vh]
                 <Link
                   to="/#menu"
                   onClick={scrollToMenu}
-                  className="inline-block bg-amber-400 hover:bg-amber-500 border border-amber-400 hover:border-amber-500 text-white px-8 py-3 text-sm uppercase tracking-[0.15em] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
+                  className="inline-block bg-amber-400 hover:bg-amber-500 border-2 border-amber-400 hover:border-amber-500 text-white px-6 sm:px-8 py-2.5 sm:py-3 text-xs sm:text-sm uppercase tracking-[0.15em] rounded-full transition-all duration-300 shadow-lg hover:shadow-xl font-semibold"
                 >
                   Discover Menu
                 </Link>

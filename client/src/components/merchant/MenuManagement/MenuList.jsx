@@ -107,60 +107,7 @@ const MenuList = () => {
         </div>
       )}
 
-      {/* 1. EDIT FORM SECTION (Contextual Overlay) */}
-      {editingItemId && (
-        <div className="max-w-2xl mx-auto mb-12 bg-white border-2 border-stone-800 p-8 shadow-[10px_10px_0px_0px_rgba(41,37,36,1)]">
-          <h2 className="text-2xl font-bold mb-6 text-stone-800 uppercase tracking-widest border-b-2 border-stone-800 pb-2">
-            Modify Selection
-          </h2>
-          <form onSubmit={updateItem} className="space-y-4 font-sans">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                ref={nameInputRef}
-                value={itemForm.name} 
-                onChange={e => setItemForm({ ...itemForm, name: e.target.value })} 
-                placeholder="Dish Name" 
-                className="p-3 border-2 border-stone-200 focus:border-stone-800 outline-none transition-colors" 
-              />
-              <input 
-                value={itemForm.price} 
-                onChange={e => setItemForm({ ...itemForm, price: e.target.value })} 
-                placeholder="Price (₹)" 
-                type="number" 
-                className="p-3 border-2 border-stone-200 focus:border-stone-800 outline-none transition-colors" 
-              />
-            </div>
-            <textarea 
-              value={itemForm.description} 
-              onChange={e => setItemForm({ ...itemForm, description: e.target.value })} 
-              placeholder="Describe the flavors and ingredients..." 
-              className="w-full p-3 border-2 border-stone-200 focus:border-stone-800 outline-none transition-colors h-24" 
-            />
-            <select 
-              value={itemForm.category} 
-              onChange={e => setItemForm({ ...itemForm, category: e.target.value })} 
-              className="w-full p-3 border-2 border-stone-200 focus:border-stone-800 outline-none transition-colors bg-white"
-            >
-              <option value="">Select Category</option>
-              {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-            </select>
-            <div className="flex gap-4 pt-4">
-              <button className="flex-1 bg-stone-800 text-white py-3 uppercase tracking-widest font-bold hover:bg-stone-700 transition-colors">
-                Save Changes
-              </button>
-              <button 
-                type="button" 
-                onClick={() => { setEditingItemId(null); setItemForm({ name: '', description: '', price: '', category: '' }); }}
-                className="px-8 border-2 border-stone-800 py-3 uppercase tracking-widest font-bold hover:bg-stone-100 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* 2. MAIN MENU CARD */}
+      {/* MAIN MENU CARD */}
       <div className="max-w-5xl mx-auto bg-[#fdfaf6] border-[8px] border-stone-800 shadow-2xl relative overflow-hidden">
         {/* Decorative Corner Accents */}
         <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-stone-400 m-4 opacity-30" />
@@ -236,51 +183,100 @@ const MenuList = () => {
               ) : (
                 filteredItems.map((it) => (
                   <div key={it._id} className="group relative">
-                    {/* Item Header (Name & Price) */}
-                    <div className="flex justify-between items-baseline gap-2 mb-1">
-                      <h3 className="text-lg font-bold text-stone-900 uppercase tracking-tight group-hover:text-stone-600 transition-colors">
-                        {it.name}
-                      </h3>
-                      <div className="flex-1 border-b border-dotted border-stone-400 mx-2 mb-1" />
-                      <span className="text-lg font-bold text-stone-800">₹{Number(it.price || 0).toLocaleString()}</span>
-                    </div>
-                    
-                    {/* Description */}
-                    <p className="text-sm text-stone-500 italic leading-snug pr-12">
-                      {it.description || "Freshly prepared with our signature house blend of spices and herbs."}
-                    </p>
+                    {editingItemId === it._id ? (
+                      <form onSubmit={updateItem} className="bg-stone-50 p-4 rounded border-2 border-stone-300">
+                        <h3 className="text-sm font-bold mb-3 text-stone-800 uppercase">Edit Item</h3>
+                        <div className="space-y-3">
+                          <input 
+                            ref={nameInputRef}
+                            value={itemForm.name} 
+                            onChange={e => setItemForm({ ...itemForm, name: e.target.value })} 
+                            placeholder="Dish Name" 
+                            className="w-full p-2 border border-stone-300 rounded text-sm" 
+                          />
+                          <input 
+                            value={itemForm.price} 
+                            onChange={e => setItemForm({ ...itemForm, price: e.target.value })} 
+                            placeholder="Price (₹)" 
+                            type="number" 
+                            className="w-full p-2 border border-stone-300 rounded text-sm" 
+                          />
+                          <textarea 
+                            value={itemForm.description} 
+                            onChange={e => setItemForm({ ...itemForm, description: e.target.value })} 
+                            placeholder="Description" 
+                            className="w-full p-2 border border-stone-300 rounded text-sm h-20" 
+                          />
+                          <select 
+                            value={itemForm.category} 
+                            onChange={e => setItemForm({ ...itemForm, category: e.target.value })} 
+                            className="w-full p-2 border border-stone-300 rounded text-sm bg-gray-100 cursor-not-allowed"
+                            disabled
+                          >
+                            <option value="">Select Category</option>
+                            {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
+                          </select>
+                          <div className="flex gap-2">
+                            <button type="submit" className="flex-1 bg-stone-800 text-white py-2 text-xs uppercase font-bold hover:bg-stone-700">
+                              Save
+                            </button>
+                            <button 
+                              type="button" 
+                              onClick={() => { setEditingItemId(null); setItemForm({ name: '', description: '', price: '', category: '' }); }}
+                              className="px-4 border border-stone-800 py-2 text-xs uppercase font-bold hover:bg-stone-100"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        {/* Item Header (Name & Price) */}
+                        <div className="flex justify-between items-baseline gap-2 mb-1">
+                          <h3 className="text-lg font-bold text-stone-900 uppercase tracking-tight group-hover:text-stone-600 transition-colors">
+                            {it.name}
+                          </h3>
+                          <div className="flex-1 border-b border-dotted border-stone-400 mx-2 mb-1" />
+                          <span className="text-base font-normal text-stone-700">₹{Number(it.price || 0).toLocaleString()}</span>
+                        </div>
+                        
+                        {/* Description */}
+                        <p className="text-sm text-stone-500 italic leading-snug pr-12">
+                          {it.description || "Freshly prepared with our signature house blend of spices and herbs."}
+                        </p>
 
-                    {/* Admin Quick Actions (Visible on Hover) */}
-                    <div className="mt-3 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity font-sans">
-                      <button 
-                        onClick={() => {
-                          setEditingItemId(it._id);
-                          setItemForm({ name: it.name, description: it.description, price: it.price, category: it.category?._id });
-                          setTimeout(() => {
-                            if (topRef?.current) {
-                              topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }
-                          }, 0);
-                        }}
-                        className="text-[10px] uppercase font-bold tracking-widest text-stone-400 hover:text-stone-900 border-b border-transparent hover:border-stone-900"
-                      >
-                        Edit Item
-                      </button>
-                      <button 
-                        onClick={async () => {
-                          if (!window.confirm('Remove from menu?')) return;
-                          try {
-                            setSubmitting(true);
-                            await axios.delete(`${API_BASE_URL}/menu/items/${it._id}`, getAuthHeaders());
-                            setToast('Item Removed');
-                            fetchData();
-                          } catch (e) { setToast('Error removing item'); } finally { setSubmitting(false); }
-                        }}
-                        className="text-[10px] uppercase font-bold tracking-widest text-red-300 hover:text-red-700 border-b border-transparent hover:border-red-700"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                        {/* Admin Quick Actions (Visible on Hover) */}
+                        <div className="mt-3 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity font-sans">
+                          <button 
+                            onClick={() => {
+                              setEditingItemId(it._id);
+                              setItemForm({ name: it.name, description: it.description, price: it.price, category: it.category?._id });
+                              setTimeout(() => {
+                                try { nameInputRef.current && nameInputRef.current.focus(); } catch (e) {}
+                              }, 100);
+                            }}
+                            className="text-[10px] uppercase font-bold tracking-widest text-stone-400 hover:text-stone-900 border-b border-transparent hover:border-stone-900"
+                          >
+                            Edit Item
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              if (!window.confirm('Remove from menu?')) return;
+                              try {
+                                setSubmitting(true);
+                                await axios.delete(`${API_BASE_URL}/menu/items/${it._id}`, getAuthHeaders());
+                                setToast('Item Removed');
+                                fetchData();
+                              } catch (e) { setToast('Error removing item'); } finally { setSubmitting(false); }
+                            }}
+                            className="text-[10px] uppercase font-bold tracking-widest text-red-300 hover:text-red-700 border-b border-transparent hover:border-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 ))
               )}

@@ -32,10 +32,20 @@ const OrderManagement = () => {
     dispatch(fetchMenuItems());
   }, [dispatch]);
 
-  // Tables are available if status is 'available'
+  // Show all tables except booked ones
   const availableTables = tables.filter(t => 
-    t.status === 'available' && !(t.spaceType || '').toLowerCase().includes('spa')
+    !(t.spaceType || '').toLowerCase().includes('spa') &&
+    !(t.orderedMenu && t.orderedMenu.length > 0)
   );
+
+  // Helper function to get table status
+  const getTableStatus = (table) => {
+    if (table.isReserved) {
+      return { text: 'Reserved', color: 'bg-yellow-100 text-yellow-700', disabled: false };
+    } else {
+      return { text: 'Available', color: 'bg-green-100 text-green-700', disabled: false };
+    }
+  };
 
   const calculateTotal = () => selectedMenuItems.reduce((total, item) => total + (item.price * item.quantity), 0);
 
@@ -263,13 +273,34 @@ const OrderManagement = () => {
             <div className="p-8 overflow-y-auto">
               {createOrderStep === 'selectTable' ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {availableTables.map((table) => (
-                    <button key={table._id} onClick={() => { setSelectedTable(table); setCreateOrderStep('selectMenu'); }} 
-                            className="p-5 border-2 border-slate-100 rounded-2xl hover:border-green-600 hover:bg-green-50 text-left transition-all">
-                      <h3 className="font-bold text-xl text-slate-800">{table.tableName}</h3>
-                      <p className="text-xs text-slate-400 uppercase font-bold mt-1">{table.spaceType}</p>
-                    </button>
-                  ))}
+                  {availableTables.map((table) => {
+                    const status = getTableStatus(table);
+                    return (
+                      <button 
+                        key={table._id} 
+                        onClick={() => { 
+                          if (!status.disabled) {
+                            setSelectedTable(table); 
+                            setCreateOrderStep('selectMenu');
+                          }
+                        }} 
+                        disabled={status.disabled}
+                        className={`p-5 border-2 rounded-2xl text-left transition-all ${
+                          status.disabled 
+                            ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-60' 
+                            : 'border-slate-100 hover:border-green-600 hover:bg-green-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-xl text-slate-800">{table.tableName}</h3>
+                          <span className={`text-xs px-2 py-1 rounded-full font-semibold ${status.color}`}>
+                            {status.text}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 uppercase font-bold">{table.spaceType}</p>
+                      </button>
+                    );
+                  })}
                   {availableTables.length === 0 && <p className="col-span-full text-center py-10 text-slate-400">No tables available.</p>}
                 </div>
               ) : (

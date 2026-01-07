@@ -65,7 +65,7 @@ const MenuManagement = () => {
                     {item.name}
                   </h3>
                   <div className="flex-1 border-b border-dotted border-gray-500 relative top-[-4px]"></div>
-                  <span className="text-lg font-serif text-white">
+                  <span className="text-lg font-sans text-white">
                     ₹{Number(item.price).toLocaleString()}
                   </span>
                 </div>

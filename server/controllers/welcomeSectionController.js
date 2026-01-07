@@ -87,18 +87,17 @@ const getWelcomeSectionById = async (req, res) => {
 // @access  Private/Merchant
 const createWelcomeSection = async (req, res) => {
   try {
-    const { hotelName, tagline, description } = req.body;
+    const { hotelName, description } = req.body;
 
-    if (!hotelName || !tagline || !description) {
+    if (!hotelName || !description) {
       return res.status(400).json({
         success: false,
-        message: 'Hotel name, tagline, and description are required'
+        message: 'Hotel name and description are required'
       });
     }
 
     const welcomeSection = await WelcomeSection.create({
       hotelName,
-      tagline,
       description,
       isActive: false,
       lastUpdatedBy: req.user._id
@@ -126,7 +125,7 @@ const createWelcomeSection = async (req, res) => {
 // @access  Private/Merchant
 const updateWelcomeSection = async (req, res) => {
   try {
-    const { hotelName, tagline, description, isActive } = req.body;
+    const { hotelName, description, isActive } = req.body;
 
     let welcomeSection = await WelcomeSection.findById(req.params.id);
 
@@ -139,7 +138,6 @@ const updateWelcomeSection = async (req, res) => {
 
     // Update fields
     welcomeSection.hotelName = hotelName || welcomeSection.hotelName;
-    welcomeSection.tagline = tagline || welcomeSection.tagline;
     welcomeSection.description = description || welcomeSection.description;
     welcomeSection.lastUpdatedBy = req.user._id;
 

@@ -1,8 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSelector } from 'react-redux';
 import axios from 'axios';
 import API_BASE_URL from '../../../config/apiConfig';
 
 const AddMenu = () => {
+  const { user } = useSelector(state => state.auth);
+  const role = user?.role;
+
+  // Check if user has permission to add menu items
+  if (role === 'supervisor' || role === 'staff') {
+    return (
+      <div className="p-6 text-center">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-3xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600 mb-4">
+            You do not have permission to add menu items.
+          </p>
+          {/* <p className="text-sm text-gray-500">
+            Only merchants and managers can add or modify menu items and categories.
+          </p> */}
+        </div>
+      </div>
+    );
+  }
+
   const [categories, setCategories] = useState([]);
   const [catName, setCatName] = useState(''); // top-level category name
   const [itemForm, setItemForm] = useState({ name: '', description: '', price: '', category: '', image: null });
@@ -124,8 +145,16 @@ const AddMenu = () => {
       setToast('Item created successfully');
       window.dispatchEvent(new CustomEvent('menuUpdated'));
     } catch (err) {
-      console.error(err);
-      setToast('Failed to create item');
+      // Show specific error message from backend (e.g., duplicate item in category)
+      if (err.response?.status === 409) {
+        // 409 is an expected validation error (duplicate), don't log to console
+        setToast(err.response.data.message || 'Item already exists in this category');
+      } else {
+        // Log unexpected errors to console
+        console.error(err);
+        const errorMsg = err.response?.data?.message || 'Failed to create item';
+        setToast(errorMsg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -159,7 +188,7 @@ const AddMenu = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Menu — Merchant</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">Add Menu </h1>
       {toast && <div className="mb-4 p-2 bg-red-300 text-black-800 rounded">{toast}</div>}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Step 1: Create Category */}

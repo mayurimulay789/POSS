@@ -25,6 +25,10 @@ export const fetchCuisineBackground = createAsyncThunk(
       const response = await cuisineCardsAPI.fetchCuisineBackground();
       return response.data;
     } catch (error) {
+      // Silently handle 404 - no cuisine gallery background uploaded yet
+      if (error.response?.status === 404) {
+        return null;
+      }
       return rejectWithValue(error.response?.data?.message || 'Error fetching cuisine background');
     }
   }

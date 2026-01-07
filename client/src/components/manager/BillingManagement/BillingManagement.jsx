@@ -17,15 +17,15 @@ const BillingManagement = () => {
   const [discounts, setDiscounts] = useState({});
   // const [optionalcharge, setOptionalcharge] = useState({});
   const [optionalChargesVisible, setOptionalChargesVisible] = useState({});
-    const [selectedOptionalCharges, setSelectedOptionalCharges] = useState({});
+  const [selectedOptionalCharges, setSelectedOptionalCharges] = useState({});
 
 
 
 
-   const {
-      optionalCharges,
-      systemChargesSummary,
-    } = useSelector((state) => state.charges);
+  const {
+    optionalCharges,
+    systemChargesSummary,
+  } = useSelector((state) => state.charges);
 
   // Filter orders based on status
   const pendingOrders = orders.filter(o => o.status === 'pending');
@@ -60,7 +60,7 @@ const BillingManagement = () => {
       return charge.value;
     }
   };
-  
+
 
 
   const calculateOptionalChargesTotal = (orderId, orderTotal) => {
@@ -84,32 +84,32 @@ const BillingManagement = () => {
     }
   };
 
-const toggleOptionalCharge = (orderId, charge, orderTotal) => {
-  setSelectedOptionalCharges(prev => {
-    const currentCharges = prev[orderId] || [];
-    const isAlreadySelected = currentCharges.some(c => c._id === charge._id);
-    
-    if (isAlreadySelected) {
-      // Remove charge
-      return {
-        ...prev,
-        [orderId]: currentCharges.filter(c => c._id !== charge._id)
-      };
-    } else {
-      // Add charge with calculated amount
-      const calculatedAmount = calculateChargeAmount(charge, orderTotal);
-      const chargeWithAmount = {
-        ...charge,
-        amount: calculatedAmount
-      };
-      
-      return {
-        ...prev,
-        [orderId]: [...currentCharges, chargeWithAmount]
-      };
-    }
-  });
-};
+  const toggleOptionalCharge = (orderId, charge, orderTotal) => {
+    setSelectedOptionalCharges(prev => {
+      const currentCharges = prev[orderId] || [];
+      const isAlreadySelected = currentCharges.some(c => c._id === charge._id);
+
+      if (isAlreadySelected) {
+        // Remove charge
+        return {
+          ...prev,
+          [orderId]: currentCharges.filter(c => c._id !== charge._id)
+        };
+      } else {
+        // Add charge with calculated amount
+        const calculatedAmount = calculateChargeAmount(charge, orderTotal);
+        const chargeWithAmount = {
+          ...charge,
+          amount: calculatedAmount
+        };
+
+        return {
+          ...prev,
+          [orderId]: [...currentCharges, chargeWithAmount]
+        };
+      }
+    });
+  };
 
   const markCompleted = async (order) => {
     try {
@@ -137,26 +137,26 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
 
   const handlePrint = async (order) => {
     const paymentMethod = selectedPayment[order._id] || 'cash';
-     const printOrder=await dispatch(updateOrder({
-        id: order._id,
-        data: {
-          status: 'payment_pending',
-          paymentMethod: paymentMethod,
-          discountApplied: parseFloat(discounts[order._id]) || 0,
-          systemChargeTax: systemChargesSummary?.totalSystemChargeRate || 0,
-          systemChargeAmmount: systemChargesSummary?.totalSystemChargesAmount || 0,
-          optionalcharge: calculateOptionalChargesTotal(order._id, order.totalBill || 0),
-          completedAt: new Date()
-        }
-      })).unwrap();
+    const printOrder = await dispatch(updateOrder({
+      id: order._id,
+      data: {
+        status: 'payment_pending',
+        paymentMethod: paymentMethod,
+        discountApplied: parseFloat(discounts[order._id]) || 0,
+        systemChargeTax: systemChargesSummary?.totalSystemChargeRate || 0,
+        systemChargeAmmount: systemChargesSummary?.totalSystemChargesAmount || 0,
+        optionalcharge: calculateOptionalChargesTotal(order._id, order.totalBill || 0),
+        completedAt: new Date()
+      }
+    })).unwrap();
 
-      console.log("order in print",printOrder.data);
-      order=printOrder.data;
+    console.log("order in print", printOrder.data);
+    order = printOrder.data;
 
-      
+
 
     const printWindow = window.open('', '', 'width=800,height=600');
-       printWindow.document.write(`
+    printWindow.document.write(`
   <!DOCTYPE html>
   <html>
   <head>
@@ -306,7 +306,7 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
     <div class="bill-details">
       <div class="bill-info">
         <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
-        <div><strong>Time:</strong> ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+        <div><strong>Time:</strong> ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
       </div>
       <div class="bill-info">
         <div><strong>Table No:</strong> ${order.tableName}</div>
@@ -386,8 +386,8 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
       <button
         onClick={() => setActiveTab('completed')}
         className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'completed'
-            ? 'border-b-2 border-blue-600 text-blue-600'
-            : 'text-gray-600 hover:text-gray-800'
+          ? 'border-b-2 border-blue-600 text-blue-600'
+          : 'text-gray-600 hover:text-gray-800'
           }`}
       >
         Completed Bills
@@ -402,8 +402,8 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
         <button
           onClick={() => setActiveTab('kot')}
           className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'kot'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-600 hover:text-gray-800'
             }`}
         >
           KOT
@@ -411,8 +411,8 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
         <button
           onClick={() => setActiveTab('print-bill')}
           className={`px-6 py-3 font-semibold transition-colors ${activeTab === 'print-bill'
-              ? 'border-b-2 border-blue-600 text-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
+            ? 'border-b-2 border-blue-600 text-blue-600'
+            : 'text-gray-600 hover:text-gray-800'
             }`}
         >
           Print Bill
@@ -547,174 +547,179 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
                         </button>
                       ) : (
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <label className="block text-sm font-semibold text-gray-700">Discount (%)</label>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setDiscountVisible({ ...discountVisible, [order._id]: false });
-                                setDiscounts({ ...discounts, [order._id]: '' });
-                              }}
-                              className="text-xs text-red-600 hover:text-red-800"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                          <input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={discounts[order._id] || ''}
-                            onChange={(e) => setDiscounts({ ...discounts, [order._id]: e.target.value })}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter discount percentage"
-                            autoFocus
-                          />
-                          {discounts[order._id] && (
-                            <p className="text-xs text-green-600">
-                              Discount amount: ₹{((order.totalBill || 0) * (parseFloat(discounts[order._id]) / 100)).toFixed(2)}
-                            </p>
-                          )}
-                        </div>
+  <div className="flex items-center justify-between">
+    <label className="block text-sm font-semibold text-gray-700">Discount (%)</label>
+    <button
+      type="button"
+      onClick={() => {
+        setDiscountVisible({ ...discountVisible, [order._id]: false });
+        setDiscounts({ ...discounts, [order._id]: '' });
+      }}
+      className="text-xs text-red-600 hover:text-red-800"
+    >
+      Remove
+    </button>
+  </div>
+  <input
+    type="number"
+    min="0"
+    max="100"
+    value={discounts[order._id] || ''}
+    onChange={(e) => {
+      const value = e.target.value;
+      if (value === '') {
+        setDiscounts({ ...discounts, [order._id]: value });
+      } else {
+        const numValue = Math.min(100, Math.max(0, parseInt(value, 10) || 0));
+        setDiscounts({ ...discounts, [order._id]: numValue });
+      }
+    }}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Enter discount percentage"
+    autoFocus
+  />
+  {discounts[order._id] && (
+    <p className="text-xs text-green-600">
+      Discount amount: ₹{((order.totalBill || 0) * (parseFloat(discounts[order._id]) / 100)).toFixed(2)}
+    </p>
+  )}
+</div>
                       )}
                     </div>
                     {!optionalChargesVisible[order._id] ? (
-                          <button
-                            type="button"
-                            onClick={() => setOptionalChargesVisible({ ...optionalChargesVisible, [order._id]: true })}
-                            className="inline-flex items-center   text-sm font-medium rounded-lg text-blue-600 transition-colors pb-2"
-                          >
-                            
-                           +  Add Charges
-                          </button>
-                        ) : (
-                          <div className="flex-1 min-w-[250px]">
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <label className="block text-sm font-semibold text-gray-700">Optional Charges</label>
+                      <button
+                        type="button"
+                        onClick={() => setOptionalChargesVisible({ ...optionalChargesVisible, [order._id]: true })}
+                        className="inline-flex items-center   text-sm font-medium rounded-lg text-blue-600 transition-colors pb-2"
+                      >
+
+                        +  Add Charges
+                      </button>
+                    ) : (
+                      <div className="flex-1 min-w-[250px]">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-sm font-semibold text-gray-700">Optional Charges</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOptionalChargesVisible({ ...optionalChargesVisible, [order._id]: false });
+                              }}
+                              className="text-xs text-red-600 hover:text-red-800 font-medium"
+                            >
+                              Close
+                            </button>
+                          </div>
+
+                          {optionalCharges && optionalCharges.length > 0 ? (
+                            <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-md bg-gray-50">
+                              {optionalCharges.map((charge) => {
+                                const isSelected = (selectedOptionalCharges[order._id] || [])
+                                  .some(c => c._id === charge._id);
+                                const calculatedAmount = calculateChargeAmount(charge, order.totalBill || 0);
+
+                                return (
+                                  <div
+                                    key={charge._id}
+                                    className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${isSelected
+                                        ? 'bg-blue-50 border border-blue-200 shadow-sm'
+                                        : 'bg-white border border-gray-200 hover:bg-gray-50'
+                                      }`}
+                                    onClick={() => toggleOptionalCharge(order._id, charge, order.totalBill || 0)}
+                                  >
+                                    <div className="flex items-center">
+                                      <div className={`w-4 h-4 flex items-center justify-center mr-2 border rounded ${isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                                        }`}>
+                                        {isSelected && (
+                                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <span className="text-sm font-medium text-gray-800 block">
+                                          {charge.chargeName}
+                                        </span>
+                                        {charge.chargeType === 'percentage' && (
+                                          <span className="text-xs text-gray-500">
+                                            {charge.value}% of ₹{(order.totalBill || 0).toFixed(2)} = ₹{calculatedAmount.toFixed(2)}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className={`text-sm font-semibold px-2 py-1 rounded ${charge.chargeType === 'percentage'
+                                          ? 'bg-blue-100 text-blue-800'
+                                          : 'bg-green-100 text-green-800'
+                                        }`}>
+                                        {charge.chargeType === 'percentage'
+                                          ? `${charge.value}%`
+                                          : `₹${charge.value}`}
+                                      </span>
+                                      {isSelected && (
+                                        <div className="text-xs text-gray-600 mt-1">
+                                          ₹{calculatedAmount.toFixed(2)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-500 italic">No optional charges available</p>
+                          )}
+
+                          {/* Selected Optional Charges Summary */}
+                          {selectedOptionalCharges[order._id]?.length > 0 && (
+                            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-semibold text-blue-800">Selected Charges</p>
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    setOptionalChargesVisible({ ...optionalChargesVisible, [order._id]: false });
+                                    setSelectedOptionalCharges(prev => {
+                                      const newState = { ...prev };
+                                      delete newState[order._id];
+                                      return newState;
+                                    });
                                   }}
                                   className="text-xs text-red-600 hover:text-red-800 font-medium"
                                 >
-                                  Close
+                                  Clear All
                                 </button>
                               </div>
-                              
-                              {optionalCharges && optionalCharges.length > 0 ? (
-                                <div className="space-y-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-md bg-gray-50">
-                                  {optionalCharges.map((charge) => {
-                                    const isSelected = (selectedOptionalCharges[order._id] || [])
-                                      .some(c => c._id === charge._id);
-                                    const calculatedAmount = calculateChargeAmount(charge, order.totalBill || 0);
-                                    
-                                    return (
-                                      <div
-                                        key={charge._id}
-                                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${
-                                          isSelected 
-                                            ? 'bg-blue-50 border border-blue-200 shadow-sm' 
-                                            : 'bg-white border border-gray-200 hover:bg-gray-50'
-                                        }`}
-                                        onClick={() => toggleOptionalCharge(order._id, charge, order.totalBill || 0)}
-                                      >
-                                        <div className="flex items-center">
-                                          <div className={`w-4 h-4 flex items-center justify-center mr-2 border rounded ${
-                                            isSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
-                                          }`}>
-                                            {isSelected && (
-                                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                              </svg>
-                                            )}
+                              <div className="space-y-1.5">
+                                {selectedOptionalCharges[order._id].map((charge) => (
+                                  <div key={charge._id} className="flex justify-between items-center text-sm py-1.5 px-2 bg-white rounded border border-gray-100">
+                                    <div className="flex items-center">
+                                      <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                      </svg>
+                                      <div>
+                                        <span className="text-gray-700">{charge.name}</span>
+                                        {charge.chargeType === 'percentage' && (
+                                          <div className="text-xs text-gray-500">
+                                            {charge.value}% of ₹{(order.totalBill || 0).toFixed(2)}
                                           </div>
-                                          <div>
-                                            <span className="text-sm font-medium text-gray-800 block">
-                                              {charge.chargeName}
-                                            </span>
-                                            {charge.chargeType === 'percentage' && (
-                                              <span className="text-xs text-gray-500">
-                                                {charge.value}% of ₹{(order.totalBill || 0).toFixed(2)} = ₹{calculatedAmount.toFixed(2)}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          <span className={`text-sm font-semibold px-2 py-1 rounded ${
-                                            charge.chargeType === 'percentage' 
-                                              ? 'bg-blue-100 text-blue-800' 
-                                              : 'bg-green-100 text-green-800'
-                                          }`}>
-                                            {charge.chargeType === 'percentage' 
-                                              ? `${charge.value}%` 
-                                              : `₹${charge.value}`}
-                                          </span>
-                                          {isSelected && (
-                                            <div className="text-xs text-gray-600 mt-1">
-                                              ₹{calculatedAmount.toFixed(2)}
-                                            </div>
-                                          )}
-                                        </div>
+                                        )}
                                       </div>
-                                    );
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-500 italic">No optional charges available</p>
-                              )}
-                              
-                              {/* Selected Optional Charges Summary */}
-                              {selectedOptionalCharges[order._id]?.length > 0 && (
-                                <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
-                                  <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-semibold text-blue-800">Selected Charges</p>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedOptionalCharges(prev => {
-                                          const newState = { ...prev };
-                                          delete newState[order._id];
-                                          return newState;
-                                        });
-                                      }}
-                                      className="text-xs text-red-600 hover:text-red-800 font-medium"
-                                    >
-                                      Clear All
-                                    </button>
-                                  </div>
-                                  <div className="space-y-1.5">
-                                    {selectedOptionalCharges[order._id].map((charge) => (
-                                      <div key={charge._id} className="flex justify-between items-center text-sm py-1.5 px-2 bg-white rounded border border-gray-100">
-                                        <div className="flex items-center">
-                                          <svg className="w-3 h-3 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                          </svg>
-                                          <div>
-                                            <span className="text-gray-700">{charge.name}</span>
-                                            {charge.chargeType === 'percentage' && (
-                                              <div className="text-xs text-gray-500">
-                                                {charge.value}% of ₹{(order.totalBill || 0).toFixed(2)}
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <span className="font-semibold text-gray-800">₹{charge.amount?.toFixed(2)}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <div className="border-t border-blue-200 mt-2 pt-2">
-                                    <div className="flex justify-between items-center text-sm font-bold">
-                                      <span className="text-blue-900">Charges Total:</span>
-                                      <span className="text-blue-900">₹{calculateOptionalChargesTotal(order._id, order.totalBill || 0).toFixed(2)}</span>
                                     </div>
+                                    <span className="font-semibold text-gray-800">₹{charge.amount?.toFixed(2)}</span>
                                   </div>
+                                ))}
+                              </div>
+                              <div className="border-t border-blue-200 mt-2 pt-2">
+                                <div className="flex justify-between items-center text-sm font-bold">
+                                  <span className="text-blue-900">Charges Total:</span>
+                                  <span className="text-blue-900">₹{calculateOptionalChargesTotal(order._id, order.totalBill || 0).toFixed(2)}</span>
                                 </div>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <button
                         onClick={() => handlePrint(order)}

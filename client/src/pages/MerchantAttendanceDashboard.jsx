@@ -359,8 +359,7 @@ const MerchantAttendanceDashboard = () => {
           <div className="hidden lg:block mb-4">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Attendance Dashboard</h1>
-                <p className="text-gray-600">Monitor and manage team attendance</p>
+                <h1 className="text-2xl font-bold text-gray-800">Attendance Dashboard</h1>
               </div>
             </div>
           </div>
