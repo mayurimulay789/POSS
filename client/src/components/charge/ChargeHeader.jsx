@@ -1,6 +1,8 @@
 import React from 'react';
 // Replace lucide-react with react-icons
 import { FaPlus, FaSearch } from 'react-icons/fa';
+import { selectCurrentUser } from '../../store/slices/authSlice';
+import { useSelector } from 'react-redux';
 
 const ChargeHeader = ({
   activeTab,
@@ -12,6 +14,8 @@ const ChargeHeader = ({
   onCreateCharge,
   filters,
 }) => {
+  const user = useSelector(selectCurrentUser);
+
   return (
     <div className="bg-white rounded-lg shadow mb-4">
       {/* Tabs */}
@@ -74,6 +78,7 @@ const ChargeHeader = ({
 
           {/* Action Buttons */}
           <div className="flex space-x-2 w-full lg:w-auto">
+          {user?.role === 'merchant' || user?.role === 'manager' &&(
             <button
               onClick={onCreateCharge}
               className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -82,7 +87,9 @@ const ChargeHeader = ({
               <FaPlus className="w-4 h-4 mr-2" />
               Add Charge
             </button>
+            )}
           </div>
+          
         </div>
 
         {/* Clear Filters */}

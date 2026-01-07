@@ -153,13 +153,13 @@ const PermissionManagement = () => {
         'contact_us_management'
       ]
     },
-    {
-      category: 'Analytics',
-      permissions: ['reports_analytics']
-    },
+    // {
+    //   category: 'Analytics',
+    //   permissions: ['reports_analytics']
+    // },
     {
       category: 'Administration',
-      permissions: ['employee_management', 'charges_management','attendance_management']
+      permissions: ['employee_management', 'charges_management']
     }
   ];
 

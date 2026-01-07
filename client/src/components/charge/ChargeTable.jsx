@@ -10,11 +10,12 @@ import {
   FaTrashAlt, 
   FaToggleOn, 
   FaToggleOff,
-  FaChevronDown, 
-  FaChevronUp,
-  FaExclamationCircle,
-  FaCheckCircle
 } from 'react-icons/fa';
+import { 
+   Eye, Edit,  Trash2 ,ChevronDown, ChevronUp 
+} from 'lucide-react';
+import { selectCurrentUser } from '../../store/slices/authSlice';
+import { useSelector } from 'react-redux';
 
 const ChargeTable = ({
   charges,
@@ -29,6 +30,7 @@ const ChargeTable = ({
   pagination,
   onPageChange
 }) => {
+    const user = useSelector(selectCurrentUser);
   // Mobile Card Component
   const MobileChargeCard = ({ charge }) => {
     const expanded = expandedRows[charge._id];
@@ -71,7 +73,7 @@ const ChargeTable = ({
             className="text-gray-400 hover:text-gray-600 ml-2"
             aria-label={expanded ? `Collapse details for ${charge.chargeName}` : `Expand details for ${charge.chargeName}`}
           >
-            {expanded ? <FaChevronUp size={20} /> : <FaChevronDown size={20} />}
+            {expanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
         </div>
 
@@ -96,6 +98,7 @@ const ChargeTable = ({
         </div>
 
         {/* Actions */}
+        {user?.role === 'merchant' || user?.role === 'manager' &&(
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <button
             onClick={() => onToggleStatus(charge, !charge.active)}
@@ -124,24 +127,25 @@ const ChargeTable = ({
               className="text-blue-600 hover:text-blue-800 p-1"
               aria-label={`View details for ${charge.chargeName}`}
             >
-              <FaEye className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
             </button>
             <button
               onClick={() => onEditClick(charge)}
               className="text-blue-600 hover:text-blue-800 p-1"
               aria-label={`Edit ${charge.chargeName}`}
             >
-              <FaEdit className="w-4 h-4" />
+              <Edit className="w-4 h-4" />
             </button>
             <button
               onClick={() => onDeleteClick(charge)}
               className="text-red-600 hover:text-red-800 p-1"
               aria-label={`Delete ${charge.chargeName}`}
             >
-              <FaTrashAlt className="w-4 h-4" />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         </div>
+        )}
 
         {/* Expanded Content */}
         {expanded && (
@@ -268,6 +272,7 @@ const ChargeTable = ({
               {formatDate(charge.createdAt)}
             </div>
           </td>
+          {user?.role === 'merchant' || user?.role === 'manager' &&(
           <td className="px-6 py-4">
             <div className="flex items-center space-x-2">
               <button
@@ -297,7 +302,7 @@ const ChargeTable = ({
                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                   aria-label={`View details for ${charge.chargeName}`}
                 >
-                  <FaEye className="w-4 h-4" />
+                  <Eye className="w-4 h-4" />
                 </button>
                 
                 <button
@@ -305,14 +310,14 @@ const ChargeTable = ({
                   className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
                   aria-label={`Edit ${charge.chargeName}`}
                 >
-                  <FaEdit className="w-4 h-4" />
+                  <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onDeleteClick(charge)}
                   className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
                   aria-label={`Delete ${charge.chargeName}`}
                 >
-                  <FaTrashAlt className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => onToggleExpand(charge._id)}
@@ -320,14 +325,15 @@ const ChargeTable = ({
                   aria-label={expandedRows[charge._id] ? `Collapse details for ${charge.chargeName}` : `Expand details for ${charge.chargeName}`}
                 >
                   {expandedRows[charge._id] ? (
-                    <FaChevronUp className="w-4 h-4" />
+                    <ChevronUp className="w-4 h-4" />
                   ) : (
-                    <FaChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-4 h-4" />
                   )}
                 </button>
               </div>
             </div>
           </td>
+          )}
         </tr>
 
         {/* Expanded Row */}
@@ -521,9 +527,11 @@ const ChargeTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created
               </th>
+              {user?.role === 'merchant' || user?.role === 'manager' &&(
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

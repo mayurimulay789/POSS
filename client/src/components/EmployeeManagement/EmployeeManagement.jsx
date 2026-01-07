@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+// import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useState,useRef,useEffect } from 'react';
 import { 
   getEmployees, 
-  createEmployee, 
-  updateEmployee, 
   deleteEmployee, 
   toggleEmployeeStatus,
   clearError,
   clearSuccess,
   setFilters
-} from '../../../store/slices/employeeSlice';
+} from '../../store/slices/employeeSlice';
 import EmployeeForm from './EmployeeForm';
 
 const EmployeeManagement = () => {
@@ -40,11 +39,10 @@ const EmployeeManagement = () => {
 
   const [columns, setColumns] = useState(allColumns);
 
+  // CHANGED: Fetch employees for all roles, not just merchant
   useEffect(() => {
-    if (user?.role === 'merchant') {
-      dispatch(getEmployees(filters));
-    }
-  }, [dispatch, user, filters]);
+    dispatch(getEmployees(filters));
+  }, [dispatch, filters]);
 
   useEffect(() => {
     if (success && !showForm) {
@@ -185,6 +183,9 @@ const EmployeeManagement = () => {
     return new Date(dateString).toLocaleDateString('en-IN');
   };
 
+  // CHANGED: Function to check if user is merchant
+  const isMerchant = user?.role === 'merchant';
+
   if (loading && employees.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -193,219 +194,287 @@ const EmployeeManagement = () => {
     );
   }
 
-  // Check if user is merchant
-  if (user?.role !== 'merchant') {
-    return (
-      <div className="p-6 text-center">
-        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-        <p className="text-gray-600">Only merchants can access employee management.</p>
-      </div>
-    );
-  }
+  // CHANGED: Removed access denied check since all roles can view now
 
   return (
     <div className="h-full flex flex-col">
       {/* Header Section */}
-      <div className="flex-shrink-0 bg-white p-4 lg:p-6 border-b border-gray-200">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full lg:w-auto space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="flex-1">
-              <h1 className="text-xl lg:text-2xl font-bold text-gray-800">Employee Management</h1>
-              <p className="text-gray-600 text-sm lg:text-base">Manage your team members and their roles</p>
-            </div>
-            
-            {/* Add New Employee Button */}
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center space-x-2 w-full sm:w-auto justify-center"
-            >
-              <span>+</span>
-              <span>New Employee</span>
-            </button>
-          </div>
-          
-          <div className="flex items-center space-x-2 lg:space-x-3 w-full lg:w-auto justify-between lg:justify-end">
-            {/* Search Input - Mobile Only */}
-            <div className="lg:hidden flex-1">
-              <input
-                type="text"
-                placeholder="Search employees..."
-                value={filters.search}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-            </div>
+      <div className="flex-shrink-0 bg-white p-4 lg:pt-4 lg:pl-4 lg:pr-4 lg:pb-1  border-b border-gray-200">
+  {/* Top Row: Title, Search, and Action Buttons */}
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+    {/* Left: Title */}
+    <div>
+      <h1 className="text-2xl lg:text-2xl font-bold text-gray-900">Employee Management</h1>
+    </div>
 
-            {/* Filter Button */}
-            <div className="relative">
-              <button
-                ref={filterButtonRef}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowFilterMenu(!showFilterMenu);
-                  setShowColumnsMenu(false);
-                }}
-                className="flex items-center space-x-1 lg:space-x-2 bg-white border border-gray-300 text-gray-700 px-3 lg:px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
-              >
-                <span>🔍</span>
-                <span className="hidden sm:inline">Filter</span>
-                <span>▼</span>
-              </button>
+    {/* Right: Action Buttons */}
+    <div className="flex items-center gap-3">
+      {/* Desktop Search Bar */}
+      <div className="hidden md:block relative flex-1 md:flex-none md:w-64">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search employees..."
+          value={filters.search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+        />
+      </div>
 
-              {/* Filter Dropdown Menu */}
-              {showFilterMenu && (
-                <div 
-                  ref={filterMenuRef}
-                  className="absolute right-0 mt-2 w-64 lg:w-72 bg-white border border-gray-200 rounded-lg shadow-xl z-50"
-                >
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-3">Filter by Role</h3>
-                    <div className="space-y-2">
-                      {['all', 'staff', 'supervisor', 'manager'].map(role => (
-                        <label key={role} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="role"
-                            value={role}
-                            checked={filters.role === role}
-                            onChange={(e) => handleRoleFilter(e.target.value)}
-                            className="text-blue-500 focus:ring-blue-500"
-                          />
-                          <span className="capitalize text-sm">
-                            {role === 'all' ? 'All Roles' : role}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                    
-                    <div className="mt-4 pt-3 border-t border-gray-200">
-                      <h3 className="font-semibold text-gray-800 mb-3">Search</h3>
-                      <input
-                        type="text"
-                        placeholder="Search employees..."
-                        value={filters.search}
-                        onChange={(e) => handleSearch(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      />
-                    </div>
-                    
-                    <div className="mt-4 flex justify-between">
+      {/* Action Buttons Group */}
+      <div className="flex items-center gap-2">
+        {/* Filter Button */}
+        <div className="relative">
+          <button
+            ref={filterButtonRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowFilterMenu(!showFilterMenu);
+              setShowColumnsMenu(false);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            title="Filter options"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <span>Filter</span>
+          </button>
+
+          {/* Filter Dropdown */}
+          {showFilterMenu && (
+            <div ref={filterMenuRef} className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl z-50">
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900">Filters</h3>
+                  <button
+                    onClick={() => {
+                      dispatch(setFilters({ search: '', role: '', page: 1 }));
+                      setShowFilterMenu(false);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Clear all
+                  </button>
+                </div>
+
+                {/* Role Filter */}
+                <div className="mb-5">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Filter by Role</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {['all', 'staff', 'supervisor', 'manager', 'merchant'].map(role => (
                       <button
-                        onClick={() => {
-                          dispatch(setFilters({ search: '', role: '', page: 1 }));
-                        }}
-                        className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+                        key={role}
+                        onClick={() => handleRoleFilter(role)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                          filters.role === role
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
                       >
-                        Reset
+                        {role === 'all' ? 'All Roles' : role}
                       </button>
-                      <button
-                        onClick={() => setShowFilterMenu(false)}
-                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
-                      >
-                        Apply
-                      </button>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* Columns Button */}
-            <div className="relative">
-              <button
-                ref={columnsButtonRef}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowColumnsMenu(!showColumnsMenu);
-                  setShowFilterMenu(false);
-                }}
-                className="flex items-center space-x-1 lg:space-x-2 bg-white border border-gray-300 text-gray-700 px-3 lg:px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-sm"
-              >
-                <span>📊</span>
-                <span className="hidden sm:inline">Columns</span>
-                <span>▼</span>
-              </button>
-
-              {/* Columns Dropdown Menu */}
-              {showColumnsMenu && (
-                <div 
-                  ref={columnsMenuRef}
-                  className="absolute right-0 mt-2 w-72 lg:w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
-                >
-                  <div className="p-4">
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-gray-800 text-sm lg:text-base">Show/Hide Columns</h3>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={selectAllColumns}
-                          className="text-xs text-blue-500 hover:text-blue-700"
-                        >
-                          Select All
-                        </button>
-                        <button
-                          onClick={deselectAllColumns}
-                          className="text-xs text-gray-500 hover:text-gray-700"
-                        >
-                          Deselect All
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {columns.map(column => (
-                        <label key={column.key} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={column.visible}
-                            onChange={() => toggleColumnVisibility(column.key)}
-                            className="text-blue-500 focus:ring-blue-500 rounded"
-                          />
-                          <span className="text-sm text-gray-700">{column.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                    
-                    <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
-                      <button
-                        onClick={() => setShowColumnsMenu(false)}
-                        className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  </div>
+                {/* Search Filter */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Search</h4>
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={filters.search}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                  />
                 </div>
-              )}
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowFilterMenu(false)}
+                    className="px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+                  >
+                    Apply Filters
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Success Message */}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mt-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span>✅</span>
-              <span className="text-sm">{success}</span>
-            </div>
-            <button onClick={() => dispatch(clearSuccess())} className="text-green-700 hover:text-green-900">
-              ×
-            </button>
-          </div>
-        )}
+        {/* Columns Button */}
+        <div className="relative">
+          <button
+            ref={columnsButtonRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowColumnsMenu(!showColumnsMenu);
+              setShowFilterMenu(false);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            title="Column visibility"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <span>Columns</span>
+          </button>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mt-4 flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <span>❌</span>
-              <span className="text-sm">{error}</span>
+          {/* Columns Dropdown */}
+          {showColumnsMenu && (
+            <div ref={columnsMenuRef} className="absolute right-0 mt-2 w-72 bg-white border border-gray-200 rounded-xl shadow-2xl z-50">
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900">Visible Columns</h3>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={selectAllColumns}
+                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      All
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      onClick={deselectAllColumns}
+                      className="text-sm text-gray-600 hover:text-gray-800 font-medium"
+                    >
+                      None
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                  {columns.map(column => {
+                    if (column.key === 'actions' && !isMerchant) {
+                      return null;
+                    }
+                    return (
+                      <label key={column.key} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg cursor-pointer group">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-4 h-4 border rounded flex items-center justify-center ${
+                            column.visible 
+                              ? 'bg-blue-600 border-blue-600' 
+                              : 'border-gray-300'
+                          }`}>
+                            {column.visible && (
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-sm font-medium text-gray-700">{column.label}</span>
+                        </div>
+                        <button
+                          onClick={() => toggleColumnVisibility(column.key)}
+                          className="text-xs text-gray-500 hover:text-gray-700 opacity-0 group-hover:opacity-100"
+                        >
+                          {column.visible ? 'Hide' : 'Show'}
+                        </button>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-gray-200 flex justify-end">
+                  <button
+                    onClick={() => setShowColumnsMenu(false)}
+                    className="px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-black font-medium text-sm"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
             </div>
-            <button onClick={() => dispatch(clearError())} className="text-red-700 hover:text-red-900">
-              ×
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+    </div>
+  </div>
+
+  {/* Bottom Row: Mobile Search and New Employee Button */}
+  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    {/* Mobile Search - Only shows on small screens */}
+    <div className="w-full sm:hidden">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          placeholder="Search employees..."
+          value={filters.search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+    </div>
+
+    {/* New Employee Button - Positioned on right for all screen sizes */}
+    {isMerchant && (
+      <button
+        onClick={() => setShowForm(true)}
+        className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-3 group"
+      >
+        <svg className="w-5 h-5 group-hover:rotate-90 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span className="text-sm lg:text-base"> New Employee</span>
+      </button>
+    )}
+  </div>
+
+  {/* Status Messages */}
+  <div className="mt-4">
+    {success && (
+      <div className="animate-slideDown bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 p-4 rounded-r-lg flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <span className="text-green-800 font-medium">{success}</span>
+        </div>
+        <button
+          onClick={() => dispatch(clearSuccess())}
+          className="text-green-600 hover:text-green-800 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    )}
+
+    {error && (
+      <div className="animate-slideDown bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 p-4 rounded-r-lg flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+            <svg className="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <span className="text-red-800 font-medium">{error}</span>
+        </div>
+        <button
+          onClick={() => dispatch(clearError())}
+          className="text-red-600 hover:text-red-800 transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    )}
+  </div>
+</div>
 
       {/* Table Container */}
       <div className="flex-1 min-h-0 bg-gray-50 p-2 lg:p-4">
@@ -416,23 +485,29 @@ const EmployeeManagement = () => {
               <table className="min-w-full divide-y divide-gray-200 border-collapse">
                 <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
-                    {columns.map(column => 
-                      column.visible && (
-                        <th 
-                          key={column.key} 
-                          className="px-2 lg:px-4 py-3 text-start text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200 bg-gray-50"
-                        >
-                          {column.label}
-                        </th>
-                      )
-                    )}
+                    {columns.map(column => {
+                      // CHANGED: Hide "actions" column header for non-merchant users
+                      if (column.key === 'actions' && !isMerchant) {
+                        return null;
+                      }
+                      return (
+                        column.visible && (
+                          <th 
+                            key={column.key} 
+                            className="px-2 lg:px-4 py-3 text-start text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap border-b border-gray-200 bg-gray-50"
+                          >
+                            {column.label}
+                          </th>
+                        )
+                      );
+                    })}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {employees.length === 0 ? (
                     <tr>
                       <td 
-                        colSpan={columns.filter(col => col.visible).length} 
+                        colSpan={columns.filter(col => col.visible && !(col.key === 'actions' && !isMerchant)).length} 
                         className="px-4 lg:px-6 py-8 lg:py-12 text-center"
                       >
                         <div className="text-gray-500">
@@ -451,6 +526,11 @@ const EmployeeManagement = () => {
                         } hover:bg-blue-50`}
                       >
                         {columns.map(column => {
+                          // CHANGED: Skip "actions" column entirely for non-merchant users
+                          if (column.key === 'actions' && !isMerchant) {
+                            return null;
+                          }
+                          
                           if (!column.visible) return null;
                           
                           // Common cell styling
@@ -490,7 +570,7 @@ const EmployeeManagement = () => {
                             case 'actions':
                               return (
                                 <td key={column.key} className={`${baseCellClasses} text-center whitespace-nowrap`}>
-                                  <div className="flex flex-row lg:flex-row items-start  justify-start space-y-2 lg:space-y-0 lg:space-x-1">
+                                  <div className="flex flex-row lg:flex-row items-start justify-start space-x-1 lg:space-y-0 lg:space-x-1">
                                     <button 
                                       onClick={() => handleEdit(employee)} 
                                       className="text-blue-600 hover:text-blue-900 px-1 lg:px-2 py-1 rounded hover:bg-blue-50 transition-colors border border-blue-200 text-xs w-full lg:w-auto" 
@@ -603,8 +683,8 @@ const EmployeeManagement = () => {
         </div>
       </div>
 
-      {/* Employee Form Modal */}
-      {showForm && (
+      {/* CHANGED: Employee Form Modal - only show for merchant */}
+      {showForm && isMerchant && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 lg:p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-4 lg:p-6">

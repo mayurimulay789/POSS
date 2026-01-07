@@ -74,9 +74,11 @@ const BaseSidebar = ({
       customer_management: '🧑‍🤝‍🧑',
       // reports_analytics: '📈',
       employee_management: '👥',
-      permission_management: '🔐',
       charges_management: '💲',
-      attendance_management: '🕒',
+      ...(user.role === 'merchant' && {
+        attendance_management: '🕒',
+          permission_management: '🔐'
+      })
     };
     return icons[permission] || '📄';
   };
@@ -193,9 +195,14 @@ const BaseSidebar = ({
       ['/hotel-images', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
     analytics: normalizedSidebarItems.filter(i => i.path === '/'),
-    administration: normalizedSidebarItems.filter(i =>
-      ['/employees', '/permission-management', '/landing-page', '/charges','/attendance-dashboard','/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'].includes(i.path)
-    )
+    
+    administration: normalizedSidebarItems.filter(i => {
+      const adminPaths = ['/employees', '/landing-page', '/charges', '/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'];
+      if (user.role === 'merchant') {
+        adminPaths.push('/permission-management', '/attendance-dashboard');
+      }
+      return adminPaths.includes(i.path);
+    })
   };
 
   const renderGroup = (key, items, label) => {

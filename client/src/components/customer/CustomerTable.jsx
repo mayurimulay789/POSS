@@ -8,7 +8,6 @@ const CustomerTable = ({
   customers,
   loading,
   canEditDelete,
-  user,
   formatDate,
   onEditClick,
   onDeleteClick,

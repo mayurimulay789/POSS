@@ -183,10 +183,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleDashboardNavigation}
-
-                  // className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
-
-                  className="bg-[#F1A722] text-[#0A2F46] hover:bg-[#14AAAB] hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 shadow-md font-semibold"
+                  className="border-2 border-white/80 text-white hover:bg-white hover:text-[#D32B36] px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 font-semibold"
                 >
                   <span>📊</span>
                   Dashboard
@@ -194,7 +191,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleAttendanceNavigation}
-                  className={`border ${showTransparent ? 'border-white/70 text-white hover:border-red-300 hover:text-red-200' : 'border-gray-300 text-gray-700 hover:border-red-500 hover:text-red-600'} px-4 py-2 rounded-md transition flex items-center gap-2 bg-transparent`}
+                  className="border-2 border-white/80 text-white hover:bg-white hover:text-[#D32B36] px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 font-semibold"
                 >
                   <span>📅</span>
                   Attendance

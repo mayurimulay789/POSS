@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createEmployee, updateEmployee, clearError, clearSuccess } from '../../../store/slices/employeeSlice';
+import { createEmployee, updateEmployee, clearError, clearSuccess } from '../../store/slices/employeeSlice';
 
 const EmployeeForm = ({ employee, onClose }) => {
   const dispatch = useDispatch();
@@ -253,9 +253,9 @@ const EmployeeForm = ({ employee, onClose }) => {
   };
 
   const roleOptions = [
-    { value: 'staff', label: 'Staff', description: 'Basic team member with limited permissions' },
-    { value: 'supervisor', label: 'Supervisor', description: 'Can manage staff and oversee operations' },
-    { value: 'manager', label: 'Manager', description: 'Has full operational control except employee management' }
+    { value: 'staff', label: 'Staff'},
+    { value: 'supervisor', label: 'Supervisor'},
+    { value: 'manager', label: 'Manager' }
   ];
 
   return (
@@ -289,7 +289,7 @@ const EmployeeForm = ({ employee, onClose }) => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Full Name */}
         <div>
           <label htmlFor="FullName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -318,9 +318,6 @@ const EmployeeForm = ({ employee, onClose }) => {
           <div className="flex justify-between mt-1">
             <span className="text-xs text-gray-500">
               {formData.FullName.length}/100 characters
-            </span>
-            <span className="text-xs text-gray-500">
-              Letters, spaces, apostrophes, periods, and hyphens allowed
             </span>
           </div>
         </div>
@@ -388,7 +385,7 @@ const EmployeeForm = ({ employee, onClose }) => {
           <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
             Role <span className="text-red-500">*</span>
           </label>
-          <div className="space-y-2">
+          <div className="space-x-4 flex">
             {roleOptions.map(option => (
               <label key={option.value} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                 <input
@@ -403,7 +400,6 @@ const EmployeeForm = ({ employee, onClose }) => {
                 />
                 <div className="flex-1">
                   <div className="font-medium text-gray-900">{option.label}</div>
-                  <div className="text-sm text-gray-600">{option.description}</div>
                 </div>
               </label>
             ))}
@@ -433,15 +429,6 @@ const EmployeeForm = ({ employee, onClose }) => {
             <label htmlFor="isActive" className="block text-sm font-medium text-gray-700">
               Active Employee
             </label>
-            <p className="text-sm text-gray-600 mt-1">
-              {formData.isActive 
-                ? '✅ This employee is active and can access the system' 
-                : '❌ This employee is inactive and cannot access the system'
-              }
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              You can change this status anytime after creation
-            </p>
           </div>
         </div>
 

@@ -339,27 +339,15 @@ const ChargeManagement = () => {
     }
   }, [canManageCharges, activeTab, systemCharges, optionalCharges, charges]);
 
-    if (user?.role !== 'merchant' && user?.role !== 'manager') {
-    return (
-      <div className="p-6 text-center">
-        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
-        <p className="text-gray-600">Only merchants and manager can access charges management.</p>
-      </div>
-    );
-  }
+
 
   return (
     <main role="main">
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Charge Management</h1>
-            <p className="text-gray-600">
-              {canManageCharges 
-                ? 'Manage system and optional charges for billing'
-                : 'View available charges for billing'}
-            </p>
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-800 ">Charges Management</h1>
           </div>
 
           {/* Stats Cards - Only show for managers/admins */}

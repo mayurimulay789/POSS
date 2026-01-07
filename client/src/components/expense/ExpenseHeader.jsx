@@ -65,8 +65,7 @@ const ExpenseHeader = ({
           {/* Date Filter (only for all expenses view) */}
           {showDateFilters && (
             <div className="w-full sm:w-auto flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-              <div className="flex items-center space-x-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
+              <div className="flex items-center space-x-2  ps-2">
                 <input
                   type="date"
                   value={dateFilter.startDate}
@@ -91,7 +90,7 @@ const ExpenseHeader = ({
           )}
 
           {/* Buttons */}
-          <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <div className="flex items-center space-x-2 w-full sm:w-auto ps-2">
             {showDateFilters && (
               <button
                 onClick={onClearFilters}

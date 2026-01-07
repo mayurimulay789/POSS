@@ -1,6 +1,6 @@
 import React from 'react';
 // Replace lucide-react with react-icons
-import { FaDollarSign, FaPercent, FaMicrochip, FaClock } from 'react-icons/fa';
+import { FaRupeeSign, FaPercent, FaMicrochip, FaClock } from 'react-icons/fa';
 
 const ChargeStats = ({ summary, counts }) => {
   const stats = [
@@ -15,7 +15,7 @@ const ChargeStats = ({ summary, counts }) => {
     {
       label: 'Total Optional Charges',
       value: counts?.optional || 0,
-      icon: FaDollarSign,
+      icon: FaRupeeSign,
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
       description: 'Optional charges'
@@ -31,7 +31,7 @@ const ChargeStats = ({ summary, counts }) => {
     {
       label: 'System Fixed Amount',
       value: `₹${summary?.totalSystemChargesAmount || 0}`,
-      icon: FaDollarSign,
+      icon: FaRupeeSign,
       bgColor: 'bg-indigo-100',
       iconColor: 'text-indigo-600',
       description: 'Total fixed amount'
@@ -39,7 +39,7 @@ const ChargeStats = ({ summary, counts }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {stats.map((stat, index) => (
         <div 
           key={index} 
@@ -51,7 +51,6 @@ const ChargeStats = ({ summary, counts }) => {
               <p className="text-2xl font-bold text-gray-800 mt-1">
                 {stat.value}
               </p>
-              <p className="text-xs text-gray-400 mt-1">{stat.description}</p>
             </div>
             <div className={`p-2 ${stat.bgColor} rounded-full ml-4`}>
               <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />

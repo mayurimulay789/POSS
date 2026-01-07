@@ -582,7 +582,7 @@ const toggleOptionalCharge = (orderId, charge, orderTotal) => {
                           <button
                             type="button"
                             onClick={() => setOptionalChargesVisible({ ...optionalChargesVisible, [order._id]: true })}
-                            className="inline-flex items-center   text-sm font-medium rounded-lg text-blue-600 transition-colors"
+                            className="inline-flex items-center   text-sm font-medium rounded-lg text-blue-600 transition-colors pb-2"
                           >
                             
                            +  Add Charges

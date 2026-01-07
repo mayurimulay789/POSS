@@ -59,7 +59,7 @@ const RoleBasedLayout = () => {
     switch (role) {
       case 'manager':
         return ['order_management', 'billing_management', 'space_management', 
-                'task_management', 'expense_management', 'reports_analytics', 
+                'task_management', 'expense_management',
                 'employee_management','customer_management','charges_management'];
       case 'supervisor':
         return ['order_management', 'billing_management', 'space_management', 
