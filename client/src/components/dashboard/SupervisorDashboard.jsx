@@ -29,12 +29,11 @@ const SupervisorDashboard = () => {
   } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-2">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Supervisor Dashboard</h2>
-          <p className="text-gray-600">Team management and daily operations</p>
         </div>
         <button 
           onClick={refreshDashboard}
@@ -45,7 +44,7 @@ const SupervisorDashboard = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard 
           title="My Expenses" 
           value={overview?.myExpenses || 0} 

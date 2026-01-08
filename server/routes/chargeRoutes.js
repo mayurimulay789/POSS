@@ -30,7 +30,7 @@ router.get('/system/summary', getSystemChargesSummary);
 // ==================== ADMIN/MANAGER ROUTES ====================
 
 // GET /api/charges - Get all charges (merchant view)
-router.get('/', authorize('merchant', 'manager'), getAllCharges);
+router.get('/', authorize('merchant', 'manager','staff','supervisor'), getAllCharges);
 
 // GET /api/charges/:id - Get single charge by ID
 router.get('/:id', authorize('merchant', 'manager'), getChargeById);

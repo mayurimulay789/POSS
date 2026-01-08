@@ -308,12 +308,11 @@ const ManagerDashboard = () => {
   } = data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-2">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center ">
         <div>
           <h2 className="text-xl font-bold text-gray-800">Manager Dashboard</h2>
-          <p className="text-gray-600">Team and operations overview</p>
         </div>
         <button 
           onClick={refreshDashboard}
@@ -324,7 +323,7 @@ const ManagerDashboard = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         <StatsCard 
           title="Total Orders" 
@@ -359,7 +358,7 @@ const ManagerDashboard = () => {
 
 
       {/* Week Performance */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
        <StatsCard 
           title="Total Expenses" 
           value={expenseStats?.totalExpenses || 0} 

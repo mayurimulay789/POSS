@@ -197,9 +197,9 @@ const EmployeeManagement = () => {
   // CHANGED: Removed access denied check since all roles can view now
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-50">
       {/* Header Section */}
-      <div className="flex-shrink-0 bg-white p-4 lg:pt-4 lg:pl-4 lg:pr-4 lg:pb-1  border-b border-gray-200">
+      <div className="flex-shrink-0 bg-white  mx-4 my-1 lg:pt-4 lg:pl-4 lg:pr-4 lg:pb-1  border-b border-gray-200">
   {/* Top Row: Title, Search, and Action Buttons */}
   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
     {/* Left: Title */}

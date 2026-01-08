@@ -98,7 +98,7 @@ const ChargeTable = ({
         </div>
 
         {/* Actions */}
-        {user?.role === 'merchant' || user?.role === 'manager' &&(
+        {(user?.role === 'merchant' || user?.role === 'manager') &&(
         <div className="flex justify-between items-center pt-3 border-t border-gray-100">
           <button
             onClick={() => onToggleStatus(charge, !charge.active)}
@@ -272,7 +272,7 @@ const ChargeTable = ({
               {formatDate(charge.createdAt)}
             </div>
           </td>
-          {user?.role === 'merchant' || user?.role === 'manager' &&(
+          {(user?.role === 'merchant' || user?.role === 'manager') &&(
           <td className="px-6 py-4">
             <div className="flex items-center space-x-2">
               <button
@@ -527,7 +527,7 @@ const ChargeTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Created
               </th>
-              {user?.role === 'merchant' || user?.role === 'manager' &&(
+              {(user?.role === 'merchant' || user?.role === 'manager') &&(
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
