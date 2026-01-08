@@ -44,20 +44,6 @@ export const getMyCustomers = createAsyncThunk(
   }
 );
 
-export const getCustomersByMembershipType = createAsyncThunk(
-  'customers/getCustomersByMembershipType',
-  async ({ type, params = {} }, { rejectWithValue }) => {
-    try {
-      const response = await customerAPI.getCustomersByMembershipType(type, params);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to fetch customers by membership type'
-      );
-    }
-  }
-);
-
 export const searchCustomers = createAsyncThunk(
   'customers/searchCustomers',
   async (query, { rejectWithValue }) => {
@@ -114,34 +100,6 @@ export const deleteCustomer = createAsyncThunk(
   }
 );
 
-export const toggleCustomerStatus = createAsyncThunk(
-  'customers/toggleCustomerStatus',
-  async ({ id, status }, { rejectWithValue }) => {
-    try {
-      const response = await customerAPI.toggleCustomerStatus(id, status);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to update customer status'
-      );
-    }
-  }
-);
-
-export const renewMembership = createAsyncThunk(
-  'customers/renewMembership',
-  async ({ id, months = 12 }, { rejectWithValue }) => {
-    try {
-      const response = await customerAPI.renewMembership(id, months);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to renew membership'
-      );
-    }
-  }
-);
-
 export const getCustomerStats = createAsyncThunk(
   'customers/getCustomerStats',
   async (_, { rejectWithValue }) => {
@@ -170,28 +128,13 @@ export const exportCustomers = createAsyncThunk(
   }
 );
 
-export const importCustomers = createAsyncThunk(
-  'customers/importCustomers',
-  async (customers, { rejectWithValue }) => {
-    try {
-      const response = await customerAPI.importCustomers(customers);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to import customers'
-      );
-    }
-  }
-);
-
 // Initial State
 const initialState = {
   customers: [],
   myCustomers: [],
-  filteredCustomers: [],
   currentCustomer: null,
-  stats: {}, // For detailed stats from getCustomerStats
-  listStats: {}, // For simple stats from getCustomers (renamed from stats)
+  stats: {},
+  listStats: {},
   loading: false,
   error: null,
   success: null,
@@ -204,9 +147,6 @@ const initialState = {
   },
   filters: {
     search: '',
-    status: '',
-    membership_type: '',
-    city: '',
     page: 1,
     limit: 10,
     sortBy: 'createdAt',
@@ -235,9 +175,6 @@ const customerSlice = createSlice({
     clearFilters: (state) => {
       state.filters = {
         search: '',
-        status: '',
-        membership_type: '',
-        city: '',
         page: 1,
         limit: 10,
         sortBy: 'createdAt',
@@ -287,7 +224,6 @@ const customerSlice = createSlice({
           hasNext: (action.payload.currentPage || 1) < (action.payload.totalPages || 1),
           hasPrev: (action.payload.currentPage || 1) > 1
         };
-        // Store list stats separately - don't overwrite detailed stats
         state.listStats = action.payload.listStats || {};
         state.error = null;
       })
@@ -318,29 +254,6 @@ const customerSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.myCustomers = [];
-      })
-      
-      // Get Customers by Membership Type
-      .addCase(getCustomersByMembershipType.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getCustomersByMembershipType.fulfilled, (state, action) => {
-        state.loading = false;
-        state.filteredCustomers = action.payload.data;
-        state.pagination = {
-          current: action.payload.currentPage || 1,
-          pages: action.payload.totalPages || 1,
-          total: action.payload.total || 0,
-          hasNext: (action.payload.currentPage || 1) < (action.payload.totalPages || 1),
-          hasPrev: (action.payload.currentPage || 1) > 1
-        };
-        state.error = null;
-      })
-      .addCase(getCustomersByMembershipType.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.filteredCustomers = [];
       })
       
       // Search Customers
@@ -397,10 +310,10 @@ const customerSlice = createSlice({
           state.myCustomers[myIndex] = updatedCustomer;
         }
         
-        // Update in filteredCustomers array
-        const filteredIndex = state.filteredCustomers.findIndex(c => c._id === updatedCustomer._id);
-        if (filteredIndex !== -1) {
-          state.filteredCustomers[filteredIndex] = updatedCustomer;
+        // Update in searchResults array
+        const searchIndex = state.searchResults.findIndex(c => c._id === updatedCustomer._id);
+        if (searchIndex !== -1) {
+          state.searchResults[searchIndex] = updatedCustomer;
         }
         
         if (state.currentCustomer && state.currentCustomer._id === updatedCustomer._id) {
@@ -432,9 +345,6 @@ const customerSlice = createSlice({
         // Remove from myCustomers array
         state.myCustomers = state.myCustomers.filter(c => c._id !== deletedId);
         
-        // Remove from filteredCustomers array
-        state.filteredCustomers = state.filteredCustomers.filter(c => c._id !== deletedId);
-        
         // Remove from searchResults array
         state.searchResults = state.searchResults.filter(c => c._id !== deletedId);
         
@@ -451,68 +361,6 @@ const customerSlice = createSlice({
         state.success = null;
       })
       
-      // Toggle Customer Status
-      .addCase(toggleCustomerStatus.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
-      })
-      .addCase(toggleCustomerStatus.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCustomer = action.payload.data;
-        
-        // Update in all arrays
-        [state.customers, state.myCustomers, state.filteredCustomers, state.searchResults].forEach(array => {
-          const index = array.findIndex(c => c._id === updatedCustomer._id);
-          if (index !== -1) {
-            array[index] = updatedCustomer;
-          }
-        });
-        
-        if (state.currentCustomer && state.currentCustomer._id === updatedCustomer._id) {
-          state.currentCustomer = updatedCustomer;
-        }
-        
-        state.success = action.payload.message || 'Customer status updated successfully';
-        state.error = null;
-      })
-      .addCase(toggleCustomerStatus.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = null;
-      })
-      
-      // Renew Membership
-      .addCase(renewMembership.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.success = null;
-      })
-      .addCase(renewMembership.fulfilled, (state, action) => {
-        state.loading = false;
-        const updatedCustomer = action.payload.data;
-        
-        // Update in all arrays
-        [state.customers, state.myCustomers, state.filteredCustomers, state.searchResults].forEach(array => {
-          const index = array.findIndex(c => c._id === updatedCustomer._id);
-          if (index !== -1) {
-            array[index] = updatedCustomer;
-          }
-        });
-        
-        if (state.currentCustomer && state.currentCustomer._id === updatedCustomer._id) {
-          state.currentCustomer = updatedCustomer;
-        }
-        
-        state.success = action.payload.message || 'Membership renewed successfully';
-        state.error = null;
-      })
-      .addCase(renewMembership.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-        state.success = null;
-      })
-      
       // Get Customer Stats
       .addCase(getCustomerStats.pending, (state) => {
         state.loading = true;
@@ -520,7 +368,7 @@ const customerSlice = createSlice({
       })
       .addCase(getCustomerStats.fulfilled, (state, action) => {
         state.loading = false;
-        state.stats = action.payload.data; // Store detailed stats here
+        state.stats = action.payload.data;
         state.error = null;
       })
       .addCase(getCustomerStats.rejected, (state, action) => {
@@ -544,10 +392,9 @@ export const {
 // Selectors
 export const selectCustomers = (state) => state.customers.customers;
 export const selectMyCustomers = (state) => state.customers.myCustomers;
-export const selectFilteredCustomers = (state) => state.customers.filteredCustomers;
 export const selectCurrentCustomer = (state) => state.customers.currentCustomer;
-export const selectCustomerStats = (state) => state.customers.stats; // Detailed stats from getCustomerStats
-export const selectCustomerListStats = (state) => state.customers.listStats; // Simple stats from getCustomers
+export const selectCustomerStats = (state) => state.customers.stats;
+export const selectCustomerListStats = (state) => state.customers.listStats;
 export const selectCustomerLoading = (state) => state.customers.loading;
 export const selectCustomerError = (state) => state.customers.error;
 export const selectCustomerSuccess = (state) => state.customers.success;

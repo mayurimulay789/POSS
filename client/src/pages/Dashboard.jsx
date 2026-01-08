@@ -1,60 +1,16 @@
-// // src/pages/Dashboard.jsx
-// import React from 'react';
-// import { useSelector } from 'react-redux';
-
-// // Import role-specific dashboard components
-// import MerchantDashboard from '../components/merchant/Dashboard/MerchantDashboard';
-// import ManagerDashboard from '../components/manager/Dashboard/ManagerDashboard';
-// import SupervisorDashboard from '../components/supervisor/Dashboard/SupervisorDashboard';
-// import StaffDashboard from '../components/staff/Dashboard/StaffDashboard';
-
-// const Dashboard = () => {
-//   const { user } = useSelector(state => state.auth);
-
-//   const renderDashboard = () => {
-//     switch (user?.role) {
-//       case 'merchant':
-//         return <MerchantDashboard />;
-//       case 'manager':
-//         return <ManagerDashboard />;
-//       case 'supervisor':
-//         return <SupervisorDashboard />;
-//       case 'staff':
-//         return <StaffDashboard />;
-//       default:
-//         return <div>Unauthorized</div>;
-//     }
-//   };
-
-//   return renderDashboard();
-// };
-
-// export default Dashboard;
-
-
-
-// src/pages/Dashboard.jsx
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDashboardData, clearDashboardError } from '../store/slices/dashboardSlice';
+import { clearDashboardError } from '../store/slices/dashboardSlice';
 import RoleDashboard from '../components/dashboard/RoleDashboard';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.auth);
   const { error } = useSelector(state => state.dashboard);
 
   // Clear any existing errors when component mounts
   useEffect(() => {
     dispatch(clearDashboardError());
   }, [dispatch]);
-
-  // Manual refresh function
-  const handleRefresh = () => {
-    if (user?.role) {
-      dispatch(fetchDashboardData(user.role));
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">

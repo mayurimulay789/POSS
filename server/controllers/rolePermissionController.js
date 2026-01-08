@@ -6,13 +6,17 @@ const DEFAULT_ROLE_PERMISSIONS = {
   merchant: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'hotel_images',
+    // 'reports_analytics',
+
+     'employee_management', 'charges_management','customer_management', 'hotel_images',
     'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ],
   manager: [
     'menu_management', 'order_management', 'billing_management',
     'space_management', 'task_management', 'expense_management',
-    'reports_analytics', 'employee_management', 'customer_management', 'hotel_images',
+    // 'reports_analytics',
+
+     'employee_management', 'customer_management', 'hotel_images','charges_management',
     'landing_page_management', 'about_us_management', 'cuisine_gallery_management', 'welcome_section_management', 'contact_us_management'
   ],
   supervisor: [
@@ -52,6 +56,8 @@ const getRolePermissions = async (req, res) => {
         isDefault: true
       });
     }
+
+    console.log("rolePermission found:", rolePermission);
 
     res.json({ 
       role,
@@ -144,6 +150,8 @@ const getAllRolePermissions = async (req, res) => {
       };
     }
 
+    console.log("all role permissions:", result);
+
     res.json(result);
   } catch (error) {
     console.error('Get all role permissions error:', error);
@@ -177,6 +185,8 @@ const getUserPermissions = async (req, res) => {
     const permissions = rolePermission 
       ? rolePermission.permissions 
       : DEFAULT_ROLE_PERMISSIONS[user.role] || [];
+
+      console.log("user permissions:", permissions);
 
     res.json({
       role: user.role,

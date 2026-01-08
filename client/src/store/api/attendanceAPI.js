@@ -55,6 +55,28 @@ const attendanceAPI = {
     return response;
   },
 
+  // End specific shift by ID
+  endShiftById: async (id, formData = null) => {
+    console.log('API call - endShiftById with id:', id);
+    
+    if (!id || id === 'undefined' || id === 'null') {
+      throw new Error('Invalid attendance ID');
+    }
+    
+    if (formData) {
+      const response = await attendanceApi.post(`/end/${id}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response;
+    } else {
+      // Send empty object if no formData
+      const response = await attendanceApi.post(`/end/${id}`, {});
+      return response;
+    }
+  },
+
   // Get current active shift
   getCurrentShift: async () => {
     const response = await attendanceApi.get('/current');

@@ -8,6 +8,7 @@ import custmoerReducer from './slices/customerSlice';
 import dashboardReducer from './slices/dashboardSlice';
 import attendanceReducer from './slices/attendanceSlice';
 import merchantAttendanceReducer from './slices/merchantAttendanceSlice';
+import chargeReducer from './slices/chargeSlice';
 import aboutUsReducer from './slices/aboutUsSlice';
 import contactUsReducer from './slices/contactUsSlice';
 import welcomeSectionReducer from './slices/welcomeSectionSlice';
@@ -29,14 +30,14 @@ export const store = configureStore({
     expenses: expenseReducer, 
     tasks: taskReducer,
     customers: custmoerReducer,
-    dashboard: dashboardReducer,
-    attendance: attendanceReducer,
-    merchantAttendance: merchantAttendanceReducer,
+     dashboard: dashboardReducer,
+     attendance: attendanceReducer,
+     merchantAttendance: merchantAttendanceReducer,
+     charges: chargeReducer,
     aboutUs: aboutUsReducer,
     contactUs: contactUsReducer,
     welcomeSection: welcomeSectionReducer,
     cuisineGallery: cuisineGalleryReducer,
-    
     order: orderReducer,
     billing: billingReducer,
     table: tableReducer,

@@ -252,7 +252,7 @@ BarChartComponent.prepareGroupedData = (data, groupBy, valueKey) => {
 };
 
 // Helper function to prepare data for stacked bar chart
-BarChartComponent.prepareStackedData = (data, categories, valueKey) => {
+BarChartComponent.prepareStackedData = (data, categories) => {
   return data.map(item => {
     const result = { name: item.name || item.label };
     categories.forEach(category => {

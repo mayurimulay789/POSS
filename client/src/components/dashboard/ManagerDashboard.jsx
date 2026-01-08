@@ -226,11 +226,46 @@ import React from 'react';
 import { useDashboard } from '../../hooks/useDashboard';
 import StatsCard from './common/StatsCard';
 import ChartCard from './common/ChartCard';
+  import LineChartComponent from './common/lineChartComponent';
 import BarChartComponent from './common/BarChartComponent';
 import PieChartComponent from './common/PieChartComponent';
 
 const ManagerDashboard = () => {
   const { data, loading, refreshDashboard } = useDashboard();
+
+  
+    const generateCustomerGrowthData = () => {
+      if (!data) return [];
+      const { customerStats } = data;
+      const totalCustomers = customerStats?.totalCustomers || 0;
+      const weeklyGrowth = customerStats?.newCustomersThisWeek || 0;
+      const monthlyEstimate = weeklyGrowth * 4;
+  
+      return [
+        { name: '3 Months Ago', customers: Math.max(0, totalCustomers - monthlyEstimate * 3) },
+        { name: '2 Months Ago', customers: Math.max(0, totalCustomers - monthlyEstimate * 2) },
+        { name: 'Last Month', customers: Math.max(0, totalCustomers - monthlyEstimate) },
+        { name: 'Current', customers: totalCustomers },
+        { name: 'Projected', customers: totalCustomers + weeklyGrowth },
+      ];
+    };
+  
+    const generateOrderGrowthData = () => {
+      if (!data) return [];
+      const { orderStats } = data;
+      const totalOrders = orderStats?.totalOrders || 0;
+      const weeklyGrowth = orderStats?.todaysOrders * 7 || 0;
+      const monthlyEstimate = weeklyGrowth * 4;
+  
+      return [
+        { name: '3 Months Ago', orders: Math.max(0, totalOrders - monthlyEstimate * 3) },
+        { name: '2 Months Ago', orders: Math.max(0, totalOrders - monthlyEstimate * 2) },
+        { name: 'Last Month', orders: Math.max(0, totalOrders - monthlyEstimate) },
+        { name: 'Current', orders: totalOrders },
+        { name: 'Projected', orders: totalOrders + weeklyGrowth },
+      ];
+    };
+  
 
 
   const generateTaskStatusData = () => {
@@ -267,10 +302,9 @@ const ManagerDashboard = () => {
   const {
     overview,
     customerStats,
+    orderStats,
     teamStats,
-    taskStats,
     expenseStats,
-    upcomingDeadlines = []
   } = data;
 
   return (
@@ -291,6 +325,21 @@ const ManagerDashboard = () => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <StatsCard 
+          title="Total Orders" 
+          value={orderStats?.totalOrders || 0} 
+          icon="📦"
+          color="blue"
+          isLoading={loading}
+        />
+        <StatsCard 
+          title="Today's Orders" 
+          value={orderStats?.todaysOrders || 0} 
+          icon="📅"
+          color="blue"
+          isLoading={loading}
+        />
         <StatsCard 
           title="Total Customers" 
           value={customerStats?.totalCustomers || 0} 
@@ -299,38 +348,24 @@ const ManagerDashboard = () => {
           isLoading={loading}
         />
         <StatsCard 
-          title="Team Size" 
+          title="Active Employees" 
           value={teamStats?.teamSize || 0} 
           icon="👨‍💼"
           color="green"
           isLoading={loading}
         />
-        <StatsCard 
+        
+      </div>
+
+
+      {/* Week Performance */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+       <StatsCard 
           title="Total Expenses" 
           value={expenseStats?.totalExpenses || 0} 
           icon="💰"
           color="red"
           format="currency"
-          isLoading={loading}
-        />
-        <StatsCard 
-          title="Team Performance" 
-          value={parseFloat(teamStats?.teamPerformance || '0')} 
-          icon="📈"
-          color="purple"
-          format="percent"
-          isLoading={loading}
-        />
-      </div>
-
-
-      {/* Week Performance */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <StatsCard 
-          title="This Week Customers" 
-          value={customerStats?.customersAddedThisWeek || 0} 
-          icon="📅"
-          color="indigo"
           isLoading={loading}
         />
         <StatsCard 
@@ -341,6 +376,14 @@ const ManagerDashboard = () => {
           format="currency"
           isLoading={loading}
         />
+         <StatsCard 
+          title="Team Performance" 
+          value={parseFloat(teamStats?.teamPerformance || '0')} 
+          icon="📈"
+          color="purple"
+          format="percent"
+          isLoading={loading}
+        />
         <StatsCard 
           title="Tasks Completed" 
           value={teamStats?.tasksCompleted || 0} 
@@ -349,6 +392,19 @@ const ManagerDashboard = () => {
           isLoading={loading}
         />
       </div>
+
+           {/* Charts Row 1 */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <ChartCard title="Customer Growth Trend">
+          <LineChartComponent data={generateCustomerGrowthData()} dataKey="customers" height={260} />
+        </ChartCard>
+
+        <ChartCard title="Order Growth Trend">
+          <LineChartComponent data={generateOrderGrowthData()} dataKey="orders" height={260} />
+        </ChartCard>
+      </div>
+
+     
 
       {/* More Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

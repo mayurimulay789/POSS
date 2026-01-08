@@ -19,6 +19,7 @@ const BaseSidebar = ({
   const [openSubMenus, setOpenSubMenus] = useState({});
 
   /* ---------------- EFFECTS ---------------- */
+  // Close sidebar on escape key
   useEffect(() => {
     const handleEscape = e => {
       if (e.key === 'Escape' && isSidebarOpen) setIsSidebarOpen(false);
@@ -27,9 +28,16 @@ const BaseSidebar = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isSidebarOpen, setIsSidebarOpen]);
 
+  // Prevent body scroll when sidebar is open on mobile
   useEffect(() => {
-    document.body.style.overflow = isSidebarOpen ? 'hidden' : 'unset';
-    return () => (document.body.style.overflow = 'unset');
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isSidebarOpen]);
 
   /* ---------------- HELPERS ---------------- */
@@ -64,9 +72,13 @@ const BaseSidebar = ({
       task_management: '✅',
       expense_management: '💸',
       customer_management: '🧑‍🤝‍🧑',
-      reports_analytics: '📈',
+      // reports_analytics: '📈',
       employee_management: '👥',
-      permission_management: '🔐'
+      charges_management: '💲',
+      ...(user.role === 'merchant' && {
+        attendance_management: '🕒',
+          permission_management: '🔐'
+      })
     };
     return icons[permission] || '📄';
   };
@@ -79,7 +91,8 @@ const BaseSidebar = ({
         return {
           path: `/${item.replace('_management', '').replace(/_/g, '-')}`,
           label: item.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-          icon: getIconForPermission(item)
+          icon: getIconForPermission(item),
+          permission: item
         };
       }
       // If it's an object, ensure label is a string
@@ -87,7 +100,7 @@ const BaseSidebar = ({
         return {
           ...item,
           label: typeof item.label === 'string' ? item.label : String(item.label || 'Unknown'),
-          icon: item.icon || '📄',
+          icon: item.icon || getIconForPermission(item.permission) || '📄',
           subItems: item.subItems?.map(sub => ({
             ...sub,
             label: typeof sub.label === 'string' ? sub.label : String(sub.label || 'Unknown')
@@ -114,30 +127,34 @@ const BaseSidebar = ({
 
     if (hasSub) {
       return (
-        <div key={item.path}>
+        <div key={item.path} className="mb-1">
           <button
             onClick={() => toggleSubMenu(item.path)}
-            className={`w-full px-4 py-3 flex justify-between rounded-lg ${
-              active ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-50'
+            className={`w-full text-left px-4 py-3 rounded-lg flex items-center justify-between transition-all duration-200 ${
+              active
+                ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                : 'text-gray-700 hover:bg-gray-50 hover:border-gray-200 border border-transparent'
             }`}
           >
-            <span className="flex gap-3">
-              <span>{item.icon}</span>
-              <span>{String(item.label)}</span>
+            <span className="flex items-center space-x-3">
+              <span className="text-lg">{item.icon}</span>
+              <span className="font-medium">{String(item.label)}</span>
             </span>
-            <span className={isOpen ? 'rotate-180' : ''}>▼</span>
+            <span className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
           </button>
 
           {isOpen && (
-            <div className="ml-6 mt-1 space-y-1">
+            <div className="ml-8 mt-1 space-y-1">
               {item.subItems.map(sub => (
                 <button
                   key={sub.path}
                   onClick={() => handleNavigation(sub.path)}
-                  className={`w-full text-left px-4 py-2 rounded ${
+                  className={`w-full text-left px-4 py-2 rounded-lg transition-colors ${
                     isActive(sub.path)
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-100'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
                   {String(sub.label || 'Unknown')}
@@ -153,14 +170,14 @@ const BaseSidebar = ({
       <button
         key={item.path}
         onClick={() => handleNavigation(item.path)}
-        className={`w-full px-4 py-3 flex gap-3 rounded-lg ${
+        className={`w-full text-left px-4 py-3 rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1 ${
           isActive(item.path)
-            ? 'bg-blue-100 text-blue-700'
-            : 'hover:bg-gray-50'
+            ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+            : 'text-gray-700 hover:bg-gray-50 hover:border-gray-200 border border-transparent'
         }`}
       >
-        <span>{item.icon}</span>
-        <span>{String(item.label)}</span>
+        <span className="text-lg">{item.icon}</span>
+        <span className="font-medium">{String(item.label)}</span>
       </button>
     );
   };
@@ -171,65 +188,143 @@ const BaseSidebar = ({
     operations: normalizedSidebarItems.filter(i =>
       ['/spaces', '/menu', '/orders', '/billing'].includes(i.path)
     ).sort((a, b) => {
-      // Define the order: spaces, menu, orders, billing
       const order = ['/spaces', '/menu', '/orders', '/billing'];
       return order.indexOf(a.path) - order.indexOf(b.path);
     }),
     management: normalizedSidebarItems.filter(i =>
       ['/hotel-images', '/tasks', '/expenses', '/customers'].includes(i.path)
     ),
-    analytics: normalizedSidebarItems.filter(i => i.path === '/reports'),
-    administration: normalizedSidebarItems.filter(i =>
-      ['/employees', '/permission-management', '/landing-page', '/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'].includes(i.path)
-    )
+    analytics: normalizedSidebarItems.filter(i => i.path === '/'),
+    
+    administration: normalizedSidebarItems.filter(i => {
+      const adminPaths = ['/employees', '/landing-page', '/charges', '/about-us-management', '/contact-us-management', '/welcome-section-management', '/cuisine-gallery-management'];
+      if (user.role === 'merchant') {
+        adminPaths.push('/permission-management', '/attendance-dashboard');
+      }
+      return adminPaths.includes(i.path);
+    })
   };
 
-  const renderGroup = (key, items, label) =>
-    items.length > 0 && (
-      <div className="mb-3">
+  const renderGroup = (key, items, label) => {
+    if (items.length === 0) return null;
+    
+    const isGroupOpen = openGroups[key] || false;
+    const hasActiveItem = items.some(item => 
+      isActive(item.path) || 
+      item.subItems?.some(sub => isActive(sub.path))
+    );
+
+    return (
+      <div className="mb-2">
         {label && (
           <button
             onClick={() => toggleGroup(key)}
-            className="w-full px-4 py-2 text-xs font-semibold uppercase text-gray-500 flex justify-between"
+            className={`w-full text-left px-4 py-2 mb-1 rounded-lg flex items-center justify-between transition-colors ${
+              hasActiveItem ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50'
+            }`}
           >
-            {label}
-            <span>{openGroups[key] ? '▲' : '▼'}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              {label}
+            </span>
+            <span className={`transform transition-transform ${isGroupOpen ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
           </button>
         )}
-        {(openGroups[key] || !label) &&
-          items.map(item => renderMenuItem(item))}
+        
+        {(isGroupOpen || !label) && (
+          <div className="space-y-1">
+            {items.map(item => renderMenuItem(item))}
+          </div>
+        )}
       </div>
     );
+  };
 
-  /* ---------------- UI ---------------- */
-  return (
-    <aside className="hidden lg:flex w-64 bg-white border-r min-h-screen flex-col">
-      <div className="p-5 border-b">
-        <h3 className="font-bold">{user?.FullName || roleName}</h3>
-        <p className="text-sm text-gray-500">{roleLabel}</p>
+  const sidebarContent = (
+    <>
+      {/* Header */}
+      <div className="p-6 border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between lg:block">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center border border-blue-300">
+              <span className="font-bold text-lg text-white">
+                {user?.FullName?.charAt(0) || roleName?.charAt(0)}
+              </span>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-800 truncate">{user?.FullName || 'User'}</h3>
+              <p className="text-gray-600 text-sm capitalize">{roleLabel}</p>
+              <p className="text-gray-500 text-xs truncate">{user?.email || ''}</p>
+            </div>
+          </div>
+          
+          {/* Mobile Close Button */}
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
+      {/* Navigation Menu */}
       <div className="flex-1 p-4 overflow-y-auto">
-        {renderGroup('main', groupedItems.main)}
-        {renderGroup('operations', groupedItems.operations, 'Operations')}
-        {renderGroup('management', groupedItems.management, 'Management')}
-        {renderGroup('analytics', groupedItems.analytics, 'Analytics')}
-        {renderGroup(
-          'administration',
-          groupedItems.administration,
-          'Administration'
+        {normalizedSidebarItems.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400 mb-2">No menu items available</div>
+            <div className="text-xs text-gray-500">Loading permissions...</div>
+          </div>
+        ) : (
+          <>
+            {renderGroup('main', groupedItems.main)}
+            {renderGroup('operations', groupedItems.operations, 'Operations')}
+            {renderGroup('management', groupedItems.management, 'Management')}
+            {/* {renderGroup('analytics', groupedItems.analytics, 'Analytics')} */}
+            {renderGroup('administration', groupedItems.administration, 'Administration')}
+          </>
         )}
       </div>
 
-      <div className="p-4 border-t">
+      {/* Footer */}
+      <div className="p-4 border-t border-gray-200 bg-white">
         <button
           onClick={handleLogout}
-          className="w-full py-2 border rounded-lg hover:bg-gray-50"
+          className="w-full bg-white border border-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center space-x-2"
         >
-          🚪 Logout
+          <span>🚪</span>
+          <span>Logout</span>
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - Always visible on large screens */}
+      <div className="hidden lg:flex lg:w-64 bg-white shadow-sm min-h-screen flex-col border-r border-gray-200">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile Sidebar - Toggleable on mobile */}
+      <div className={`
+        lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col border-r border-gray-200
+        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {sidebarContent}
+      </div>
+
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+    </>
   );
 };
 

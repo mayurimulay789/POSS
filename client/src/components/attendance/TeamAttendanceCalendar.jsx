@@ -68,13 +68,7 @@ const TeamAttendanceCalendar = ({
     });
   };
 
-  const formatTime = (time) => {
-    if (!time) return '--:--';
-    return new Date(time).toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+ 
 
   const getStatusIcon = (status) => {
     const iconSize = window.innerWidth < 640 ? 'w-3.5 h-3.5' : 'w-4 h-4';

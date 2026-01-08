@@ -9,6 +9,8 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
+
+
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const logoUrl = useSelector((state) => state.logo.logoUrl);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,6 +46,14 @@ const Navbar = () => {
     navigate('/');
     setIsMobileMenuOpen(false);
   };
+
+  const handleAttendanceNavigation = () => {
+    if (user?.role) {
+      navigate(`/attendance`);
+    }
+    setIsMobileMenuOpen(false);
+  };
+
 
   const handleDashboardNavigation = () => {
     if (user?.role) {
@@ -175,10 +185,18 @@ const Navbar = () => {
 
                 <button
                   onClick={handleDashboardNavigation}
-                  className="bg-[#F1A722] text-[#0A2F46] hover:bg-[#14AAAB] hover:text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 shadow-md font-semibold"
+                  className="border-2 border-white/80 text-white hover:bg-white hover:text-[#D32B36] px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 font-semibold"
                 >
                   <span>📊</span>
                   Dashboard
+                </button>
+
+                <button
+                  onClick={handleAttendanceNavigation}
+                  className="border-2 border-white/80 text-white hover:bg-white hover:text-[#D32B36] px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 font-semibold"
+                >
+                  <span>📅</span>
+                  Attendance
                 </button>
 
                 <button
@@ -188,6 +206,8 @@ const Navbar = () => {
                   <span>🚪</span>
                   Logout
                 </button>
+
+                
               </>
             ) : (
               <>
@@ -252,6 +272,15 @@ const Navbar = () => {
                   <span>📊</span>
                   Dashboard
                 </button>
+
+               <button
+                  onClick={handleAttendanceNavigation}
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50"
+                >
+                  <span>📅</span>
+                  Attendance
+                </button>
+
 
                 <button
                   onClick={handleLogout}

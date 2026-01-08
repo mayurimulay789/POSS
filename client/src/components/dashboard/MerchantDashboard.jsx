@@ -7,7 +7,7 @@ import BarChartComponent from './common/BarChartComponent';
 import PieChartComponent from './common/PieChartComponent';
 
 const MerchantDashboard = () => {
-  const { data, loading, refreshDashboard } = useDashboard();
+  const { data, refreshDashboard } = useDashboard();
 
   const generateCustomerGrowthData = () => {
     if (!data) return [];
@@ -25,9 +25,26 @@ const MerchantDashboard = () => {
     ];
   };
 
+  const generateOrderGrowthData = () => {
+    if (!data) return [];
+    const { orderStats } = data;
+    const totalOrders = orderStats?.totalOrders || 0;
+    const weeklyGrowth = orderStats?.todaysOrders * 7 || 0;
+    const monthlyEstimate = weeklyGrowth * 4;
+
+    return [
+      { name: '3 Months Ago', orders: Math.max(0, totalOrders - monthlyEstimate * 3) },
+      { name: '2 Months Ago', orders: Math.max(0, totalOrders - monthlyEstimate * 2) },
+      { name: 'Last Month', orders: Math.max(0, totalOrders - monthlyEstimate) },
+      { name: 'Current', orders: totalOrders },
+      { name: 'Projected', orders: totalOrders + weeklyGrowth },
+    ];
+  };
+
   const generateExpenseDistributionData = () => {
     if (!data) return [];
     const paymentMethods = data.financialStats?.expensesByPaymentMethod || {};
+    console.log('Expense Payment Methods:', paymentMethods);
     return Object.entries(paymentMethods).map(([method, amountObj]) => ({
       name: method.charAt(0).toUpperCase() + method.slice(1).replace('_', ' '),
       amount: typeof amountObj === 'object' ? amountObj.amount || 0 : amountObj || 0,
@@ -63,7 +80,7 @@ const MerchantDashboard = () => {
     );
   }
 
-  const { customerStats, employeeStats, financialStats, taskStats, recentActivity = [], trends = {} } = data;
+  const { customerStats,orderStats, employeeStats, financialStats, taskStats, recentActivity = [] } = data;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] mx-auto">
@@ -93,6 +110,8 @@ const MerchantDashboard = () => {
       {/* Membership Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatsCard title="With Membership" value={customerStats?.membershipStats?.totalWithMembership || 0} icon="🎫" />
+        <StatsCard title="Total Order" value={orderStats?.totalOrders || 0} icon="📦" />
+        <StatsCard title="Today's Orders" value={orderStats?.todaysOrders || 0} icon="📅" />
       </div>
 
       {/* Charts Row 1 */}
@@ -101,16 +120,20 @@ const MerchantDashboard = () => {
           <LineChartComponent data={generateCustomerGrowthData()} dataKey="customers" height={260} />
         </ChartCard>
 
-        <ChartCard title="Membership Distribution">
-          <PieChartComponent data={generateMembershipDistributionData()} height={260} />
+        <ChartCard title="Order Growth Trend">
+          <LineChartComponent data={generateOrderGrowthData()} dataKey="orders" height={260} />
         </ChartCard>
       </div>
 
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <ChartCard title="Membership Distribution">
+          <PieChartComponent data={generateMembershipDistributionData()} height={260} />
+        </ChartCard>
         <ChartCard title="Expense Distribution">
           <BarChartComponent data={generateExpenseDistributionData()} dataKey="amount" height={260} />
         </ChartCard>
+        
 
       </div>
 

@@ -186,19 +186,21 @@ const OrderManagement = () => {
             </div>
             <div>
               <div className="text-gray-500">Discount</div>
-              <div className="text-red-500 font-semibold">-₹{order.discount?.toFixed(2) ?? '0.00'}</div>
+              <div className="text-red-500 font-semibold">-₹{order.discountApplied?.toFixed(2) ?? '0.00'}</div>
             </div>
           </div>
           <div className="flex justify-between text-base mb-3">
             <div>
               <div className="text-gray-500">Tax</div>
-              <div className="font-semibold">₹{order.tax?.toFixed(2) ?? '0.00'}</div>
+              <div className="font-semibold">₹{order.taxAmount?.toFixed(2) ?? '0.00'}</div>
             </div>
             <div>
               <div className="text-gray-500">Payment</div>
               <div className="font-bold">{order.paymentMethod || order.paymentType || '-'}</div>
             </div>
           </div>
+          <div className="text-gray-500">Optional Charges</div>
+          <div className="font-bold">{order.optionalcharge?.toFixed(2) ?? '0.00'}</div>
           <div className="border-t border-green-200 my-3"></div>
           <div className="text-xl font-extrabold text-green-700 mb-3">
             Total: ₹{order.finalAmount?.toFixed(2) ?? order.totalBill?.toFixed(2) ?? '0.00'}

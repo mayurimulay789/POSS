@@ -64,12 +64,12 @@ export const SIDEBAR_ITEMS = {
     icon: '💸',
     permission: FIXED_PERMISSIONS.EXPENSE_MANAGEMENT,
   },
-  reports: {
-    path: '/reports',
-    label: 'Reports & Analytics',
-    icon: '📈',
-    permission: FIXED_PERMISSIONS.REPORTS_ANALYTICS,
-  },
+  // reports: {
+  //   path: '/reports',
+  //   label: 'Reports & Analytics',
+  //   icon: '📈',
+  //   permission: FIXED_PERMISSIONS.REPORTS_ANALYTICS,
+  // },
   employees: {
     path: '/employees',
     label: 'Employee Management',
@@ -82,12 +82,25 @@ export const SIDEBAR_ITEMS = {
     icon: '🧑‍🤝‍🧑',
     permission: FIXED_PERMISSIONS.CUSTOMER_MANAGEMENT,
   },
+  charges: {
+    path: '/charges',
+    label: 'Charges Management',
+    icon: '💲',
+    permission: FIXED_PERMISSIONS.CHARGES_MANAGEMENT,
+  },
+  attendance: {
+    path: '/attendance-dashboard',
+    label: 'Attendance Management',
+    icon: '🕒',
+    permission: FIXED_PERMISSIONS.ATTENDANCE_MANAGEMENT,
+  },
   permissions: {
     path: '/permission-management',
     label: 'Permission Management',
     icon: '🔐',
     permission: FIXED_PERMISSIONS.EMPLOYEE_MANAGEMENT, // Only for merchant
   },
+
   landingPageManagement: {
     path: '/landing-page',
     label: 'Landing Page Management',
@@ -164,6 +177,6 @@ export const GROUPED_SIDEBAR_ITEMS = {
   main: ['dashboard'],
   operations: ['orders', 'menu', 'billing'],
   management: ['hotelImages', 'spaces', 'tasks', 'expenses','customers'],
-  analytics: ['reports'],
-  administration: ['employees', 'permissions', 'landingPageManagement']
+  // analytics: ['reports'],
+  administration: ['employees', 'permissions', 'charges','attendance','landingPageManagement'],
 };

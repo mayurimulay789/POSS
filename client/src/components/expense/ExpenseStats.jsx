@@ -31,11 +31,11 @@ const ExpenseStats = ({ totalAmount, totalRecords, user, formatCurrency }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 mb-4 lg:mb-6">
       {stats.map((stat, index) => (
         <div 
           key={index} 
-          className="bg-white rounded-lg shadow p-3 lg:p-4 hover:shadow-md transition-shadow"
+          className="bg-white rounded-lg shadow p-3 lg:p-2 hover:shadow-md transition-shadow"
         >
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
@@ -50,7 +50,7 @@ const ExpenseStats = ({ totalAmount, totalRecords, user, formatCurrency }) => {
               )}
             </div>
             <div className={`p-2 lg:p-2.5 ${stat.bgColor} rounded-full ml-3 flex-shrink-0`}>
-              <stat.icon className="w-4 h-4 lg:w-5 lg:h-5" className={stat.iconColor} />
+              <stat.icon className={`${stat.iconColor} w-4 h-4 lg:w-5 lg:h-5`}/>
             </div>
           </div>
         </div>

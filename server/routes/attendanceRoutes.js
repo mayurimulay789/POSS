@@ -5,7 +5,8 @@ const {
   startShift,
   endShift,
   getCurrentShift,
-  getMyAttendance
+  getMyAttendance,
+  endShiftById
 } = require('../controllers/attendanceController');
 
 // Import multer for file upload
@@ -47,6 +48,8 @@ router.use(protect);
 router.post('/start', upload.single('selfie'), startShift);
 
 router.post('/end', upload.single('selfie'), endShift);
+
+router.post('/end/:id', upload.single('selfie'), endShiftById);
 
 router.get('/current', getCurrentShift);
 

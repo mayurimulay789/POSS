@@ -30,6 +30,27 @@ export const endShift = createAsyncThunk(
   }
 );
 
+export const endShiftById = createAsyncThunk(
+  'attendance/endShiftById',
+  async ({ id, formData = null }, { rejectWithValue }) => {
+    try {
+      console.log('endShiftById thunk called with id:', id, 'type:', typeof id);
+      
+      if (!id) {
+        throw new Error('Attendance ID is required');
+      }
+      
+      const response = await attendanceAPI.endShiftById(id, formData);
+      return response.data;
+    } catch (error) {
+      console.error('endShiftById thunk error:', error.response?.data);
+      return rejectWithValue(
+        error.response?.data?.message || error.message || 'Failed to end shift'
+      );
+    }
+  }
+);
+
 export const getCurrentShift = createAsyncThunk(
   'attendance/getCurrentShift',
   async (_, { rejectWithValue }) => {
@@ -132,6 +153,16 @@ const attendanceSlice = createSlice({
     },
     setCurrentShift: (state, action) => {
       state.currentShift = action.payload;
+    },
+    updateAttendanceRecord: (state, action) => {
+      const { id, updates } = action.payload;
+      const index = state.attendanceHistory.findIndex(record => record._id === id);
+      if (index !== -1) {
+        state.attendanceHistory[index] = {
+          ...state.attendanceHistory[index],
+          ...updates
+        };
+      }
     }
   },
   extraReducers: (builder) => {
@@ -147,6 +178,19 @@ const attendanceSlice = createSlice({
         state.currentShift = action.payload.data;
         state.success = action.payload.message || 'Shift started successfully';
         state.error = null;
+        
+        // Add to history if not already present
+        if (action.payload.data) {
+          const exists = state.attendanceHistory.some(
+            record => record._id === action.payload.data.id
+          );
+          if (!exists) {
+            state.attendanceHistory.unshift({
+              ...action.payload.data,
+              status: 'active'
+            });
+          }
+        }
       })
       .addCase(startShift.rejected, (state, action) => {
         state.loading = false;
@@ -164,24 +208,86 @@ const attendanceSlice = createSlice({
         state.loading = false;
         state.currentShift = null;
         
-        // Add to history if we have the new record
+        // Update in history if we have the new record
         if (action.payload.data) {
-          // Remove any existing active shift for this date
-          state.attendanceHistory = state.attendanceHistory.filter(
-            record => !record._id === action.payload.data.id
+          const index = state.attendanceHistory.findIndex(
+            record => record._id === action.payload.data.id
           );
           
-          // Add the completed shift to history
-          state.attendanceHistory.unshift({
-            ...action.payload.data,
-            status: 'completed'
-          });
+          if (index !== -1) {
+            // Update existing record
+            state.attendanceHistory[index] = {
+              ...state.attendanceHistory[index],
+              ...action.payload.data,
+              status: 'completed'
+            };
+          } else {
+            // Add as new record
+            state.attendanceHistory.unshift({
+              ...action.payload.data,
+              status: 'completed'
+            });
+          }
         }
         
         state.success = action.payload.message || 'Shift ended successfully';
         state.error = null;
       })
       .addCase(endShift.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = null;
+      })
+      
+      // End Shift By ID
+      .addCase(endShiftById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(endShiftById.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        // Update current shift if it's the same one
+        if (state.currentShift && state.currentShift.id === action.payload.data?.id) {
+          state.currentShift = null;
+        }
+        
+        // Update the specific record in history
+        const endedShiftId = action.payload.data?.id;
+        if (endedShiftId) {
+          const index = state.attendanceHistory.findIndex(
+            record => record._id === endedShiftId
+          );
+          
+          if (index !== -1) {
+            state.attendanceHistory[index] = {
+              ...state.attendanceHistory[index],
+              ...action.payload.data,
+              status: 'completed'
+            };
+          }
+          
+          // Update stats
+          state.stats = {
+            ...state.stats,
+            activeShifts: Math.max(0, state.stats.activeShifts - 1),
+            completedShifts: state.stats.completedShifts + 1,
+            totalShifts: state.stats.totalShifts,
+            totalHours: state.stats.totalHours + (action.payload.data.totalHours || 0),
+            daysPresent: state.stats.daysPresent
+          };
+          
+          // Recalculate average hours
+          if (state.stats.completedShifts > 0) {
+            state.stats.averageHours = state.stats.totalHours / state.stats.completedShifts;
+          }
+        }
+        
+        state.success = action.payload.message || 'Shift ended successfully';
+        state.error = null;
+      })
+      .addCase(endShiftById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = null;
@@ -270,7 +376,8 @@ export const {
   setFilters,
   clearFilters,
   resetAttendanceState,
-  setCurrentShift
+  setCurrentShift,
+  updateAttendanceRecord
 } = attendanceSlice.actions;
 
 // Selectors
@@ -283,5 +390,9 @@ export const selectAttendancePagination = (state) => state.attendance.pagination
 export const selectAttendanceFilters = (state) => state.attendance.filters;
 export const selectAttendanceStats = (state) => state.attendance.stats;
 export const selectHasActiveShift = (state) => !!state.attendance.currentShift;
+
+// Helper selector to get active shifts from history
+export const selectActiveShiftsFromHistory = (state) => 
+  state.attendance.attendanceHistory.filter(record => record.status === 'active');
 
 export default attendanceSlice.reducer;

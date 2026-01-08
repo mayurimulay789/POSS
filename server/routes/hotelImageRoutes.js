@@ -15,7 +15,7 @@ router.get('/', ctrl.list);
 
 router.get('/:id', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), ctrl.getById);
 
-router.post('/', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), uploadMultiple('images', 12), ctrl.create);
+router.post('/', protect, authorize('merchant', 'manager', 'supervisor'), uploadMultiple('images', 12), ctrl.create);
 
 router.put('/:id', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), uploadSingle('image'), ctrl.update);
 

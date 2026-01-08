@@ -291,15 +291,12 @@ const ExpenseManagement = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Expense Management</h1>
+        <div className="mb-2 sm:mb-2">
+          <h1 className="text-2xl sm:text-2xl font-bold text-gray-800 mb-2">Expense Management</h1>
           <p className="text-gray-600 text-sm sm:text-base">
-            {canViewAllExpenses 
-              ? 'Track and manage all restaurant expenses'
-              : 'Manage your personal expenses'}
             {user?.role !== 'merchant' && (
               <span className="ml-2 text-xs sm:text-sm text-orange-600 font-medium">
-                (Editable only before midnight on creation day)
+              (Editable only before midnight on creation day)
               </span>
             )}
           </p>

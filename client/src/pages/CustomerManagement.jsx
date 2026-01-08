@@ -1,8 +1,5 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import {
   createCustomer,
   getCustomers,
@@ -10,8 +7,6 @@ import {
   getCustomer,
   updateCustomer,
   deleteCustomer,
-  toggleCustomerStatus,
-  renewMembership,
   getCustomerStats,
   clearError,
   clearSuccess,
@@ -29,32 +24,26 @@ import {
   CreateCustomerModal,
   EditCustomerModal,
   DeleteCustomerModal,
-  StatusChangeModal,
-  RenewMembershipModal,
   CustomerDetailsModal
 } from '../components/customer';
 
 const CustomerManagement = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   const {
     customers,
     myCustomers,
-    currentCustomer,
     loading,
     error,
     success,
     pagination,
     filters,
-    stats // This now contains detailed stats from getCustomerStats
+    stats,
   } = useSelector((state) => state.customers);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showRenewModal, setShowRenewModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
@@ -64,30 +53,12 @@ const CustomerManagement = () => {
     cust_name: '',
     email: '',
     phone: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      country: 'India',
-      pincode: ''
-    },
-    membership_type: 'none',
-    status: 'active'
+    membership_id: ''
   });
-  const [renewMonths, setRenewMonths] = useState(12);
-  const [status, setStatus] = useState('active');
-  const [showFilters, setShowFilters] = useState(false);
 
   // Check if user can view all customers
   const canViewAllCustomers = user?.role === 'merchant' || user?.role === 'manager' || user?.role === 'supervisor';
   const canEditDelete = user?.role === 'merchant' || user?.role === 'manager' || user?.role === 'supervisor';
-
-  // Debug: Check what stats we have
-  useEffect(() => {
-    console.log('CustomerManagement DEBUG: Stats from Redux:', stats);
-    console.log('CustomerManagement DEBUG: Stats has totals?', stats?.totals);
-    console.log('CustomerManagement DEBUG: Stats has _id?', stats?._id);
-  }, [stats]);
 
   // Set default tab based on user role
   useEffect(() => {
@@ -147,9 +118,9 @@ const CustomerManagement = () => {
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.cust_name || !formData.email || !formData.phone) {
-      alert('Please fill all required fields');
+    // Validate required field
+    if (!formData.cust_name) {
+      alert('Customer name is required');
       return;
     }
 
@@ -161,15 +132,7 @@ const CustomerManagement = () => {
         cust_name: '',
         email: '',
         phone: '',
-        address: {
-          street: '',
-          city: '',
-          state: '',
-          country: 'India',
-          pincode: ''
-        },
-        membership_type: 'none',
-        status: 'active'
+        membership_id: ''
       });
       // Refresh stats after creating a customer
       dispatch(getCustomerStats());
@@ -205,55 +168,13 @@ const CustomerManagement = () => {
     }
   };
 
-  const handleStatusChange = async () => {
-    if (!selectedCustomer) return;
-    
-    const result = await dispatch(toggleCustomerStatus({
-      id: selectedCustomer._id,
-      status
-    }));
-    
-    if (!result.error) {
-      setShowStatusModal(false);
-      setSelectedCustomer(null);
-      setStatus('active');
-      // Refresh stats after changing status
-      dispatch(getCustomerStats());
-    }
-  };
-
-  const handleRenewMembership = async () => {
-    if (!selectedCustomer) return;
-    
-    const result = await dispatch(renewMembership({
-      id: selectedCustomer._id,
-      months: renewMonths
-    }));
-    
-    if (!result.error) {
-      setShowRenewModal(false);
-      setSelectedCustomer(null);
-      setRenewMonths(12);
-      // Refresh stats after renewing membership
-      dispatch(getCustomerStats());
-    }
-  };
-
   const handleEditClick = (customer) => {
     setSelectedCustomer(customer);
     setFormData({
       cust_name: customer.cust_name,
-      email: customer.email,
-      phone: customer.phone,
-      address: customer.address || {
-        street: '',
-        city: '',
-        state: '',
-        country: 'India',
-        pincode: ''
-      },
-      membership_type: customer.membership_type || 'none',
-      status: customer.status || 'active'
+      email: customer.email || '',
+      phone: customer.phone || '',
+      membership_id: customer.membership_id || ''
     });
     setShowEditModal(true);
   };
@@ -261,17 +182,6 @@ const CustomerManagement = () => {
   const handleDeleteClick = (customer) => {
     setSelectedCustomer(customer);
     setShowDeleteModal(true);
-  };
-
-  const handleStatusClick = (customer) => {
-    setSelectedCustomer(customer);
-    setStatus(customer.status || 'active');
-    setShowStatusModal(true);
-  };
-
-  const handleRenewClick = (customer) => {
-    setSelectedCustomer(customer);
-    setShowRenewModal(true);
   };
 
   const handleDetailsClick = async (customer) => {
@@ -295,10 +205,6 @@ const CustomerManagement = () => {
     dispatch(setFilters({ search: searchTerm, page: 1 }));
   };
 
-  const handleFilterChange = (filterType, value) => {
-    dispatch(setFilters({ [filterType]: value, page: 1 }));
-  };
-
   const handleClearFilters = () => {
     setSearchTerm('');
     dispatch(clearFilters());
@@ -318,54 +224,14 @@ const CustomerManagement = () => {
       return new Date(dateString).toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       });
     } catch (error) {
+      console.error(error);
       return 'Invalid date';
     }
-  };
-
-  const formatMembershipValidity = (validityDate) => {
-    if (!validityDate) return 'No membership';
-    
-    const date = new Date(validityDate);
-    const today = new Date();
-    
-    if (date < today) {
-      return `Expired on ${formatDate(validityDate)}`;
-    } else {
-      return `Valid until ${formatDate(validityDate)}`;
-    }
-  };
-
-  const getMembershipType = (type) => {
-    const membershipTypes = [
-      { value: 'none', label: 'No Membership', color: 'bg-gray-100 text-gray-800' },
-      { value: 'basic', label: 'Basic', color: 'bg-blue-100 text-blue-800' },
-      { value: 'premium', label: 'Premium', color: 'bg-purple-100 text-purple-800' },
-      { value: 'gold', label: 'Gold', color: 'bg-yellow-100 text-yellow-800' },
-      { value: 'platinum', label: 'Platinum', color: 'bg-indigo-100 text-indigo-800' }
-    ];
-    
-    const membership = membershipTypes.find(m => m.value === type);
-    return membership || membershipTypes[0];
-  };
-
-  const getStatus = (status) => {
-    const statusOptions = [
-      { value: 'active', label: 'Active', color: 'bg-green-100 text-green-800' },
-      { value: 'inactive', label: 'Inactive', color: 'bg-gray-100 text-gray-800' },
-      { value: 'suspended', label: 'Suspended', color: 'bg-yellow-100 text-yellow-800' },
-      { value: 'blocked', label: 'Blocked', color: 'bg-red-100 text-red-800' }
-    ];
-    
-    const statusObj = statusOptions.find(s => s.value === status);
-    return statusObj || statusOptions[0];
-  };
-
-  const isMembershipValid = (validityDate) => {
-    if (!validityDate) return false;
-    return new Date(validityDate) > new Date();
   };
 
   // Get current customers based on active tab
@@ -376,14 +242,12 @@ const CustomerManagement = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">Customer Management</h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Manage customer information, memberships, and interactions
-          </p>
+        <div className="mb-2 sm:mb-2">
+          <h1 className="text-2xl sm:text-2xl font-bold text-gray-800 mb-2">Customer Management</h1>
         </div>
 
-        {/* Stats Cards - Now receives detailed stats from getCustomerStats */}
+        {/* Stats Cards */}
+        {/* <CustomerStats stats={stats} listStats={listStats} /> */}
         <CustomerStats stats={stats} />
 
         {/* Main Content */}
@@ -396,12 +260,8 @@ const CustomerManagement = () => {
             searchTerm={searchTerm}
             onSearchChange={(e) => setSearchTerm(e.target.value)}
             onSearchSubmit={handleSearchSubmit}
-            filters={filters}
-            onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
             onCreateCustomer={() => setShowCreateModal(true)}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
           />
 
           {/* Error/Success Messages */}
@@ -426,14 +286,8 @@ const CustomerManagement = () => {
             canEditDelete={canEditDelete}
             user={user}
             formatDate={formatDate}
-            formatMembershipValidity={formatMembershipValidity}
-            getMembershipType={getMembershipType}
-            getStatus={getStatus}
-            isMembershipValid={isMembershipValid}
             onEditClick={handleEditClick}
             onDeleteClick={handleDeleteClick}
-            onStatusClick={handleStatusClick}
-            onRenewClick={handleRenewClick}
             onDetailsClick={handleDetailsClick}
             expandedRows={expandedRows}
             onToggleExpand={toggleRowExpand}
@@ -475,37 +329,6 @@ const CustomerManagement = () => {
         selectedCustomer={selectedCustomer}
         onSubmit={handleDelete}
         loading={loading}
-        getStatus={getStatus}
-      />
-
-      <StatusChangeModal
-        show={showStatusModal}
-        onClose={() => {
-          setShowStatusModal(false);
-          setSelectedCustomer(null);
-        }}
-        selectedCustomer={selectedCustomer}
-        status={status}
-        setStatus={setStatus}
-        onSubmit={handleStatusChange}
-        loading={loading}
-      />
-
-      <RenewMembershipModal
-        show={showRenewModal}
-        onClose={() => {
-          setShowRenewModal(false);
-          setSelectedCustomer(null);
-        }}
-        selectedCustomer={selectedCustomer}
-        renewMonths={renewMonths}
-        setRenewMonths={setRenewMonths}
-        onSubmit={handleRenewMembership}
-        loading={loading}
-        formatDate={formatDate}
-        formatMembershipValidity={formatMembershipValidity}
-        getMembershipType={getMembershipType}
-        isMembershipValid={isMembershipValid}
       />
 
       <CustomerDetailsModal
@@ -517,10 +340,6 @@ const CustomerManagement = () => {
         selectedCustomer={selectedCustomer}
         onEditClick={handleEditClick}
         formatDate={formatDate}
-        formatMembershipValidity={formatMembershipValidity}
-        getMembershipType={getMembershipType}
-        getStatus={getStatus}
-        isMembershipValid={isMembershipValid}
         canEditDelete={canEditDelete}
       />
     </div>

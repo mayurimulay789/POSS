@@ -86,7 +86,7 @@ const PermissionManagement = () => {
       manager: [
         'menu_management', 'order_management', 'billing_management',
         'space_management', 'task_management', 'expense_management',
-        'reports_analytics', 'employee_management', 'customer_management'
+        'employee_management', 'customer_management', 'charges_management'
       ],
       supervisor: [
         'order_management', 'billing_management', 'space_management', 'task_management'
@@ -155,13 +155,13 @@ const PermissionManagement = () => {
         ,'footer_management'
       ]
     },
-    {
-      category: 'Analytics',
-      permissions: ['reports_analytics']
-    },
+    // {
+    //   category: 'Analytics',
+    //   permissions: ['reports_analytics']
+    // },
     {
       category: 'Administration',
-      permissions: ['employee_management']
+      permissions: ['employee_management','charges_management']
     }
   ];
 

@@ -5,10 +5,8 @@ import {
   getTeamAttendance,
   getAttendanceAnalytics,
   approveAttendance,
-  exportAttendance,
   clearError,
   clearSuccess,
-  setFilters,
   getAttendanceCalendar,
   getMerchantUsers,
   selectAllAttendance,
@@ -17,8 +15,6 @@ import {
   selectMerchantAttendanceLoading,
   selectMerchantAttendanceError,
   selectMerchantAttendanceSuccess,
-  selectMerchantAttendanceStats,
-  selectMerchantAttendanceFilters,
   selectCalendarData,
   selectMerchantUsers,
   selectCalendarLoading
@@ -56,8 +52,6 @@ const MerchantAttendanceDashboard = () => {
   const loading = useSelector(selectMerchantAttendanceLoading);
   const error = useSelector(selectMerchantAttendanceError);
   const success = useSelector(selectMerchantAttendanceSuccess);
-  const stats = useSelector(selectMerchantAttendanceStats);
-  const filters = useSelector(selectMerchantAttendanceFilters);
   const calendarData = useSelector(selectCalendarData);
   const merchantUsers = useSelector(selectMerchantUsers);
   const calendarLoading = useSelector(selectCalendarLoading);
@@ -211,8 +205,8 @@ const MerchantAttendanceDashboard = () => {
       console.error('Export failed:', error);
       // Fallback: Try direct download approach
       try {
-        const token = localStorage.getItem('token');
-        const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
+  
         
         const queryParams = new URLSearchParams({
           format: 'csv',
@@ -249,7 +243,7 @@ const MerchantAttendanceDashboard = () => {
       setExportLoading(true);
       
       const token = localStorage.getItem('token');
-      const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+      const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5000';
       
       // Create a simple export with current filters
       const params = new URLSearchParams();
@@ -304,10 +298,7 @@ const MerchantAttendanceDashboard = () => {
     setSelectedDate(date);
   };
 
-  const handleApplyFilters = (newFilters) => {
-    dispatch(setFilters(newFilters));
-    loadData();
-  };
+
 
   const handleCalendarMonthChange = (month, year) => {
     setCalendarMonth(month);
@@ -334,12 +325,9 @@ const MerchantAttendanceDashboard = () => {
 
   if (user?.role !== 'merchant') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-md w-full">
-          <XCircle className="w-16 h-16 sm:w-20 sm:h-20 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">Access Denied</h2>
-          <p className="text-gray-500 text-sm sm:text-base">Only merchants can access this dashboard</p>
-        </div>
+      <div className="p-6 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Access Denied</h1>
+        <p className="text-gray-600">Only merchants can access attendance management.</p>
       </div>
     );
   }
@@ -371,8 +359,7 @@ const MerchantAttendanceDashboard = () => {
           <div className="hidden lg:block mb-4">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">Attendance Dashboard</h1>
-                <p className="text-gray-600">Monitor and manage team attendance</p>
+                <h1 className="text-2xl font-bold text-gray-800">Attendance Dashboard</h1>
               </div>
             </div>
           </div>

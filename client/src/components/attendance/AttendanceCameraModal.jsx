@@ -1,31 +1,64 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, Upload, X, RotateCw, Check } from 'lucide-react';
+import { Camera, Upload, X, RotateCw, Check, AlertCircle } from 'lucide-react';
 
 const AttendanceCameraModal = ({
   show,
   onClose,
   isStartingShift,
   selfieImage,
-  webcamRef,
-  fileInputRef,
-  isCameraActive,
-  onCameraToggle,
   onCapturePhoto,
   onFileUpload,
   onRetakePhoto,
   onSubmit,
-  loading
+  loading,
+  isCameraActive,
+  onCameraToggle,
+  title,
+  description,
+  submitButtonText,
+  isOptional = false
 }) => {
-  const [facingMode, setFacingMode] = useState('user'); // 'user' for front camera, 'environment' for back
-
-  if (!show) return null;
+  const [facingMode, setFacingMode] = useState('user');
+  const webcamRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const videoConstraints = {
     width: { ideal: 1280 },
     height: { ideal: 720 },
     facingMode: facingMode
   };
+
+  const handleCapturePhotoInternal = () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      onCapturePhoto(imageSrc);
+    }
+  };
+
+  const handleFileUploadInternal = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!file.type.match('image.*')) {
+        alert('Please select an image file');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      
+      onFileUpload(file);
+    }
+  };
+
+  const handleSubmitWithoutSelfie = () => {
+    onSubmit();
+  };
+
+  if (!show) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
@@ -36,12 +69,12 @@ const AttendanceCameraModal = ({
             <Camera className="w-6 h-6 text-blue-600 mr-3" />
             <div>
               <h3 className="text-lg font-semibold text-gray-800">
-                {isStartingShift ? 'Start Shift Selfie' : 'End Shift Selfie'}
+                {title || (isStartingShift ? 'Start Shift Selfie' : 'End Shift Selfie')}
               </h3>
               <p className="text-sm text-gray-600">
-                {isStartingShift 
+                {description || (isStartingShift 
                   ? 'Take a selfie to start your shift' 
-                  : 'Optional: Take a selfie to end your shift'}
+                  : 'Optional: Take a selfie to end your shift')}
               </p>
             </div>
           </div>
@@ -108,7 +141,7 @@ const AttendanceCameraModal = ({
                       <RotateCw className="w-5 h-5 text-gray-700" />
                     </button>
                     <button
-                      onClick={onCapturePhoto}
+                      onClick={handleCapturePhotoInternal}
                       className="p-4 bg-white border-4 border-gray-300 hover:border-gray-400 rounded-full transition-all shadow-lg"
                       title="Capture photo"
                     >
@@ -117,7 +150,7 @@ const AttendanceCameraModal = ({
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={onFileUpload}
+                      onChange={handleFileUploadInternal}
                       accept="image/*"
                       capture="environment"
                       className="hidden"
@@ -144,7 +177,7 @@ const AttendanceCameraModal = ({
                     <input
                       type="file"
                       ref={fileInputRef}
-                      onChange={onFileUpload}
+                      onChange={handleFileUploadInternal}
                       accept="image/*"
                       className="hidden"
                       id="file-upload"
@@ -174,6 +207,21 @@ const AttendanceCameraModal = ({
                   <li>• Selfie will be stored for 2 months only</li>
                 </ul>
               </div>
+
+              {/* Optional Selfie Note */}
+              {isOptional && (
+                <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                  <div className="flex items-start">
+                    <AlertCircle className="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800 mb-1">Selfie is Optional</h4>
+                      <p className="text-sm text-yellow-700">
+                        You can skip the selfie and end your shift without it. This selfie is optional but recommended for verification.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             /* Preview Mode */
@@ -212,11 +260,24 @@ const AttendanceCameraModal = ({
                   ) : (
                     <>
                       <Check className="w-4 h-4 mr-2" />
-                      {isStartingShift ? 'Start Shift' : 'End Shift'}
+                      {submitButtonText || (isStartingShift ? 'Start Shift' : 'End Shift')}
                     </>
                   )}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Skip Selfie Button (only for optional selfie) */}
+          {isOptional && !selfieImage && (
+            <div className="mt-6">
+              <button
+                onClick={handleSubmitWithoutSelfie}
+                disabled={loading}
+                className="w-full px-4 py-3 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Skip Selfie and End Shift
+              </button>
             </div>
           )}
         </div>
