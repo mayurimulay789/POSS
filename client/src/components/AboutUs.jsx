@@ -101,14 +101,16 @@ const AboutUs = () => {
 
           {/* DESKTOP: Two Column Layout */}
           <div className="hidden lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
-            <div className="space-y-6 rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-8 backdrop-blur">
-              <div className="grid gap-4 md:grid-cols-2">
-                {values.map((value, index) => (
-                  <div key={index} className="flex items-start gap-3 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/50 px-4 py-3">
-                    <CheckCircleIcon className="h-5 w-5 text-[#F1A722] flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-white/90 leading-relaxed">{value.text || value}</p>
-                  </div>
-                ))}
+            <div className="space-y-6">
+              <div className="rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-8 backdrop-blur self-start">
+                <div className="grid gap-4 md:grid-cols-2">
+                  {values.map((value, index) => (
+                    <div key={index} className="flex items-start gap-3 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/50 px-4 py-3">
+                      <CheckCircleIcon className="h-5 w-5 text-[#F1A722] flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-white/90 leading-relaxed">{value.text || value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="grid gap-4 grid-cols-3">

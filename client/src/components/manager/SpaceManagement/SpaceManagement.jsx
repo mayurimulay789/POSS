@@ -1,4 +1,3 @@
-// ...existing code...
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTables, createTable, updateTable, deleteTable, clearSuccess, clearError, optimisticUpdateTable } from '../../../store/slices/tableSlice';
@@ -22,11 +21,11 @@ const SpaceManagement = () => {
   const tabs = ['Tables'];
 
   // Fetch tables when component mounts and set up auto-refresh
-  useEffect(() => {
-    dispatch(fetchTables());
-    
-    // The interval and cleanup logic have been removed from here
-  }, [dispatch]);
+ useEffect(() => {
+  dispatch(fetchTables());
+  
+  // The interval and cleanup logic have been removed from here
+}, [dispatch]);
 
   useEffect(() => {
     if (!toast) return;
