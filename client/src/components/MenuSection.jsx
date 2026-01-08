@@ -52,7 +52,7 @@ const MenuSection = () => {
   );
 
   return (
-    <section id="menu" className="bg-gradient-to-br from-[#0A3D4D] via-[#134A5C] to-[#0A3D4D] py-8 sm:py-16 md:py-20 px-4 sm:px-6 font-sans text-white">
+    <section id="menu" className="bg-[#0A2F46] py-8 sm:py-16 md:py-20 px-4 sm:px-6 font-sans text-white">
       <div className="max-w-6xl mx-auto">
         
         {/* Header */}

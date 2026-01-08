@@ -72,11 +72,11 @@ const AboutUs = () => {
           
           {/* MOBILE: Highlights First - Desktop: Right Column */}
           <div className="lg:hidden">
-            <div className="rounded-xl sm:rounded-2xl border-2 border-[#14AAAB] bg-white/5 p-3 sm:p-4 backdrop-blur">
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-[#F1A722] font-semibold mb-3">What Makes Us Special</p>
+            <div className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4 backdrop-blur">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.15em] text-[#F1A722]/70 font-semibold mb-3">What Makes Us Special</p>
               <div className="grid gap-2.5 sm:gap-3 grid-cols-2">
                 {highlights.map((highlight, index) => (
-                  <div key={index} className="flex flex-col items-center text-center gap-1.5 rounded-lg border-2 border-[#14AAAB] bg-[#0A2F46]/20 px-2 py-2.5">
+                  <div key={index} className="flex flex-col items-center text-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2 py-2.5">
                     <div className="text-xl sm:text-2xl">{highlight.icon}</div>
                     <div>
                       <p className="text-xs sm:text-sm font-bold text-white leading-tight">{highlight.title}</p>
@@ -91,8 +91,8 @@ const AboutUs = () => {
           {/* Stats - Full Width on Mobile */}
           <div className="grid gap-2.5 sm:gap-3 grid-cols-3 lg:hidden">
             {stats.map((stat, index) => (
-              <div key={index} className="rounded-lg sm:rounded-xl border-2 border-[#14AAAB] bg-gradient-to-br from-[#0A2F46]/40 to-[#0A2F46]/20 p-2.5 sm:p-3 text-center shadow-lg">
-                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] text-[#14AAAB] font-bold leading-tight">{stat.label}</p>
+              <div key={index} className="rounded-lg sm:rounded-xl border border-white/10 bg-white/5 p-2.5 sm:p-3 text-center">
+                <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] text-white/50 font-bold leading-tight">{stat.label}</p>
                 <p className="mt-1 sm:mt-1.5 text-lg sm:text-xl font-serif font-bold text-[#F1A722]">{stat.value}</p>
                 <p className="mt-0.5 text-[9px] sm:text-[10px] text-white/70 leading-tight">{stat.detail}</p>
               </div>
@@ -100,52 +100,64 @@ const AboutUs = () => {
           </div>
 
           {/* DESKTOP: Two Column Layout */}
-          <div className="hidden lg:grid lg:grid-cols-[1.1fr_0.9fr] gap-10">
-            <div className="space-y-6 rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-8 backdrop-blur">
-              <div className="grid gap-4 md:grid-cols-2">
-                {values.map((value, index) => (
-                  <div key={index} className="flex items-start gap-3 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/50 px-4 py-3">
-                    <CheckCircleIcon className="h-5 w-5 text-[#F1A722] flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-white/90 leading-relaxed">{value.text || value}</p>
-                  </div>
-                ))}
+          <div className="hidden lg:block">
+            {/* Top Row: Values and House Rhythm side by side */}
+            <div className="grid lg:grid-cols-2 gap-6 mb-6">
+              {/* Values Section */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Our Values</p>
+                <div className="grid gap-3 grid-cols-2">
+                  {values.map((value, index) => (
+                    <div key={index} className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+                      <CheckCircleIcon className="h-4 w-4 text-[#F1A722] flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-white/90 leading-relaxed">{value.text || value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="grid gap-4 grid-cols-3">
-                {stats.map((stat, index) => (
-                  <div key={index} className="rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/30 p-4 text-center shadow-lg">
-                    <p className="text-[11px] uppercase tracking-[0.22em] text-[#14AAAB] font-bold">{stat.label}</p>
-                    <p className="mt-2 text-3xl font-serif font-bold text-[#F1A722]">{stat.value}</p>
-                    <p className="mt-1 text-sm text-white/70">{stat.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="relative overflow-hidden rounded-3xl border-2 border-[#14AAAB] bg-[#134A5C]/40 p-7 backdrop-blur shadow-2xl shadow-black/25">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.05),transparent_32%)]" />
-                <div className="relative space-y-4">
-                  <p className="text-sm uppercase tracking-[0.18em] text-[#F1A722] font-semibold">House rhythm</p>
-                  <h3 className="text-2xl font-semibold text-white">{data.rhythmTitle}</h3>
-                  <p className="text-white/80 leading-relaxed text-base">
+              {/* House Rhythm Section */}
+              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.03),transparent_32%)]" />
+                <div className="relative space-y-3">
+                  <p className="text-sm uppercase tracking-[0.18em] text-[#F1A722]/70 font-semibold">House rhythm</p>
+                  <h3 className="text-xl font-semibold text-white">{data.rhythmTitle}</h3>
+                  <p className="text-white/80 leading-relaxed text-sm">
                     {data.rhythmDescription}
                   </p>
-                  <div className="rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/40 px-4 py-3 text-sm text-[#F1A722] italic font-medium">
+                  <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F1A722]/80 italic font-medium">
                     {data.rhythmQuote}
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="rounded-3xl border-2 border-[#14AAAB] bg-white/5 p-6 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-semibold">Highlights</p>
-                <div className="mt-5 grid gap-4 grid-cols-2">
+            {/* Bottom Row: Stats and Highlights side by side */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Stats Section */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Our Journey</p>
+                <div className="grid gap-4 grid-cols-3">
+                  {stats.map((stat, index) => (
+                    <div key={index} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">{stat.label}</p>
+                      <p className="mt-2 text-2xl font-serif font-bold text-[#F1A722]">{stat.value}</p>
+                      <p className="mt-1 text-xs text-white/70">{stat.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Highlights Section */}
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Highlights</p>
+                <div className="grid gap-3 grid-cols-2">
                   {highlights.map((highlight, index) => (
-                    <div key={index} className="flex items-start gap-4 rounded-2xl border-2 border-[#14AAAB] bg-[#0A2F46]/20 px-4 py-3">
+                    <div key={index} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
                       <div className="text-2xl flex-shrink-0">{highlight.icon}</div>
                       <div>
-                        <p className="text-base font-semibold text-white">{highlight.title}</p>
-                        <p className="text-sm text-white/75 leading-relaxed">{highlight.description}</p>
+                        <p className="text-sm font-semibold text-white">{highlight.title}</p>
+                        <p className="text-xs text-white/75 leading-relaxed mt-0.5">{highlight.description}</p>
                       </div>
                     </div>
                   ))}
@@ -155,26 +167,26 @@ const AboutUs = () => {
           </div>
 
           {/* MOBILE: House Rhythm */}
-          <div className="lg:hidden relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-[#14AAAB] bg-[#134A5C]/40 p-3.5 sm:p-4 backdrop-blur shadow-lg">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.05),transparent_32%)]" />
+          <div className="lg:hidden relative overflow-hidden rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 p-3.5 sm:p-4 backdrop-blur">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.03),transparent_32%)]" />
             <div className="relative space-y-2 sm:space-y-2.5">
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] text-[#F1A722] font-semibold">House Rhythm</p>
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] text-[#F1A722]/70 font-semibold">House Rhythm</p>
               <h3 className="text-base sm:text-lg font-semibold text-white leading-tight">{data.rhythmTitle}</h3>
               <p className="text-white/80 leading-relaxed text-xs sm:text-sm">
                 {data.rhythmDescription}
               </p>
-              <div className="rounded-lg sm:rounded-xl border-2 border-[#14AAAB] bg-[#0A2F46]/40 px-2.5 py-2 sm:px-3 sm:py-2.5 text-[10px] sm:text-xs text-[#F1A722] italic font-medium leading-snug">
+              <div className="rounded-lg sm:rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 sm:px-3 sm:py-2.5 text-[10px] sm:text-xs text-[#F1A722]/80 italic font-medium leading-snug">
                 {data.rhythmQuote}
               </div>
             </div>
           </div>
 
           {/* MOBILE: Values - Compact 2 Column */}
-          <div className="lg:hidden rounded-xl sm:rounded-2xl border-2 border-[#14AAAB] bg-white/5 p-3 sm:p-4 backdrop-blur">
-            <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] text-[#F1A722] font-semibold mb-2.5 sm:mb-3">Our Values</p>
+          <div className="lg:hidden rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4 backdrop-blur">
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.12em] text-[#F1A722]/70 font-semibold mb-2.5 sm:mb-3">Our Values</p>
             <div className="grid gap-2 sm:gap-2.5 grid-cols-2">
               {values.map((value, index) => (
-                <div key={index} className="flex items-start gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border-2 border-[#14AAAB] bg-[#0A2F46]/50 px-2 py-1.5 sm:px-2.5 sm:py-2">
+                <div key={index} className="flex items-start gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border border-white/10 bg-white/5 px-2 py-1.5 sm:px-2.5 sm:py-2">
                   <CheckCircleIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-[#F1A722] flex-shrink-0 mt-0.5" />
                   <p className="text-[10px] sm:text-[11px] text-white/90 leading-snug">{value.text || value}</p>
                 </div>
@@ -189,3 +201,16 @@ const AboutUs = () => {
 };
 
 export default AboutUs;
+
+
+
+
+
+
+
+
+
+
+
+
+

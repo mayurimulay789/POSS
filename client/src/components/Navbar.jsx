@@ -130,10 +130,9 @@ const Navbar = () => {
   const textClass = showTransparent ? 'text-white' : 'text-white';
   const linkClass = `${textClass} hover:text-[#F1A722] transition-all duration-300 font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
   const navBg = showTransparent
-    ? 'bg-[#14AAAB]/70 shadow-none backdrop-blur-sm'
-    : 'bg-[#14AAAB]/90 shadow-lg';
-    // ? 'bg-[#012f46] shadow-none backdrop-blur-sm'
-    // : 'bg-[#012f46]/90 shadow-lg';
+
+    ? 'bg-[#0A2F46]/80 shadow-none backdrop-blur-md border-b border-white/5'
+    : 'bg-[#0A2F46]/95 shadow-xl border-b border-[#F1A722]/20';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>
@@ -146,10 +145,17 @@ const Navbar = () => {
           <Link
             to="/"
             onClick={goHome}
-            className={`text-2xl font-bold transition flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-lg' : 'text-white hover:text-[#F1A722]'}`}
+            className={`text-2xl font-bold transition-all duration-300 flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-2xl' : 'text-white hover:scale-105'}`}
           >
             {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-32 sm:h-40 md:h-48 w-auto object-contain mt-0" style={{ maxWidth: '280px', maxHeight: '140px' }} />
+              <div className="relative">
+                <img 
+                  src={logoUrl} 
+                  alt="Logo" 
+                  className="h-24 sm:h-26 md:h-40 w-auto object-contain drop-shadow-2xl hover:drop-shadow-[0_0_15px_rgba(241,167,34,0.5)] transition-all duration-300" 
+                  style={{ maxWidth: '200px', filter: 'brightness(1.1) contrast(1.1)' }} 
+                />
+              </div>
             ) : (
               <span className="text-4xl sm:text-5xl md:text-6xl mt-0" style={{ color: '#F1A722' }}>🍽️</span>
             )}
@@ -159,7 +165,7 @@ const Navbar = () => {
           {/* HAMBURGER (MOBILE ONLY) */}
           <button
             onClick={toggleMobileMenu}
-            className={`md:hidden p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F1A722] transition-all ${showTransparent ? 'text-white bg-black/20 hover:bg-black/30' : 'text-white bg-[#0A2F46]/30 hover:bg-[#0A2F46]/50'}`}
+            className={`md:hidden p-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#F1A722] transition-all ${showTransparent ? 'text-white bg-white/10 hover:bg-white/20' : 'text-white bg-[#F1A722]/20 hover:bg-[#F1A722]/30'}`}
             aria-label="Toggle menu"
           >
             <div className="w-6 h-6 flex flex-col justify-between">
@@ -249,14 +255,14 @@ const Navbar = () => {
 
         {/* MOBILE DROPDOWN */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t-2 border-[#14AAAB] shadow-2xl pb-3 animate-slideDown">
+          <div className="md:hidden bg-[#0A2F46] border-t-2 border-[#F1A722]/30 shadow-2xl pb-3 animate-slideDown">
 
             {isAuthenticated ? (
               <>
                 {/* USER INFO */}
-                <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                <div className="px-4 py-3 border-b border-[#F1A722]/20 bg-white/5">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-gray-700 font-medium">
+                    <span className="text-white font-medium">
                       {user?.name}
                     </span>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs capitalize flex items-center gap-1 ${getRoleColor(user?.role)}`}>
@@ -264,12 +270,12 @@ const Navbar = () => {
                       {user?.role}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-gray-300">{user?.email}</p>
                 </div>
 
                 <button
                   onClick={handleDashboardNavigation}
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 border-b border-gray-100"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-white hover:text-[#F1A722] hover:bg-[#F1A722]/10 border-b border-[#F1A722]/20"
                 >
                   <span>📊</span>
                   Dashboard
@@ -277,7 +283,7 @@ const Navbar = () => {
 
                <button
                   onClick={handleAttendanceNavigation}
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-white hover:text-[#F1A722] hover:bg-[#F1A722]/10 border-b border-[#F1A722]/20"
                 >
                   <span>📅</span>
                   Attendance
@@ -286,7 +292,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-gray-700 hover:text-red-600 hover:bg-red-50"
+                  className="flex items-center gap-3 w-full text-left px-4 py-3 text-white hover:text-[#D32B36] hover:bg-[#D32B36]/10"
                 >
                   <span>🚪</span>
                   Logout
@@ -300,7 +306,7 @@ const Navbar = () => {
                       key={link.label}
                       to={link.to}
                       onClick={goHome}
-                      className="block px-5 py-3.5 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/20 font-medium transition-all"
+                      className="block px-5 py-3.5 text-white hover:text-[#F1A722] hover:bg-[#F1A722]/10 border-b border-[#F1A722]/20 font-medium transition-all"
                     >
                       {link.label}
                     </Link>
@@ -308,7 +314,7 @@ const Navbar = () => {
                     <button
                       key={link.label}
                       onClick={() => scrollToSection(link.anchor)}
-                      className="block w-full text-left px-5 py-3.5 text-[#0A2F46] hover:text-[#F1A722] hover:bg-[#14AAAB]/10 border-b border-[#14AAAB]/20 font-medium transition-all"
+                      className="block w-full text-left px-5 py-3.5 text-white hover:text-[#F1A722] hover:bg-[#F1A722]/10 border-b border-[#F1A722]/20 font-medium transition-all"
                     >
                       {link.label}
                     </button>
@@ -317,7 +323,7 @@ const Navbar = () => {
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block mx-4 my-4 text-center bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl"
+                  className="block mx-4 my-4 text-center bg-[#D32B36] hover:bg-[#F1A722] text-white px-6 py-3 rounded-full transition-all font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   Login
                 </Link>

@@ -27,9 +27,9 @@ const SpaceManagement = () => {
     if (table.isReserved) {
       return 'bg-yellow-50 border-yellow-300 border-2';
     } else if (table.orderedMenu && table.orderedMenu.length > 0) {
-      return 'bg-green-50 border-green-300 border-2';
+      return 'bg-blue-50 border-blue-300 border-2';
     } else {
-      return 'bg-white border border-gray-300';
+      return 'bg-green-50 border-green-300 border-2';
     }
   };
 
@@ -37,9 +37,9 @@ const SpaceManagement = () => {
     if (table.isReserved) {
       return { text: 'Reserved', color: 'text-yellow-600 bg-yellow-100' };
     } else if (table.orderedMenu && table.orderedMenu.length > 0) {
-      return { text: 'Booked', color: 'text-green-600 bg-green-200' };
+      return { text: 'Booked', color: 'text-blue-600 bg-blue-100' };
     } else {
-      return { text: 'Available', color: 'text-blue-600 bg-blue-100' };
+      return { text: 'Available', color: 'text-green-600 bg-green-100' };
     }
   };
 
