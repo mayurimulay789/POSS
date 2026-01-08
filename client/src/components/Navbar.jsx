@@ -132,6 +132,8 @@ const Navbar = () => {
   const navBg = showTransparent
     ? 'bg-[#14AAAB]/70 shadow-none backdrop-blur-sm'
     : 'bg-[#14AAAB]/90 shadow-lg';
+    // ? 'bg-[#012f46] shadow-none backdrop-blur-sm'
+    // : 'bg-[#012f46]/90 shadow-lg';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>

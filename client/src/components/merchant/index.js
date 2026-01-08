@@ -1,5 +1,5 @@
 // Merchant Role Components
-export { default as EmployeeManagement } from './EmployeeManagement/EmployeeManagement';
+export { default as EmployeeManagement } from '../EmployeeManagement/EmployeeManagement';
 export { default as SpaceManagement } from './SpaceManagement/SpaceManagement';
 export { default as MenuManagement } from './MenuManagement/MenuManagement';
 export { default as OrderManagement } from './OrderManagement/OrderManagement';
