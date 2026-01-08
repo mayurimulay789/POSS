@@ -78,9 +78,9 @@ const CuisineGallery = () => {
                 {[...cuisineCards, ...cuisineCards].map((item, index) => (
                   <div
                     key={`${item._id}-${index}`}
-                    className="flex-shrink-0 w-[240px] sm:w-[300px] md:w-[360px]"
+                    className="flex-shrink-0 w-[200px] sm:w-[240px] md:w-[280px]"
                   >
-                    <div className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#14AAAB]/50 transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-[#F1A722]/20">
+                    <div className="group relative h-[220px] sm:h-[260px] md:h-[300px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#14AAAB]/50 transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-[#F1A722]/20">
                       <img
                         src={item.url}
                         alt={item.alt || item.title}
