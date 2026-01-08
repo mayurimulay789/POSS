@@ -61,9 +61,9 @@ const AboutUs = () => {
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col gap-2 sm:gap-3 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mt-2 sm:mt-3 mb-2 sm:mb-4 italic text-[#F1A722] px-2">{data.mainTitle}</h2>
-          <div className="w-12 sm:w-16 md:w-20 h-[2px] bg-[#F1A722] mx-auto mb-2 sm:mb-3"></div>
-          <p className="text-white/90 text-xs sm:text-sm md:text-base lg:text-lg max-w-3xl mx-auto px-2 leading-relaxed">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mt-2 sm:mt-3 mb-2 sm:mb-4 italic text-[#F1A722] px-2 drop-shadow-[0_2px_8px_rgba(241,167,34,0.3)]">{data.mainTitle}</h2>
+          <div className="w-16 sm:w-20 md:w-24 h-[3px] bg-gradient-to-r from-transparent via-[#F1A722] to-transparent mx-auto mb-2 sm:mb-3 shadow-[0_0_10px_rgba(241,167,34,0.4)]"></div>
+          <p className="text-white/90 text-xs sm:text-sm md:text-base lg:text-lg max-w-3xl mx-auto px-2 leading-relaxed font-light">
             {data.mainDescription}
           </p>
         </div>
@@ -104,61 +104,90 @@ const AboutUs = () => {
             {/* Top Row: Values and House Rhythm side by side */}
             <div className="grid lg:grid-cols-2 gap-6 mb-6">
               {/* Values Section */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Our Values</p>
+              <div className="group rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-[#F1A722]/30 transition-all duration-300">
+                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-bold mb-6 flex items-center gap-2">
+                  <span className="w-8 h-[2px] bg-[#F1A722]"></span>
+                  Our Values
+                </p>
                 <div className="grid gap-3 grid-cols-2">
                   {values.map((value, index) => (
-                    <div key={index} className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                      <CheckCircleIcon className="h-4 w-4 text-[#F1A722] flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-white/90 leading-relaxed">{value.text || value}</p>
+                    <div key={index} className="flex items-start gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-3 hover:bg-white/10 hover:border-[#F1A722]/30 transition-all duration-200 hover:scale-[1.02] hover:shadow-lg">
+                      <CheckCircleIcon className="h-5 w-5 text-[#F1A722] flex-shrink-0 mt-0.5 drop-shadow-[0_0_4px_rgba(241,167,34,0.5)]" />
+                      <p className="text-xs text-white/90 leading-relaxed font-light">{value.text || value}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {/* House Rhythm Section */}
-              <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.03),transparent_32%)]" />
-                <div className="relative space-y-3">
-                  <p className="text-sm uppercase tracking-[0.18em] text-[#F1A722]/70 font-semibold">House rhythm</p>
-                  <h3 className="text-xl font-semibold text-white">{data.rhythmTitle}</h3>
-                  <p className="text-white/80 leading-relaxed text-sm">
+              <div className="group relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-[#F1A722]/30 transition-all duration-300">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.08),transparent_50%)]" />
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#F1A722]/5 rounded-full blur-3xl" />
+                <div className="relative space-y-4">
+                  <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-bold flex items-center gap-2">
+                    <span className="w-8 h-[2px] bg-[#F1A722]"></span>
+                    House Rhythm
+                  </p>
+                  <h3 className="text-2xl font-bold text-white leading-tight">{data.rhythmTitle}</h3>
+                  <p className="text-white/85 leading-relaxed text-sm font-light">
                     {data.rhythmDescription}
                   </p>
-                  <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-[#F1A722]/80 italic font-medium">
-                    {data.rhythmQuote}
+                  <div className="relative rounded-xl border border-[#F1A722]/20 bg-gradient-to-r from-[#F1A722]/10 to-transparent px-4 py-3 text-xs text-[#F1A722] italic font-medium leading-relaxed shadow-inner">
+                    <span className="absolute left-2 top-2 text-[#F1A722]/40 text-2xl font-serif">"</span>
+                    <span className="block pl-4">{data.rhythmQuote}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Row: Stats and Highlights side by side */}
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* Stats Section */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Our Journey</p>
-                <div className="grid gap-4 grid-cols-3">
-                  {stats.map((stat, index) => (
-                    <div key={index} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
-                      <p className="text-[10px] uppercase tracking-[0.2em] text-white/50 font-bold">{stat.label}</p>
-                      <p className="mt-2 text-2xl font-serif font-bold text-[#F1A722]">{stat.value}</p>
-                      <p className="mt-1 text-xs text-white/70">{stat.detail}</p>
-                    </div>
-                  ))}
-                </div>
+            {/* Stats Section - Full Width */}
+            <div className="group rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-7 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-[#F1A722]/30 transition-all duration-300 mb-6">
+              <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-bold mb-6 flex items-center gap-2">
+                <span className="w-8 h-[2px] bg-[#F1A722]"></span>
+                Our Journey
+              </p>
+              <div className="flex gap-5 justify-between">
+                {stats.map((stat, index) => (
+                  <div key={index} className="flex-1 rounded-2xl border border-white/15 bg-gradient-to-b from-white/10 to-white/5 p-6 text-center hover:bg-white/15 hover:border-[#F1A722]/30 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-white/60 font-bold mb-2">{stat.label}</p>
+                    <p className="mt-2 text-3xl font-serif font-bold text-[#F1A722] drop-shadow-[0_2px_8px_rgba(241,167,34,0.4)]">{stat.value}</p>
+                    <p className="mt-2 text-xs text-white/75 font-light">{stat.detail}</p>
+                  </div>
+                ))}
               </div>
+            </div>
 
-              {/* Highlights Section */}
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-                <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722]/70 font-semibold mb-5">Highlights</p>
-                <div className="grid gap-3 grid-cols-2">
+            {/* Highlights Section - Full Width */}
+            <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-8 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-[#F1A722]/30 transition-all duration-300">
+              <div className="absolute top-0 left-0 w-40 h-40 bg-[#F1A722]/5 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-40 h-40 bg-[#F1A722]/5 rounded-full blur-3xl"></div>
+              
+              <div className="relative">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-[3px] bg-gradient-to-r from-[#F1A722] to-transparent rounded-full"></span>
+                    <p className="text-base uppercase tracking-[0.25em] text-[#F1A722] font-bold">What Makes Us Special</p>
+                  </div>
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-white/20 to-transparent ml-4"></div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-5">
                   {highlights.map((highlight, index) => (
-                    <div key={index} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3">
-                      <div className="text-2xl flex-shrink-0">{highlight.icon}</div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{highlight.title}</p>
-                        <p className="text-xs text-white/75 leading-relaxed mt-0.5">{highlight.description}</p>
+                    <div key={index} className="group/item relative overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br from-[#0A2F46]/50 via-white/5 to-transparent p-6 hover:bg-gradient-to-br hover:from-white/15 hover:via-white/10 hover:to-transparent hover:border-[#F1A722]/40 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-2xl">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-[#F1A722]/5 rounded-full blur-2xl opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"></div>
+                      
+                      <div className="relative flex items-start gap-4">
+                        <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br from-[#F1A722]/20 to-[#F1A722]/5 border border-[#F1A722]/20 flex items-center justify-center text-3xl transform group-hover/item:scale-110 group-hover/item:rotate-6 transition-all duration-300 shadow-lg">
+                          {highlight.icon}
+                        </div>
+                        
+                        <div className="flex-1">
+                          <h4 className="text-base font-bold text-white mb-2 group-hover/item:text-[#F1A722] transition-colors duration-300">{highlight.title}</h4>
+                          <p className="text-sm text-white/75 leading-relaxed font-light">{highlight.description}</p>
+                        </div>
                       </div>
+                      
+                      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#F1A722]/20 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-300"></div>
                     </div>
                   ))}
                 </div>
