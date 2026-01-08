@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCuisineGallery } from '../store/slices/cuisineGallerySlice';
 import { fetchCuisineCards, fetchCuisineBackground } from '../store/slices/cuisineCardsSlice';
-// ...existing code...
 
 const CuisineGallery = () => {
   const dispatch = useDispatch();
@@ -25,46 +24,43 @@ const CuisineGallery = () => {
   return (
     <section 
       id="gallery"
-      className="py-6 sm:py-12 md:py-20 lg:py-28 relative bg-cover bg-center bg-fixed"
+      className="py-12 sm:py-20 md:py-28 lg:py-32 relative bg-cover bg-center bg-fixed"
       style={{
-        backgroundImage: cuisineBackground && cuisineBackground.url
-          ? `url(${cuisineBackground.url})`
-          : 'none',
-        backgroundColor: cuisineBackground && cuisineBackground.url ? 'transparent' : '#F9FAFB',
-        backgroundAttachment: 'fixed'
+        backgroundImage: cuisineBackground?.url ? `url(${cuisineBackground.url})` : 'none',
+        backgroundColor: cuisineBackground?.url ? 'transparent' : '#0A2F46',
       }}
     >
-      {/* Background Selection Checkbox */}
-      {/* Removed Show Background checkbox */}
+      {/* --- ADDED: Teal Transparent Overlay Layer --- */}
+      <div className="absolute inset-0 bg-[#0A2F46]/70 backdrop-blur-[2px] pointer-events-none"></div>
 
-      <div className="container mx-auto px-4 sm:px-6">
+      <div className="container mx-auto px-4 sm:px-6 relative z-10">
         {/* Section Header */}
         {galleryContent ? (
-          <div className="text-center mb-6 sm:mb-8 md:mb-10">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mt-2 sm:mt-3 mb-3 sm:mb-4 italic text-[#F1A722] px-2">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif mb-4 italic text-[#F1A722] drop-shadow-md">
               {galleryContent.heading}
             </h2>
-            <div className="flex justify-center mb-3 sm:mb-4 md:mb-6">
-              <div className="w-16 sm:w-20 md:w-28 h-[2px] bg-[#F1A722]"></div>
+            <div className="flex justify-center mb-6">
+              <div className="w-20 sm:w-28 h-[3px] bg-[#F1A722] rounded-full"></div>
             </div>
             {galleryContent.subheading && (
-              <p className="text-[#0A2F46] max-w-2xl mx-auto text-sm sm:text-base md:text-lg font-medium px-4">
+              <p className="text-white max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-light tracking-wide px-4 drop-shadow">
                 {galleryContent.subheading}
               </p>
             )}
           </div>
         ) : (
-          <div className="text-center mb-6 sm:mb-8 md:mb-10">
-            <div className="text-3xl sm:text-4xl md:text-5xl mb-3">🍽️</div>
-            <p className="text-white text-base sm:text-lg">Cuisine Gallery Coming Soon</p>
+          <div className="text-center mb-10">
+            <div className="text-4xl mb-3">🍽️</div>
+            <p className="text-white text-lg">Cuisine Gallery Coming Soon</p>
           </div>
         )}
 
         {/* Scrolling Cards Container */}
         <div className="relative overflow-hidden">
           {loading || cardsLoading || backgroundLoading ? (
-            <div className="flex items-center justify-center h-96">
-              <div className="text-white text-lg">Loading cuisine gallery...</div>
+            <div className="flex items-center justify-center h-80">
+              <div className="text-white text-lg animate-pulse">Loading cuisine gallery...</div>
             </div>
           ) : cuisineCards.length > 0 ? (
             <div className="relative w-full overflow-hidden" style={{
@@ -72,47 +68,36 @@ const CuisineGallery = () => {
               WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
             }}>
               <div 
-                className="flex gap-3 sm:gap-5 md:gap-7 w-max"
+                className="flex gap-4 sm:gap-6 md:gap-8 w-max"
                 style={{
                   animation: isPaused ? 'none' : 'scroll 40s linear infinite'
                 }}
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={() => setIsPaused(false)}
               >
-                {/* Duplicate items for seamless loop */}
                 {[...cuisineCards, ...cuisineCards].map((item, index) => (
                   <div
                     key={`${item._id}-${index}`}
-                    className="flex-shrink-0 w-[220px] sm:w-[280px] md:w-[340px]"
+                    className="flex-shrink-0 w-[240px] sm:w-[300px] md:w-[360px]"
                   >
-                    <div className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-lg sm:rounded-xl overflow-hidden shadow-lg sm:shadow-xl border-2 sm:border-3 md:border-4 border-[#14AAAB] transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-2xl">
-                      {/* Image */}
+                    <div className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#14AAAB]/50 transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-[#F1A722]/20">
                       <img
                         src={item.url}
-                        alt={item.alt || item.title || 'Cuisine Image'}
+                        alt={item.alt || item.title}
                         className="w-full h-full object-cover"
                       />
-                      
-                      {/* Gradient Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A2F46] via-[#0A2F46]/50 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
-                      
-                      {/* Content Overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4 md:p-5 text-white transition-transform duration-300">
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A2F46] via-[#0A2F46]/40 to-transparent opacity-90 transition-opacity duration-300"></div>
+                      <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         {item.title && (
-                          <h3 className="text-lg sm:text-xl md:text-2xl font-serif font-bold mb-1 text-[#F1A722] line-clamp-1">
+                          <h3 className="text-xl sm:text-2xl font-serif font-bold mb-1 text-[#F1A722]">
                             {item.title}
                           </h3>
                         )}
                         {item.alt && item.alt !== item.title && (
-                          <p className="text-white text-xs sm:text-sm mb-1 sm:mb-2 line-clamp-2">
+                          <p className="text-white/90 text-sm line-clamp-2 italic">
                             {item.alt}
                           </p>
                         )}
-                      </div>
-
-                      {/* Decorative Corner */}
-                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-[#D32B36] rounded-full flex items-center justify-center text-white font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="text-sm sm:text-base md:text-lg">→</span>
                       </div>
                     </div>
                   </div>
@@ -120,24 +105,17 @@ const CuisineGallery = () => {
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 sm:py-12 md:py-16 px-4">
-              <div className="text-4xl sm:text-5xl mb-3">🍽️</div>
-              <p className="text-white text-base sm:text-lg mb-2">No cuisine images available</p>
-              <p className="text-white/70 text-xs sm:text-sm">Add images and check "Show in cuisine gallery" in Hotel Images</p>
+            <div className="text-center py-20">
+              <p className="text-white/60">No cuisine images available</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Keyframe Animation */}
       <style>{`
         @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
         }
       `}</style>
     </section>

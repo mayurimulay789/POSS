@@ -15,10 +15,7 @@ const WelcomeSection = () => {
     axios.get(`${import.meta.env.VITE_API_URL}/hotel-images/welcome`)
       .then(res => setWelcomeImage(res.data))
       .catch(err => {
-        // Silently handle 404 - no welcome image uploaded yet
-        if (err.response?.status !== 404) {
-          console.error('Error fetching welcome image:', err);
-        }
+        if (err.response?.status !== 404) console.error('Error:', err);
         setWelcomeImage(null);
       })
       .finally(() => setImgLoading(false));
@@ -28,66 +25,89 @@ const WelcomeSection = () => {
 
   if (!content) {
     return (
-      <section className="relative py-20 bg-[#0A2F46] overflow-hidden">
-        <div className="container mx-auto px-6 text-center">
-          <div className="text-6xl mb-4">🏨</div>
-          <p className="text-white text-xl">Welcome Section Coming Soon</p>
-          <p className="text-white/70 text-sm mt-2">Content will be available shortly</p>
+      <section className="py-24 bg-[#0A2F46] flex items-center justify-center">
+        <div className="text-center animate-pulse">
+          <div className="text-4xl mb-4">✨</div>
+          <p className="text-[#F1A722] font-serif italic text-xl">Preparing your welcome...</p>
         </div>
       </section>
     );
   }
 
   return (
-    <section className="relative py-8 sm:py-16 md:py-20 bg-[#0A2F46] overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 sm:w-48 sm:h-48 md:w-64 md:h-64 bg-[#14AAAB] opacity-5 rounded-bl-full"></div>
-      <div className="absolute bottom-0 left-0 w-24 h-24 sm:w-36 sm:h-36 md:w-48 md:h-48 bg-[#F1A722] opacity-5 rounded-tr-full"></div>
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-16">
-        {/* Section Header */}
-        <div className="text-center mb-8 sm:mb-10 md:mb-12">
-          <span className="uppercase tracking-[0.2em] sm:tracking-[0.3em] text-xs sm:text-sm text-[#D32B36] font-semibold">
-            Welcome To
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif mt-3 sm:mt-4 mb-4 sm:mb-6 italic text-[#F1A722] font-bold px-2">
-            {content.hotelName}
-          </h2>
-          <div className="w-16 sm:w-20 md:w-24 h-[2px] bg-[#F1A722] mx-auto mb-6 sm:mb-8"></div>
-        </div>
+    <section className="relative py-16 lg:py-24 bg-[#0A2F46] overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-[#14AAAB] rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-[#F1A722] rounded-full blur-[120px]" />
+      </div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 md:gap-12 lg:gap-16">
+      <div className="container mx-auto px-6 lg:px-12 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
           
-          {/* LEFT: TEXT CONTENT */}
-          <div className="w-full lg:w-3/5 space-y-4 sm:space-y-6 md:space-y-8">
-
-            <div className="relative">
-              <div className="absolute -left-6 top-0 bottom-0 w-[2px] bg-[#F1A722] hidden md:block"></div>
-              
-              <div className="text-white text-base sm:text-lg leading-relaxed font-normal text-justify">
-                {content.description.split('\n\n').map((para, idx) => (
-                  <p key={idx} className="mb-4 sm:mb-6 last:mb-0 first-letter:text-3xl sm:first-letter:text-4xl md:first-letter:text-5xl first-letter:text-[#F1A722] first-letter:font-bold first-letter:mr-2 first-letter:float-left first-letter:leading-none">
-                    {para}
-                  </p>
-                ))}
+          {/* LEFT: IMAGE GRID (Professional Layered Look) */}
+          <div className="w-full lg:w-1/2 order-2 lg:order-1">
+            <div className="relative max-w-md mx-auto lg:mx-0">
+              {/* Main Image Frame */}
+              <div className="relative z-20 rounded-2xl overflow-hidden shadow-2xl transform transition duration-700 hover:scale-[1.02]">
+                {!imgLoading && welcomeImage ? (
+                  <img 
+                    src={welcomeImage.url} 
+                    alt="Luxury Interior" 
+                    className="w-full aspect-[4/5] object-cover"
+                  />
+                ) : (
+                  <div className="w-full aspect-[4/5] bg-white/5 animate-pulse flex items-center justify-center">
+                    <span className="text-white/20">Loading...</span>
+                  </div>
+                )}
               </div>
+              
+              {/* Decorative Accent Frames */}
+              <div className="absolute -top-6 -left-6 w-32 h-32 border-t-2 border-l-2 border-[#F1A722] z-10 hidden sm:block"></div>
+              <div className="absolute -bottom-6 -right-6 w-1/2 h-1/2 bg-[#14AAAB]/20 rounded-2xl -z-10 translate-x-4 translate-y-4"></div>
             </div>
           </div>
 
-          {/* RIGHT: IMAGE SECTION */}
-          <div className="w-full lg:w-2/5 relative">
-            <div className="relative z-10 rounded-xl overflow-hidden shadow-2xl border-2 sm:border-3 md:border-4 border-[#14AAAB] max-w-md mx-auto lg:max-w-none">
-               {!imgLoading && welcomeImage ? (
-                  <img 
-                    src={welcomeImage.url}
-                    alt="Interior" 
-                    className="w-full aspect-[3/4] object-cover"
-                  />
-                ) : (
-                  <div className="w-full aspect-[3/4] bg-gray-200 animate-pulse" />
-                )}
+          {/* RIGHT: TEXT CONTENT */}
+          <div className="w-full lg:w-1/2 order-1 lg:order-2 text-center">
+            <div className="mb-6">
+              <span className="inline-block px-4 py-1 mb-4 text-xs font-bold tracking-[0.3em] uppercase text-[#14AAAB] bg-[#14AAAB]/10 rounded-full">
+                Luxury Experience
+              </span>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight">
+               
+                <span className="text-[#F1A722] italic font-medium">{content.hotelName}</span>
+              </h2>
+              <div className="w-16 sm:w-20 md:w-24 h-[2px] bg-[#F1A722] mt-6 mx-auto"></div>
             </div>
-            
-            <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 w-full h-full border-2 sm:border-3 md:border-4 border-[#F1A722] rounded-xl -z-10"></div>
+
+            <div className="space-y-6">
+              <div className="text-white/80 text-lg leading-relaxed font-light">
+                {content.description.split('\n\n').map((para, idx) => (
+                  <p key={idx} className="mb-6 last:mb-0 relative">
+                    {idx === 0 && (
+                      <span className="text-5xl text-[#F1A722] font-serif float-left mr-3 mt-1 leading-none">
+                        {para.charAt(0)}
+                      </span>
+                    )}
+                    {idx === 0 ? para.slice(1) : para}
+                  </p>
+                ))}
+              </div>
+              
+              <button 
+                onClick={() => {
+                  const aboutSection = document.getElementById('AboutUs');
+                  if (aboutSection) {
+                    aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }}
+                className="mt-8 px-8 py-4 bg-transparent border-2 border-[#F1A722] text-[#F1A722] hover:bg-[#F1A722] hover:text-[#0A2F46] transition-all duration-300 font-bold uppercase tracking-widest text-sm rounded-sm shadow-lg hover:shadow-[#F1A722]/50"
+              >
+                Want to know Us
+              </button>
+            </div>
           </div>
 
         </div>
