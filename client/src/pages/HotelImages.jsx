@@ -92,10 +92,11 @@ const HotelImages = () => {
   }, []);
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-2">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Hotel Images</h1>
+    /* Changed max-w-md to max-w-7xl to allow the grid to breathe on desktop, while keeping px-2 for mobile */
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 sm:p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Hotel Images</h1>
           {canEdit && (
             <button
               onClick={handleAddImagesClick}
@@ -107,7 +108,7 @@ const HotelImages = () => {
           )}
         </div>
         {!canEdit && (
-          <p className="text-gray-600 mb-3 sm:mb-4 text-xs sm:text-sm">View only - You can see hotel images but cannot modify them.</p>
+          <p className="text-gray-600 mb-4 text-[10px] sm:text-sm">View only - You can see hotel images but cannot modify them.</p>
         )}
 
         {/* Hidden file input to trigger on button click */}
@@ -143,7 +144,7 @@ const HotelImages = () => {
           />
         )}
         {(toast || error) && (
-          <div className={`mb-3 sm:mb-4 p-2 text-sm rounded ${error ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          <div className={`mb-4 p-2 text-xs sm:text-sm rounded ${error ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
             {error || toast}
           </div>
         )}
@@ -155,28 +156,18 @@ const HotelImages = () => {
             No images yet. Click "Add Images" to upload.
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          /* Grid Change: grid-cols-2 for mobile, sm:grid-cols-2 for tablets, lg:grid-cols-3/4 for desktop */
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
             {imageList.map(img => (
-              <div key={img._id} className="border rounded-lg overflow-hidden">
-                <img src={img.url} alt={img.alt || img.title || 'Hotel image'} className="w-full h-32 sm:h-40 object-cover" />
+              <div key={img._id} className="border rounded-lg overflow-hidden flex flex-col bg-gray-50">
+                <img src={img.url} alt={img.alt || img.title || 'Hotel image'} className="w-full h-24 xs:h-32 sm:h-40 object-cover" />
                 
                 {canEdit ? (
-                  // Full edit controls for merchant and manager
-                  <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
-                        <input
-                          type="checkbox"
-                          className="h-3 w-3 sm:h-4 sm:w-4"
-                          checked={!!img.isBanner}
-                          onChange={(e) => {
-                            immediateUpdate(img._id, { isBanner: e.target.checked });
-                          }}
-                        />
-                        <span>Use in banner</span>
-                      </label>
+                  /* Reduced padding on p-2 for mobile to fit 2-grid content */
+                  <div className="p-1.5 sm:p-3 space-y-1.5 sm:space-y-3 flex-1 flex flex-col">
+                    <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-1">
                       <button
-                        className="px-2 sm:px-3 py-1 bg-red-600 text-white rounded disabled:opacity-60 text-xs sm:text-sm"
+                        className="w-full xs:w-auto px-2 py-0.5 bg-red-600 text-white rounded disabled:opacity-60 text-[10px] sm:text-sm"
                         disabled={saving}
                         onClick={() => {
                           if (!confirm('Delete this image?')) return;
@@ -193,84 +184,84 @@ const HotelImages = () => {
                       >Delete</button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                    <div className="flex flex-col gap-1 sm:gap-2">
+                      <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
+                          className="h-4 w-4 sm:h-4 sm:w-4"
+                          checked={!!img.isBanner}
+                          onChange={(e) => {
+                            immediateUpdate(img._id, { isBanner: e.target.checked });
+                          }}
+                        />
+                        <span className="leading-tight">Banner</span>
+                      </label>
+                      <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isWelcome}
                           onChange={(e) => {
                             handleExclusiveSelection(img._id, 'isWelcome', e.target.checked);
                           }}
                         />
-                        <span>Use as welcome image</span>
+                        <span className="leading-tight">Welcome Image</span>
                       </label>
-                      {img.isWelcome && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
-                    </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                      <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
+                          className="h-4 w-4 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isCuisineGallery}
                           onChange={(e) => {
                             handleExclusiveSelection(img._id, 'isCuisineGallery', e.target.checked);
                           }}
                         />
-                        <span>Cuisine gallery background</span>
+                        <span className="leading-tight">Cuisine BG</span>
                       </label>
-                      {img.isCuisineGallery && <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
-                    </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                      <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
+                          className="h-4 w-4 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isCuisineCard}
                           onChange={(e) => {
                             immediateUpdate(img._id, { isCuisineCard: e.target.checked });
                           }}
                         />
-                        <span>Show in cuisine gallery</span>
+                        <span className="leading-tight">Cuisine Gallery</span>
                       </label>
-                      {img.isCuisineCard && <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 sm:py-1 rounded">Active</span>}
-                    </div>
 
-                    <div className="flex items-center justify-between gap-2">
-                      <label className="inline-flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-700">
+                      <label className="inline-flex items-center gap-2 text-xs sm:text-sm text-gray-700">
                         <input
                           type="checkbox"
-                          className="h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
+                          className="h-4 w-4 sm:h-4 sm:w-4 cursor-pointer"
                           checked={!!img.isLoginImage}
                           onChange={(e) => {
                             handleExclusiveSelection(img._id, 'isLoginImage', e.target.checked);
                           }}
                         />
-                        <span>Use as login page image</span>
+                        <span className="leading-tight">Login Page</span>
                       </label>
-                      {img.isLoginImage && <span className="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 sm:py-1 rounded">Selected</span>}
                     </div>
 
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">Banner heading</label>
+                    <div className="mt-auto">
+                      <label className="block text-[9px] sm:text-xs text-gray-500 mb-0.5">Banner heading</label>
                       <input
                         type="text"
                         defaultValue={img.bannerHeading || ''}
                         onChange={(e) => {
                           debouncedUpdate(img._id, { bannerHeading: e.target.value });
                         }}
-                        placeholder="e.g., Come Join Us For A Magical Experience"
-                        className="w-full border rounded px-2 py-1.5 text-xs sm:text-sm"
+                        placeholder="Heading text..."
+                        className="w-full border rounded px-1.5 py-1 text-[10px] sm:text-sm"
                       />
                     </div>
 
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="pt-1 flex items-center justify-end">
                       <button
-                        className="px-2 sm:px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-xs sm:text-sm"
+                        className="px-2 py-0.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors text-[10px] sm:text-sm"
                         onClick={() => {
-                          // Clear any pending updates for this image
                           if (debounceTimers.current[img._id]) {
                             clearTimeout(debounceTimers.current[img._id]);
                             delete debounceTimers.current[img._id];
@@ -282,28 +273,17 @@ const HotelImages = () => {
                     </div>
                   </div>
                 ) : (
-                  // Read-only view for supervisor and staff
                   <div className="p-2 sm:p-3 space-y-2">
-                    <div className="flex flex-wrap gap-1 sm:gap-2">
-                      {img.isBanner && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Banner</span>
-                      )}
-                      {img.isWelcome && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Welcome</span>
-                      )}
-                      {img.isCuisineGallery && (
-                        <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Cuisine BG</span>
-                      )}
-                      {img.isCuisineCard && (
-                        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Cuisine Gallery</span>
-                      )}
-                      {img.isLoginImage && (
-                        <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Login Image</span>
-                      )}
+                    <div className="flex flex-wrap gap-1">
+                      {img.isBanner && <span className="text-[9px] sm:text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Banner</span>}
+                      {img.isWelcome && <span className="text-[9px] sm:text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">Welcome</span>}
+                      {img.isCuisineGallery && <span className="text-[9px] sm:text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Cuisine BG</span>}
+                      {img.isCuisineCard && <span className="text-[9px] sm:text-xs bg-green-100 text-green-800 px-1.5 py-0.5 rounded">Cuisine</span>}
+                      {img.isLoginImage && <span className="text-[9px] sm:text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded">Login</span>}
                     </div>
                     {img.bannerHeading && (
-                      <div className="text-xs text-gray-600">
-                        <span className="font-semibold">Heading:</span> {img.bannerHeading}
+                      <div className="text-[10px] sm:text-xs text-gray-600 truncate">
+                        <span className="font-semibold">Title:</span> {img.bannerHeading}
                       </div>
                     )}
                   </div>

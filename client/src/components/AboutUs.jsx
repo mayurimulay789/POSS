@@ -132,17 +132,17 @@ const AboutUs = () => {
               <div className="group relative overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-6 backdrop-blur-md shadow-xl hover:shadow-2xl hover:border-[#F1A722]/30 transition-all duration-300">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(241,167,34,0.08),transparent_50%)]" />
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#F1A722]/5 rounded-full blur-3xl" />
-                <div className="relative space-y-4">
-                  <p className="text-sm uppercase tracking-[0.2em] text-[#F1A722] font-bold flex items-center gap-2">
+                <div className="relative space-y-3">
+                  <p className="text-xs uppercase tracking-[0.2em] text-[#F1A722] font-bold flex items-center gap-2">
                     <span className="w-8 h-[2px] bg-[#F1A722]"></span>
                     House Rhythm
                   </p>
-                  <h3 className="text-2xl font-bold text-white leading-tight">{data.rhythmTitle}</h3>
-                  <p className="text-white/85 leading-relaxed text-sm font-light">
+                  <h3 className="text-lg font-bold text-white leading-tight">{data.rhythmTitle}</h3>
+                  <p className="text-white/85 leading-relaxed text-xs font-light">
                     {data.rhythmDescription}
                   </p>
-                  <div className="relative rounded-xl border border-[#F1A722]/20 bg-gradient-to-r from-[#F1A722]/10 to-transparent px-4 py-3 text-xs text-[#F1A722] italic font-medium leading-relaxed shadow-inner">
-                    <span className="absolute left-2 top-2 text-[#F1A722]/40 text-2xl font-serif">"</span>
+                  <div className="relative rounded-xl border border-[#F1A722]/20 bg-gradient-to-r from-[#F1A722]/10 to-transparent px-3 py-2 text-[11px] text-[#F1A722] italic font-medium leading-relaxed shadow-inner">
+                    <span className="absolute left-2 top-2 text-[#F1A722]/40 text-lg font-serif">"</span>
                     <span className="block pl-4">{data.rhythmQuote}</span>
                   </div>
                 </div>

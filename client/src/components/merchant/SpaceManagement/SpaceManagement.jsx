@@ -262,14 +262,14 @@ const SpaceManagement = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Space Management</h1>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex gap-2">
+      <div className="bg-white rounded-lg shadow p-2 sm:p-4 mb-6">
+        <div className="flex flex-wrap gap-2">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -288,7 +288,7 @@ const SpaceManagement = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 p-4 rounded shadow-lg ${
+        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4 p-2 sm:p-4 rounded shadow-lg ${
           toast.toLowerCase().includes('success') || toast.toLowerCase().includes('created') || toast.toLowerCase().includes('updated') || toast.toLowerCase().includes('deleted')
             ? 'bg-green-100 border border-green-400 text-green-700'
             : 'bg-red-100 border border-red-400 text-red-700'
@@ -298,14 +298,14 @@ const SpaceManagement = () => {
       )}
       
       {/* Management Content */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-800">
+      <div className="bg-white rounded-lg shadow p-2 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
             {activeTab} Management
           </h2>
           <button
             onClick={() => setShowAddForm(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="px-3 py-2 sm:px-4 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm sm:text-base"
           >
             Add {activeTab === 'Tables' ? 'Table' : 'Room'}
           </button>
@@ -317,7 +317,7 @@ const SpaceManagement = () => {
             <p className="text-gray-600">Loading...</p>
           </div>
         ) : tables.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
             {tables.map((table) => {
               const status = getTableStatus(table);
               
@@ -331,10 +331,10 @@ const SpaceManagement = () => {
               return (
                 <div
                   key={table._id}
-                  className={`rounded-lg border hover:shadow-lg transition-all duration-200 overflow-hidden ${cardBg}`}
+                  className={`rounded-lg border hover:shadow-lg transition-all duration-200 overflow-hidden ${cardBg} min-w-0`}
                 >
                   {/* Card Header */}
-                  <div className="p-4 border-b border-gray-100">
+                  <div className="p-3 sm:p-4 border-b border-gray-100">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${
@@ -364,12 +364,12 @@ const SpaceManagement = () => {
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     {/* Ordered Menu Section */}
                     {table.orderedMenu && table.orderedMenu.length > 0 ? (
                       <div className="mb-4">
                         <p className="text-xs font-semibold text-gray-600 mb-2">Current Orders</p>
-                        <div className="bg-gray-50 rounded-lg p-2 max-h-32 overflow-y-auto space-y-1">
+                        <div className="bg-gray-50 rounded-lg p-2 max-h-24 sm:max-h-32 overflow-y-auto space-y-1">
                           {table.orderedMenu.map((item, idx) => (
                             <div key={idx} className="flex justify-between items-center text-xs px-2 py-1">
                               <span className="text-gray-700">{item.name}</span>
@@ -385,13 +385,13 @@ const SpaceManagement = () => {
                         )}
                       </div>
                     ) : (
-                      <div className="mb-4 text-center py-4">
+                      <div className="mb-4 text-center py-2 sm:py-4">
                         <p className="text-xs text-gray-400">No active orders</p>
                       </div>
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-row gap-2">
                       {table.isReserved ? (
                         <button
                           onClick={(e) => handleReserveTable(table, e)}
@@ -430,7 +430,7 @@ const SpaceManagement = () => {
 
                     {/* Reserve Checkbox */}
                     {!table.isReserved && !(table.orderedMenu && table.orderedMenu.length > 0) && (
-                      <label className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-100 cursor-pointer group">
+                      <label className="flex items-center justify-center gap-2 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-100 cursor-pointer group text-xs sm:text-sm">
                         <input
                           type="checkbox"
                           checked={false}
@@ -456,13 +456,13 @@ const SpaceManagement = () => {
 
       {/* Add Form Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md">
             <h2 className="text-xl font-semibold mb-4">
               Add New {activeTab === 'Tables' ? 'Table' : 'Room'}
             </h2>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Name *
                 </label>
@@ -478,7 +478,7 @@ const SpaceManagement = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.tableName.length}/50 characters</p>
               </div>
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Capacity (1-10) *
                 </label>
@@ -497,7 +497,7 @@ const SpaceManagement = () => {
                   <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 justify-end flex-wrap">
                 <button
                   type="button"
                   onClick={closeAddForm}
@@ -521,13 +521,13 @@ const SpaceManagement = () => {
 
       {/* Edit Form Modal */}
       {showEditForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-2">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-xs sm:max-w-md">
             <h2 className="text-xl font-semibold mb-4">
               Edit {activeTab === 'Tables' ? 'Table' : 'Room'}
             </h2>
             <form onSubmit={handleUpdate}>
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Name *
                 </label>
@@ -543,7 +543,7 @@ const SpaceManagement = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">{formData.tableName.length}/50 characters</p>
               </div>
-              <div className="mb-4">
+              <div className="mb-3 sm:mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Capacity (1-10) *
                 </label>
@@ -562,7 +562,7 @@ const SpaceManagement = () => {
                   <p className="text-xs text-red-500 mt-1">Capacity must be between 1 and 10</p>
                 )}
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2 justify-end flex-wrap">
                 <button
                   type="button"
                   onClick={closeEditForm}

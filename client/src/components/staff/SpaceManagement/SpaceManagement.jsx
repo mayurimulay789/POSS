@@ -21,8 +21,6 @@ const SpaceManagement = () => {
     dispatch(fetchTables());
   }, [dispatch]);
 
-  // ...existing code...
-
   const getTableCardColor = (table) => {
     if (table.isReserved) {
       return 'bg-yellow-50 border-yellow-300 border-2';
@@ -44,19 +42,19 @@ const SpaceManagement = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-full h-auto p-2 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Space Management </h1>
       </div>
       {errorMessage}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-2 sm:p-4 md:p-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-6">Tables Overview</h2>
         {loading ? (
           <div className="text-center py-8">
             <p className="text-gray-600">Loading...</p>
           </div>
         ) : tables.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {tables.map((table) => {
               const status = getTableStatus(table);
               const cardColor = getTableCardColor(table);
