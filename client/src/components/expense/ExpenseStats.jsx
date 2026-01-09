@@ -22,7 +22,7 @@ const ExpenseStats = ({ totalAmount, totalRecords, user, formatCurrency }) => {
     {
       label: 'Your Permissions',
       value: user?.role === 'merchant' ? 'Full Access' : 'Limited',
-      description: user?.role === 'merchant' ? 'Can modify anytime' : 'Can modify only today',
+      description: user?.role === 'merchant' ? 'Can modify anytime' : "Can't modify only view",
       icon: user?.role === 'merchant' ? Shield : Lock,
       bgColor: 'bg-purple-100',
       iconColor: 'text-purple-600',

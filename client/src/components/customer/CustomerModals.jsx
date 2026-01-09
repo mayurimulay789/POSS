@@ -281,7 +281,7 @@ export const CreateCustomerModal = ({
       phone: true,
       membership_id: true
     });
-    crossOriginIsolated.log(touched);
+    // crossOriginIsolated.log(touched);
     
     const formErrors = validateForm();
     

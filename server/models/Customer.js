@@ -11,7 +11,6 @@ const customerSchema = new mongoose.Schema({
   
   email: {
     type: String,
-    unique: true,
     lowercase: true,
     trim: true,
     match: [
@@ -30,7 +29,6 @@ const customerSchema = new mongoose.Schema({
   },
   membership_id: {
     type: String,
-    default: null
   },
   
   // Created By (User who added the customer)

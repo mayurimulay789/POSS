@@ -547,43 +547,43 @@ const BillingManagement = () => {
                         </button>
                       ) : (
                         <div className="space-y-2">
-  <div className="flex items-center justify-between">
-    <label className="block text-sm font-semibold text-gray-700">Discount (%)</label>
-    <button
-      type="button"
-      onClick={() => {
-        setDiscountVisible({ ...discountVisible, [order._id]: false });
-        setDiscounts({ ...discounts, [order._id]: '' });
-      }}
-      className="text-xs text-red-600 hover:text-red-800"
-    >
-      Remove
-    </button>
-  </div>
-  <input
-    type="number"
-    min="0"
-    max="100"
-    value={discounts[order._id] || ''}
-    onChange={(e) => {
-      const value = e.target.value;
-      if (value === '') {
-        setDiscounts({ ...discounts, [order._id]: value });
-      } else {
-        const numValue = Math.min(100, Math.max(0, parseInt(value, 10) || 0));
-        setDiscounts({ ...discounts, [order._id]: numValue });
-      }
-    }}
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    placeholder="Enter discount percentage"
-    autoFocus
-  />
-  {discounts[order._id] && (
-    <p className="text-xs text-green-600">
-      Discount amount: ₹{((order.totalBill || 0) * (parseFloat(discounts[order._id]) / 100)).toFixed(2)}
-    </p>
-  )}
-</div>
+                          <div className="flex items-center justify-between">
+                            <label className="block text-sm font-semibold text-gray-700">Discount (%)</label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDiscountVisible({ ...discountVisible, [order._id]: false });
+                                setDiscounts({ ...discounts, [order._id]: '' });
+                              }}
+                              className="text-xs text-red-600 hover:text-red-800"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={discounts[order._id] || ''}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              if (value === '') {
+                                setDiscounts({ ...discounts, [order._id]: value });
+                              } else {
+                                const numValue = Math.min(100, Math.max(0, parseInt(value, 10) || 0));
+                                setDiscounts({ ...discounts, [order._id]: numValue });
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter discount percentage"
+                            autoFocus
+                          />
+                          {discounts[order._id] && (
+                            <p className="text-xs text-green-600">
+                              Discount amount: ₹{((order.totalBill || 0) * (parseFloat(discounts[order._id]) / 100)).toFixed(2)}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                     {!optionalChargesVisible[order._id] ? (
@@ -622,8 +622,8 @@ const BillingManagement = () => {
                                   <div
                                     key={charge._id}
                                     className={`flex items-center justify-between p-2 rounded cursor-pointer transition-all ${isSelected
-                                        ? 'bg-blue-50 border border-blue-200 shadow-sm'
-                                        : 'bg-white border border-gray-200 hover:bg-gray-50'
+                                      ? 'bg-blue-50 border border-blue-200 shadow-sm'
+                                      : 'bg-white border border-gray-200 hover:bg-gray-50'
                                       }`}
                                     onClick={() => toggleOptionalCharge(order._id, charge, order.totalBill || 0)}
                                   >
@@ -649,8 +649,8 @@ const BillingManagement = () => {
                                     </div>
                                     <div className="text-right">
                                       <span className={`text-sm font-semibold px-2 py-1 rounded ${charge.chargeType === 'percentage'
-                                          ? 'bg-blue-100 text-blue-800'
-                                          : 'bg-green-100 text-green-800'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : 'bg-green-100 text-green-800'
                                         }`}>
                                         {charge.chargeType === 'percentage'
                                           ? `${charge.value}%`

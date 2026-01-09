@@ -47,7 +47,7 @@ const StatsCard = ({
 
   if (isLoading) {
     return (
-      <div className={`p-6 rounded-xl border ${colorClasses[color]} animate-pulse`}>
+      <div className={`p-6  rounded-xl border ${colorClasses[color]} animate-pulse`}>
         <div className="flex justify-between items-start">
           <div className="space-y-2">
             <div className="h-4 bg-gray-200 rounded w-24"></div>
@@ -60,11 +60,11 @@ const StatsCard = ({
   }
 
   return (
-    <div className={`p-6 rounded-xl border ${colorClasses[color]} transition-all hover:shadow-md`}>
+    <div className={`p-4 rounded-xl border ${colorClasses[color]} transition-all hover:shadow-md`}>
       <div className="flex justify-between items-start">
         <div>
           <p className="text-sm text-gray-600 mb-1">{title}</p>
-          <h3 className="text-2xl font-bold text-gray-800">{formatValue(value)}</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-800">{formatValue(value)}</h3>
         </div>
         <div className={`p-3 rounded-lg ${iconColors[color]}`}>
           <span className="text-xl">{icon}</span>

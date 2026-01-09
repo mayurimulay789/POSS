@@ -137,7 +137,7 @@ const LoginForm = () => {
               </button>
             </div>
 
-            <div className="flex justify-between items-center text-sm mb-2 ">
+            <div className="flex justify-between items-center text-sm  ">
               <button
                 type="submit"
                 disabled={loading}

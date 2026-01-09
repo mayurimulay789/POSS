@@ -21,142 +21,121 @@ export default function Footer() {
   if (loading || !data) return null;
 
   return (
-    <footer className="w-full bg-[#0A2F46] py-10 sm:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/5">
+    <footer className="w-full bg-[#0A2F46] py-4 sm:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
-        
-        <div className="bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-md rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 p-6 sm:p-8 lg:p-14 shadow-2xl">
+        <div className="bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-md rounded-[2rem] border border-white/10 p-6 lg:p-14 shadow-2xl">
           
-          {/* Main Layout Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+          {/* Main Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-12 gap-y-6 gap-x-4 lg:gap-8 items-start">
             
-            {/* 1. Brand Section - FLEX ROW, LOGO LEFT OF NAME, LEFT-ALIGNED FOR MOBILE */}
-            <div className="lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left">
-              <div className="flex flex-row items-center justify-center lg:justify-start gap-3 mb-4 w-full">
+            {/* 1. Brand Section */}
+            <div className="col-span-2 lg:col-span-5 flex flex-col items-center lg:items-start text-center lg:text-left">
+              <div className="flex flex-row items-center justify-center lg:justify-start gap-3 mb-2 w-full">
                 {logoUrl && (
-                  <img 
-                    src={logoUrl} 
-                    alt="Logo" 
-                    className="h-10 w-10 sm:h-14 sm:w-14 object-contain filter drop-shadow-2xl" 
-                    style={{ minWidth: '2.5rem' }}
-                  />
+                  <div className="shrink-0"> 
+                    <img 
+                      src={logoUrl} 
+                      alt="Logo" 
+                      className="h-8 sm:h-20 lg:h-24 w-auto object-contain"
+                    />
+                  </div>
                 )}
-                <h2 className="text-lg sm:text-2xl font-serif text-white font-bold tracking-tight text-left">
-                  {data.restaurantName || 'POSS RESTRO'}
+                <h2 className="text-lg sm:text-2xl lg:text-3xl font-serif text-white font-bold tracking-tight">
+                  {data.restaurantName || 'DISCOUNT FEAST'}
                 </h2>
               </div>
 
-              {/* Decorative Lines */}
-              <div className="flex gap-1.5 mb-5">
-                <span className="h-1.5 w-12 bg-[#F1A722] rounded-full"></span>
-                <span className="h-1.5 w-8 bg-[#14AAAB] rounded-full"></span>
+              <div className="flex gap-1.5 mb-3 justify-center lg:justify-start">
+                <span className="h-1 w-10 bg-[#F1A722] rounded-full"></span>
+                <span className="h-1 w-6 bg-[#14AAAB] rounded-full"></span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-sm mb-6 lg:mb-0">
-                {data.shortDescription || "Crafting exceptional culinary experiences."}
+              
+              {/* Description Centered on Mobile */}
+              <p className="text-gray-400 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto lg:mx-0 text-center lg:text-left mb-2">
+                {data.shortDescription || "this is a footer data."}
               </p>
             </div>
 
-            {/* Nested Grid for Side-by-Side Content */}
-            <div className="lg:col-span-7 grid grid-cols-2 gap-4 sm:gap-10">
-              
-              {/* 2. Quick Links (Explore) */}
-              <div className="flex flex-col items-start lg:pt-10">
-                <h4 className="text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] mb-6">
-                  Explore
-                </h4>
-                <ul className="flex flex-col gap-y-4 w-full">
-                  {['Home', 'Menu', 'Gallery', 'About Us', 'Contact'].map((link) => (
-                    <li key={link}>
-                      <a 
-                        href={`#${link.toLowerCase().replace(' ', '')}`} 
-                        className="text-gray-400 hover:text-[#14AAAB] transition-all duration-300 text-xs sm:text-sm font-medium flex items-center gap-2 group"
-                      >
-                        <ChevronRightIcon className="w-3 h-3 text-[#F1A722] shrink-0" />
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 3. Contact Details (Get In Touch) */}
-              <div className="flex flex-col gap-6 lg:pt-10">
-                <div className="flex flex-col items-start">
-                  <h4 className="text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] mb-6">
-                    Get In Touch
-                  </h4>
-                  <div className="flex flex-col gap-4 w-full">
-                    {/* Phone */}
-                    <a href={`tel:${contact?.contactNo}`} className="flex items-center gap-2 sm:gap-3 text-gray-400 hover:text-white transition-colors group">
-                      <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg group-hover:bg-[#14AAAB]/20 text-[#14AAAB]">
-                          <PhoneIcon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] sm:text-sm font-semibold tracking-wide truncate">
-                        {contact?.contactNo || '1245225522'}
-                      </span>
+            {/* 2. Quick Links */}
+            <div className="col-span-1 lg:col-span-3 flex flex-col items-start lg:pt-10">
+              <h4 className="text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] mb-4 lg:mb-8">
+                Explore
+              </h4>
+              <ul className="space-y-2 lg:space-y-4">
+                {['Home', 'Menu', 'Gallery', 'About Us', 'Contact'].map((link) => (
+                  <li key={link}>
+                    <a href={`#${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 text-xs sm:text-sm flex items-center gap-2">
+                      <ChevronRightIcon className="w-3 h-3 text-[#F1A722]" />
+                      {link}
                     </a>
-                    
-                    {/* Email */}
-                    <a href={`mailto:${contact?.email}`} className="flex items-center gap-2 sm:gap-3 text-gray-400 hover:text-white transition-colors group">
-                      <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg group-hover:bg-[#14AAAB]/20 text-[#14AAAB]">
-                          <EnvelopeIcon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] sm:text-sm font-semibold truncate max-w-[80px] sm:max-w-none">
-                        {contact?.email}
-                      </span>
-                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-                    {/* Address */}
-                    <div className="flex items-start gap-2 sm:gap-3 text-gray-400">
-                      <div className="p-1.5 sm:p-2 bg-white/5 rounded-lg text-[#F1A722]">
-                          <MapPinIcon className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] sm:text-sm font-medium leading-tight pt-1">
-                        {contact?.address}
-                      </span>
-                    </div>
+            {/* 3. Get In Touch */}
+            <div className="col-span-1 lg:col-span-4 flex flex-col items-start lg:pt-10">
+              <h4 className="text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] mb-4 lg:mb-8">
+                Get In Touch
+              </h4>
+              <div className="space-y-3 w-full">
+                <a href={`tel:${contact?.contactNo}`} className="flex items-center gap-2 text-gray-400 group">
+                  <div className="p-1.5 bg-white/5 rounded-lg text-[#14AAAB]">
+                    <PhoneIcon className="w-4 h-4" />
                   </div>
+                  <span className="text-[10px] sm:text-sm truncate">{contact?.contactNo || '1245225522'}</span>
+                </a>
+                <a href={`mailto:${contact?.email}`} className="flex items-center gap-2 text-gray-400 group">
+                  <div className="p-1.5 bg-white/5 rounded-lg text-[#14AAAB]">
+                    <EnvelopeIcon className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] sm:text-sm truncate">{contact?.email || 'mrunal@gmail.com'}</span>
+                </a>
+                <div className="flex items-start gap-2 text-gray-400">
+                  <div className="p-1.5 bg-white/5 rounded-lg">
+                    <MapPinIcon className="w-4 h-4 text-[#F1A722]" />
+                  </div>
+                  <span className="text-[10px] sm:text-sm leading-tight pt-0.5">{contact?.address || 'nirman chowk, kolhapur.'}</span>
                 </div>
+              </div>
+            </div>
 
-                {/* Operating Hours */}
-                <div className="bg-[#082738] border border-white/10 rounded-xl p-3 flex items-center gap-3">
-                  <div className="bg-[#F1A722]/10 p-1.5 rounded-lg hidden sm:block">
-                    <ClockIcon className="w-5 h-5 text-[#F1A722]" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] text-gray-500 uppercase font-black">Open Daily</p>
-                    <p className="text-[10px] sm:text-sm font-serif text-white font-bold">{data.hours || '10AM - 11PM'}</p>
-                  </div>
+            {/* 4. Time Section - Centered across both columns on mobile */}
+            <div className="col-span-2 flex justify-center mt-2 lg:mt-6 lg:col-start-9 lg:col-span-4">
+              <div className="bg-[#082738] border border-white/10 rounded-2xl p-3 sm:p-5 flex items-center gap-4 w-full max-w-[280px] lg:max-w-none">
+                <div className="bg-[#F1A722]/10 p-2 sm:p-3 rounded-xl">
+                  <ClockIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#F1A722]" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[8px] sm:text-[10px] text-gray-500 uppercase tracking-widest font-black">Open Daily</p>
+                  <p className="text-xs sm:text-lg font-serif text-white font-bold whitespace-nowrap">
+                    {data.hours || '10.00 AM TO 10.00 PM'}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-10" />
+          {/* Bottom Divider */}
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-6 lg:my-10" />
 
           {/* Footer Bottom */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="text-center md:text-left">
-              <p className="text-gray-500 text-xs font-medium">
-                © {currentYear} <span className="text-gray-300 font-bold">{data.restaurantName}</span>.
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left order-2 md:order-1">
+              <p className="text-gray-500 text-[10px] sm:text-xs">
+                © {currentYear} <span className="text-gray-300 font-bold uppercase">{data.restaurantName || 'DISCOUNT FEAST'}</span>.
               </p>
             </div>
 
-            {/* Social Icons */}
-            <div className="flex items-center gap-4">
-              {[
-                { icon: 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z', link: data?.social?.facebook },
-                { icon: 'M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01', link: data?.social?.instagram },
-                { icon: 'M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z', link: data?.social?.twitter },
-              ].map((item, idx) => (
-                <a key={idx} href={item.link || '#'} className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:border-[#14AAAB] hover:text-[#14AAAB] transition-all">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d={item.icon}/>
-                  </svg>
-                </a>
+            <div className="flex items-center gap-4 order-1 md:order-2">
+              {/* Simple Social Icons */}
+              {['facebook', 'instagram', 'twitter'].map((platform) => (
+                <div key={platform} className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400">
+                  <span className="capitalize text-[10px]">{platform[0]}</span>
+                </div>
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </footer>

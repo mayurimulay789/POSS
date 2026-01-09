@@ -13,32 +13,8 @@ const Dashboard = () => {
   }, [dispatch]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+    <div className="min-h-screen  bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        {/* Header with refresh button */}
-        {/* <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-              Dashboard
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Welcome back, {user?.FullName}! 
-              <span className="ml-2 capitalize text-sm bg-gray-100 px-2 py-1 rounded">
-                {user?.role}
-              </span>
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleRefresh}
-              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
-            >
-              <span className="text-lg">↻</span>
-              <span>Refresh</span>
-            </button>
-          </div>
-        </div> */}
 
         {/* Error message */}
         {error && (
@@ -51,7 +27,7 @@ const Dashboard = () => {
         )}
 
         {/* Main dashboard content */}
-        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-2">
           <RoleDashboard />
         </div>
 

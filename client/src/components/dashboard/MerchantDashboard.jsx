@@ -83,13 +83,12 @@ const MerchantDashboard = () => {
   const { customerStats,orderStats, employeeStats, financialStats, taskStats, recentActivity = [] } = data;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6 space-y-8 max-w-[1600px] mx-auto">
+    <div className="px-4 sm:px-6 lg:px-8 py-1  space-y-8 max-w-[1600px] mx-auto">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Merchant Dashboard</h2>
-          <p className="text-gray-600">Complete overview of your restaurant</p>
         </div>
         <button
           onClick={refreshDashboard}
@@ -100,7 +99,7 @@ const MerchantDashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatsCard title="Total Customers" value={customerStats?.totalCustomers || 0} icon="👥" color="blue" />
         <StatsCard title="Active Employees" value={employeeStats?.activeEmployees || 0} icon="👨‍💼" color="green" />
         <StatsCard title="Total Expenses" value={financialStats?.totalExpenses || 0} icon="💰" color="red" format="currency" />
@@ -108,14 +107,14 @@ const MerchantDashboard = () => {
       </div>
 
       {/* Membership Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <StatsCard title="With Membership" value={customerStats?.membershipStats?.totalWithMembership || 0} icon="🎫" />
         <StatsCard title="Total Order" value={orderStats?.totalOrders || 0} icon="📦" />
         <StatsCard title="Today's Orders" value={orderStats?.todaysOrders || 0} icon="📅" />
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 ">
         <ChartCard title="Customer Growth Trend">
           <LineChartComponent data={generateCustomerGrowthData()} dataKey="customers" height={260} />
         </ChartCard>
