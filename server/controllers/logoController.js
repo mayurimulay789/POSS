@@ -1,72 +1,48 @@
-const fs = require('fs');
-const path = require('path');
-const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
-// Path to store logo URL persistently (for demo, use a JSON file)
-const LOGO_DATA_PATH = path.join(__dirname, '../config/logo.json');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../utils/cloudinaryUpload');
+const Logo = require('../models/Logo');
 
-// Helper to read logo URL
-function getLogoUrl() {
-  if (fs.existsSync(LOGO_DATA_PATH)) {
-    const data = JSON.parse(fs.readFileSync(LOGO_DATA_PATH, 'utf-8'));
-    return data.logoUrl || '';
+// GET logo (returns latest logo)
+exports.getLogo = async (req, res) => {
+  try {
+    const logo = await Logo.findOne().sort({ createdAt: -1 });
+    if (!logo) return res.json({ logoUrl: '' });
+    res.json({ logoUrl: logo.url });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Failed to fetch logo' });
   }
-  return '';
-}
-
-// Helper to save logo URL
-function saveLogoUrl(url) {
-  fs.writeFileSync(LOGO_DATA_PATH, JSON.stringify({ logoUrl: url }, null, 2));
-}
-
-exports.getLogo = (req, res) => {
-  const logoUrl = getLogoUrl();
-  res.json({ logoUrl });
 };
 
-// Helper to extract publicId from Cloudinary URL
-function extractPublicId(url) {
-  if (!url) return null;
-  // Cloudinary URLs look like: https://res.cloudinary.com/<cloud>/image/upload/v123456789/<folder>/<public_id>.<ext>
-  // We want: <folder>/<public_id> (without extension)
-  const uploadIdx = url.indexOf('/upload/');
-  if (uploadIdx === -1) return null;
-  let publicIdWithVersion = url.substring(uploadIdx + 8); // after '/upload/'
-  // Remove version if present (starts with v + digits + /)
-  publicIdWithVersion = publicIdWithVersion.replace(/^v\d+\//, '');
-  // Remove extension
-  return publicIdWithVersion.replace(/\.(jpg|jpeg|png|gif|webp)$/, '');
-}
-
+// POST logo (upload new logo, delete old if exists)
 exports.uploadLogo = async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
     }
-    // Upload to Cloudinary (use 'logo' folder)
+    // Delete old logo from Cloudinary and DB
+    const oldLogo = await Logo.findOne().sort({ createdAt: -1 });
+    if (oldLogo) {
+      try { await deleteFromCloudinary(oldLogo.public_id); } catch {}
+      await Logo.deleteMany({});
+    }
+    // Upload new logo
     const result = await uploadToCloudinary(req.file, 'logo');
-    saveLogoUrl(result.url);
-    res.json({ logoUrl: result.url });
+    const newLogo = await Logo.create({ url: result.url, public_id: result.publicId });
+    res.json({ logoUrl: newLogo.url });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to upload logo' });
   }
 };
 
+// DELETE logo (delete from Cloudinary and DB)
 exports.deleteLogo = async (req, res) => {
   try {
-    const logoUrl = getLogoUrl();
-    if (!logoUrl) {
+    const logo = await Logo.findOne().sort({ createdAt: -1 });
+    if (!logo) {
       return res.status(404).json({ message: 'No logo to delete' });
     }
-    const publicId = extractPublicId(logoUrl);
-    if (!publicId) {
-      return res.status(400).json({ message: 'Invalid logo URL' });
-    }
-    // Delete from Cloudinary
-    const { deleteFromCloudinary } = require('../utils/cloudinaryUpload');
-    await deleteFromCloudinary(publicId);
-    // Remove from local config
-    saveLogoUrl('');
+    await deleteFromCloudinary(logo.public_id);
+    await Logo.deleteMany({});
     res.json({ message: 'Logo deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message || 'Failed to delete logo' });

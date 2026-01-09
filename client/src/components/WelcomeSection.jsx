@@ -54,10 +54,10 @@ const WelcomeSection = () => {
                   <img 
                     src={welcomeImage.url} 
                     alt="Luxury Interior" 
-                    className="w-full aspect-[4/5] object-cover"
+                    className="w-full aspect-[4/4] object-cover"
                   />
                 ) : (
-                  <div className="w-full aspect-[4/5] bg-white/5 animate-pulse flex items-center justify-center">
+                  <div className="w-full aspect-[4/4] bg-white/5 animate-pulse flex items-center justify-center">
                     <span className="text-white/20">Loading...</span>
                   </div>
                 )}
@@ -65,6 +65,7 @@ const WelcomeSection = () => {
               
               {/* Decorative Accent Frames */}
               <div className="absolute -top-6 -left-6 w-32 h-32 border-t-2 border-l-2 border-[#F1A722] z-10 hidden sm:block"></div>
+              <div className="absolute -bottom-6 -left-6 w-24 h-24 border-b-2 border-l-2 border-[#F1A722] z-10 hidden sm:block"></div>
               <div className="absolute -bottom-6 -right-6 w-1/2 h-1/2 bg-[#14AAAB]/20 rounded-2xl -z-10 translate-x-4 translate-y-4"></div>
             </div>
           </div>

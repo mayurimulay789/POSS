@@ -22,42 +22,43 @@ const CuisineGallery = () => {
   const galleryContent = cuisineGallery?.data;
 
   return (
-    <section 
-      id="gallery"
-      className="py-12 sm:py-20 md:py-28 lg:py-32 relative bg-cover bg-center bg-fixed"
-      style={{
-        backgroundImage: cuisineBackground?.url ? `url(${cuisineBackground.url})` : 'none',
-        backgroundColor: cuisineBackground?.url ? 'transparent' : '#0A2F46',
-      }}
-    >
-      {/* --- ADDED: Teal Transparent Overlay Layer --- */}
-      <div className="absolute inset-0 bg-[#0A2F46]/70 backdrop-blur-[2px] pointer-events-none"></div>
-
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        {/* Section Header */}
-        {galleryContent ? (
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif mb-4 italic text-[#F1A722] drop-shadow-md">
-              {galleryContent.heading}
-            </h2>
-            <div className="flex justify-center mb-6">
-              <div className="w-20 sm:w-28 h-[3px] bg-[#F1A722] rounded-full"></div>
+    <>
+      {/* Section Header - Outside the background image */}
+      <div className="bg-[#0A2F46] pt-8 sm:pt-10 pb-6 sm:pb-8">
+        <div className="container mx-auto px-4 sm:px-6">
+          {galleryContent ? (
+            <div className="text-center">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif mb-4 italic text-[#F1A722] drop-shadow-md">
+                {galleryContent.heading}
+              </h2>
+              <div className="flex justify-center mb-4">
+                <div className="w-20 sm:w-28 h-[3px] bg-[#F1A722] rounded-full"></div>
+              </div>
+              {galleryContent.subheading && (
+                <p className="text-white max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-light tracking-wide px-4">
+                  {galleryContent.subheading}
+                </p>
+              )}
             </div>
-            {galleryContent.subheading && (
-              <p className="text-white max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-light tracking-wide px-4 drop-shadow">
-                {galleryContent.subheading}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="text-center mb-10">
-            <div className="text-4xl mb-3">🍽️</div>
-            <p className="text-white text-lg">Cuisine Gallery Coming Soon</p>
-          </div>
-        )}
+          ) : (
+            <div className="text-center">
+              <div className="text-4xl mb-3">🍽️</div>
+              <p className="text-white text-lg">Cuisine Gallery Coming Soon</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-        {/* Scrolling Cards Container */}
-        <div className="relative overflow-hidden">
+      {/* Scrolling Images Section */}
+      <section 
+        id="gallery"
+        className="py-12 sm:py-16 md:py-20 relative bg-cover bg-center bg-fixed"
+        style={{
+          backgroundImage: cuisineBackground?.url ? `url(${cuisineBackground.url})` : 'none',
+          backgroundColor: cuisineBackground?.url ? 'transparent' : '#0A2F46',
+        }}
+      >
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
           {loading || cardsLoading || backgroundLoading ? (
             <div className="flex items-center justify-center h-80">
               <div className="text-white text-lg animate-pulse">Loading cuisine gallery...</div>
@@ -78,9 +79,9 @@ const CuisineGallery = () => {
                 {[...cuisineCards, ...cuisineCards].map((item, index) => (
                   <div
                     key={`${item._id}-${index}`}
-                    className="flex-shrink-0 w-[240px] sm:w-[300px] md:w-[360px]"
+                    className="flex-shrink-0 w-[200px] sm:w-[240px] md:w-[280px]"
                   >
-                    <div className="group relative h-[280px] sm:h-[320px] md:h-[360px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#14AAAB]/50 transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-[#F1A722]/20">
+                    <div className="group relative h-[220px] sm:h-[260px] md:h-[300px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#14AAAB]/50 transition-all duration-500 hover:scale-105 hover:border-[#F1A722] hover:shadow-[#F1A722]/20">
                       <img
                         src={item.url}
                         alt={item.alt || item.title}
@@ -110,7 +111,7 @@ const CuisineGallery = () => {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       <style>{`
         @keyframes scroll {
@@ -118,7 +119,7 @@ const CuisineGallery = () => {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-    </section>
+    </>
   );
 };
 
