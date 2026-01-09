@@ -10,6 +10,7 @@ exports.createCustomer = async (req, res) => {
       phone, 
       membership_id,
     } = req.body;
+  
 
     console.log('Create customer request body:', req.body);
 
@@ -23,14 +24,16 @@ exports.createCustomer = async (req, res) => {
     }
 
     // Check for duplicates in a single query (email, phone, membership_id)
-    const existingCustomer = await Customer.findOne({
-      $or: [
-        ...(email ? [{ email }] : []),
-        ...(phone ? [{ phone }] : []),
-        ...(membership_id ? [{ membership_id }] : [])
-      ]
-    });
+    const orConditions = [];
+    if (email) orConditions.push({ email });
+    if (phone) orConditions.push({ phone });
+    if (membership_id) orConditions.push({ membership_id });
 
+    const existingCustomer = orConditions.length > 0 
+      ? await Customer.findOne({ $or: orConditions })
+      : null;
+
+      console.log("********1");
     if (existingCustomer) {
       // Determine which field is duplicate
       let duplicateField = '';
@@ -49,6 +52,8 @@ exports.createCustomer = async (req, res) => {
       });
     }
 
+    console.log("********2");
+
     // Create customer
     const customer = await Customer.create({
       cust_name,
@@ -57,6 +62,7 @@ exports.createCustomer = async (req, res) => {
       ...(membership_id && { membership_id }),
       createdBy: req.user._id
     });
+    console.log("********3");
 
     res.status(201).json({
       success: true,
@@ -65,6 +71,7 @@ exports.createCustomer = async (req, res) => {
     });
 
   } catch (error) {
+    console.log("********4");
     console.log('Error creating customer:', error);
     console.error('Create customer error:', error);
     
@@ -77,6 +84,7 @@ exports.createCustomer = async (req, res) => {
     }
     
     if (error.code === 11000) {
+      console.log("********5");
       return res.status(400).json({
         success: false,
         message: 'Duplicate field value entered'
@@ -266,7 +274,6 @@ exports.getCustomer = async (req, res) => {
   }
 };
 
-
 exports.updateCustomer = async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
@@ -289,49 +296,12 @@ exports.updateCustomer = async (req, res) => {
       });
     }
 
-    const { email, phone, membership_id } = req.body;
-
-    // Check for duplicates in a single query (excluding current customer)
-    const duplicateConditions = [];
+    // Prepare update data - directly use req.body since no unique constraints
+    const updateData = { ...req.body };
+    console.log(req.body);
     
-    if (email && email !== customer.email) {
-      duplicateConditions.push({ email });
-    }
-    
-    if (phone && phone !== customer.phone) {
-      duplicateConditions.push({ phone });
-    }
-    
-    if (membership_id && membership_id !== customer.membership_id) {
-      duplicateConditions.push({ membership_id });
-    }
-
-    if (duplicateConditions.length > 0) {
-      const existingCustomer = await Customer.findOne({
-        $or: duplicateConditions,
-        _id: { $ne: req.params.id }
-      });
-
-      if (existingCustomer) {
-        // Determine which field is duplicate
-        let duplicateField = '';
-        if (email && existingCustomer.email === email) {
-          duplicateField = 'Email';
-        } else if (phone && existingCustomer.phone === phone) {
-          duplicateField = 'Phone number';
-        } else if (membership_id && existingCustomer.membership_id === membership_id) {
-          duplicateField = 'Membership ID';
-        }
-        
-        return res.status(400).json({
-          success: false,
-          message: `${duplicateField} already exists`
-        });
-      }
-    }
-
     // Update customer
-    Object.assign(customer, req.body);
+    Object.assign(customer, updateData);
     await customer.save();
 
     // Populate before returning
@@ -362,10 +332,15 @@ exports.updateCustomer = async (req, res) => {
       });
     }
     
+    // If you still get duplicate errors, you need to remove the old index
     if (error.code === 11000) {
+      console.log('⚠️ Duplicate error indicates existing unique index in DB');
+      console.log('Run this in MongoDB to check indexes: db.customers.getIndexes()');
+      console.log('To remove index: db.customers.dropIndex("membership_id_1")');
+      
       return res.status(400).json({
         success: false,
-        message: 'Duplicate field value entered'
+        message: 'Database has unique constraint. Contact admin to fix schema.'
       });
     }
     
@@ -375,7 +350,6 @@ exports.updateCustomer = async (req, res) => {
     });
   }
 };
-
 
 exports.deleteCustomer = async (req, res) => {
   try {

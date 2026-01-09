@@ -21,37 +21,41 @@ export default function Footer() {
   if (loading || !data) return null;
 
   return (
-    <footer className="w-full bg-[#0A2F46] py-12 sm:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/5">
+    <footer className="w-full bg-[#0A2F46] py-1 sm:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         
         <div className="bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-md rounded-[2rem] border border-white/10 p-8 lg:p-14 shadow-2xl">
           
           {/* Main Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 items-start ">
             
-            {/* 1. Brand Section */}
-            <div className="lg:col-span-5 flex flex-col items-center md:items-start text-center md:text-left">
-              {logoUrl && (
-                <div className="mb-2 transition-transform hover:scale-105 duration-300"> 
-                  <img 
-                    src={logoUrl} 
-                    alt="Logo" 
-                    /* Increased height and ensured object-contain for clarity */
-                    className="h-28 lg:h-36 w-auto object-contain filter drop-shadow-2xl" 
-                  />
-                </div>
-              )}
-              <h2 className="text-3xl font-serif text-white mb-2 font-bold tracking-tight">
-                {data.restaurantName || 'POSS RESTRO'}
-              </h2>
-              <div className="flex gap-1.5 mb-5">
-                <span className="h-1.5 w-12 bg-[#F1A722] rounded-full"></span>
-                <span className="h-1.5 w-8 bg-[#14AAAB] rounded-full"></span>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
-                {data.shortDescription || "Crafting exceptional culinary experiences with passion and tradition."}
-              </p>
-            </div>
+            {/* 1. Brand Section - UPDATED LOGO CONTAINER */}
+            <div className="lg:col-span-5 flex flex-col md:items-start text-center md:text-left mt-7">
+  {logoUrl && (
+    <div className="relative mb-1 transition-transform hover:scale duration-300 w-full"> 
+      <img 
+        src={logoUrl} 
+        alt="Logo" 
+        className="h-auto w-[40%] md:w-[35%] lg:w-[30%] object-contain drop-shadow-2xl"
+        style={{ 
+          maxHeight: '80px', // Reduced from 120px
+          filter: 'brightness(1.1) contrast(1.1)',
+          objectFit: 'contain'
+        }} 
+      />
+    </div>
+  )}
+  <h2 className="text-3xl font-serif text-white mb-2 font-bold tracking-tight mt-2">
+    {data.restaurantName || 'POSS RESTRO'}
+  </h2>
+  <div className="flex gap-1.5 mb-5">
+    <span className="h-1.5 w-12 bg-[#F1A722] rounded-full"></span>
+    <span className="h-1.5 w-8 bg-[#14AAAB] rounded-full"></span>
+  </div>
+  <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
+    {data.shortDescription || "Crafting exceptional culinary experiences with passion and tradition."}
+  </p>
+</div>
 
             {/* 2. Quick Links */}
             <div className="lg:col-span-3 flex flex-col items-center md:items-start md:pt-10">

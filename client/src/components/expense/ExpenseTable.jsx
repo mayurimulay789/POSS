@@ -80,13 +80,14 @@ const ExpenseTable = ({
       <div className="bg-white p-4 border-b border-gray-200">
         {/* Header */}
         <div className="flex justify-between items-start mb-3">
-          <div className="flex-1">
+          <div className="flex justify-between gap-5">
             <h3 className="font-medium text-gray-900 text-sm">{expense.title}</h3>
-            <p className="text-lg font-bold text-gray-800 mt-1">
+            <p className="text-lg font-bold text-gray-800 ">
               {formatCurrency(expense.amount)}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
+          {user?.role =='merchant' && (
+          <div className="flex items-center space-x-2 ">
             {canModify ? (
               <>
                 <button
@@ -110,6 +111,7 @@ const ExpenseTable = ({
               </span>
             )}
           </div>
+          )}
         </div>
 
         {/* Details */}
@@ -219,6 +221,7 @@ const ExpenseTable = ({
         )}
         
         <td className="px-4 sm:px-6 py-4">
+        {user?.role=='merchant' &&  (
           <div className="flex items-center space-x-2">
             {canModify ? (
               <>
@@ -252,6 +255,7 @@ const ExpenseTable = ({
               </div>
             )}
           </div>
+        )}
         </td>
       </tr>
     );
@@ -355,9 +359,11 @@ const ExpenseTable = ({
                   Created By
                 </th>
               )}
+              {user?.role=='merchant' && (
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">

@@ -9,8 +9,6 @@ const Navbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
 
-
-
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const logoUrl = useSelector((state) => state.logo.logoUrl);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -54,7 +52,6 @@ const Navbar = () => {
     setIsMobileMenuOpen(false);
   };
 
-
   const handleDashboardNavigation = () => {
     if (user?.role) {
       navigate(`/${user.role}/dashboard`);
@@ -63,8 +60,6 @@ const Navbar = () => {
     }
     setIsMobileMenuOpen(false);
   };
-
-
 
   const goHome = (e) => {
     // Prevent default if we're already on home to avoid re-render and just scroll
@@ -130,36 +125,39 @@ const Navbar = () => {
   const textClass = showTransparent ? 'text-white' : 'text-white';
   const linkClass = `${textClass} hover:text-[#F1A722] transition-all duration-300 font-medium px-2 md:px-3 py-2 uppercase tracking-wide text-sm`;
   const navBg = showTransparent
-
     ? 'bg-[#0A2F46]/80 shadow-none backdrop-blur-md border-b border-white/5'
     : 'bg-[#0A2F46]/95 shadow-xl border-b border-[#F1A722]/20';
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${navBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* MAIN NAV BAR */}
         <div className="flex justify-between items-center h-16">
-
-          {/* LOGO */}
+          {/* LOGO - UPDATED FOR PROPER SIZING */}
           <Link
             to="/"
             onClick={goHome}
-            className={`text-2xl font-bold transition-all duration-300 flex items-center gap-2 ${showTransparent ? 'text-white drop-shadow-2xl' : 'text-white hover:scale-105'}`}
+            className={`text-2xl font-bold transition-all duration-300 flex items-center ${showTransparent ? 'text-white drop-shadow-2xl' : 'text-white hover:scale-105'}`}
           >
             {logoUrl ? (
-              <div className="relative">
+              <div className="relative flex items-center h-full">
                 <img 
                   src={logoUrl} 
                   alt="Logo" 
-                  className="h-24 sm:h-26 md:h-40 w-auto object-contain drop-shadow-2xl hover:drop-shadow-[0_0_15px_rgba(241,167,34,0.5)] transition-all duration-300" 
-                  style={{ maxWidth: '200px', filter: 'brightness(1.1) contrast(1.1)' }} 
+                  className="h-12 sm:h-14 md:h-16 w-auto object-contain drop-shadow-2xl hover:drop-shadow-[0_0_15px_rgba(241,167,34,0.5)] transition-all duration-300"
+                  style={{ 
+                    maxWidth: '180px',
+                    maxHeight: '64px',
+                    filter: 'brightness(1.1) contrast(1.1)',
+                  }} 
                 />
               </div>
             ) : (
-              <span className="text-4xl sm:text-5xl md:text-6xl mt-0" style={{ color: '#F1A722' }}>🍽️</span>
+              <div className="flex items-center gap-2">
+                <span className="text-3xl sm:text-4xl md:text-5xl" style={{ color: '#F1A722' }}>🍽️</span>
+                <span className="text-base sm:text-lg md:text-xl">India Restaurant</span>
+              </div>
             )}
-            {!logoUrl && <span className="text-base sm:text-lg md:text-xl">India Restaurant</span>}
           </Link>
 
           {/* HAMBURGER (MOBILE ONLY) */}
@@ -177,7 +175,6 @@ const Navbar = () => {
 
           {/* DESKTOP MENU */}
           <div className="hidden md:flex items-center gap-6">
-
             {isAuthenticated ? (
               <>
                 {/* USER INFO */}
@@ -214,13 +211,11 @@ const Navbar = () => {
                   <span>🚪</span>
                   Logout
                 </button>
-
-                
               </>
             ) : (
               <>
                 <div className="flex items-center gap-4">
-                  {navLinks.map((link) => (
+                  {navLinks.map((link) =>
                     link.type === 'route' ? (
                       <Link
                         key={link.label}
@@ -239,7 +234,7 @@ const Navbar = () => {
                         {link.label}
                       </button>
                     )
-                  ))}
+                  )}
                 </div>
 
                 <Link
@@ -256,7 +251,6 @@ const Navbar = () => {
         {/* MOBILE DROPDOWN */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-[#0A2F46] border-t-2 border-[#F1A722]/30 shadow-2xl pb-3 animate-slideDown">
-
             {isAuthenticated ? (
               <>
                 {/* USER INFO */}
@@ -281,14 +275,13 @@ const Navbar = () => {
                   Dashboard
                 </button>
 
-               <button
+                <button
                   onClick={handleAttendanceNavigation}
                   className="flex items-center gap-3 w-full text-left px-4 py-3 text-white hover:text-[#F1A722] hover:bg-[#F1A722]/10 border-b border-[#F1A722]/20"
                 >
                   <span>📅</span>
                   Attendance
                 </button>
-
 
                 <button
                   onClick={handleLogout}
@@ -300,7 +293,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                {navLinks.map((link) => (
+                {navLinks.map((link) =>
                   link.type === 'route' ? (
                     <Link
                       key={link.label}
@@ -319,7 +312,7 @@ const Navbar = () => {
                       {link.label}
                     </button>
                   )
-                ))}
+                )}
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -331,7 +324,6 @@ const Navbar = () => {
             )}
           </div>
         )}
-
       </div>
     </nav>
   );

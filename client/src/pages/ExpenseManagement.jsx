@@ -293,13 +293,6 @@ const ExpenseManagement = () => {
         {/* Header */}
         <div className="mb-2 sm:mb-2">
           <h1 className="text-2xl sm:text-2xl font-bold text-gray-800 mb-2">Expense Management</h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            {user?.role !== 'merchant' && (
-              <span className="ml-2 text-xs sm:text-sm text-orange-600 font-medium">
-              (Editable only before midnight on creation day)
-              </span>
-            )}
-          </p>
         </div>
 
         {/* Stats Cards */}
