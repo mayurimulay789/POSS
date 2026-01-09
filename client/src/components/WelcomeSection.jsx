@@ -4,6 +4,7 @@ import { fetchWelcomeSection } from '../store/slices/welcomeSectionSlice';
 import axios from 'axios';
 
 const WelcomeSection = () => {
+    const [showFullDesc, setShowFullDesc] = React.useState(false);
   const dispatch = useDispatch();
   const welcomeSection = useSelector(state => state.welcomeSection);
   const [welcomeImage, setWelcomeImage] = React.useState(null);
@@ -76,25 +77,59 @@ const WelcomeSection = () => {
               <span className="inline-block px-4 py-1 mb-4 text-xs font-bold tracking-[0.3em] uppercase text-[#14AAAB] bg-[#14AAAB]/10 rounded-full">
                 Luxury Experience
               </span>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight">
-               
-                <span className="text-[#F1A722] italic font-medium">{content.hotelName}</span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif italic font-medium text-[#F1A722] leading-tight mb-2">
+                {content.hotelName}
               </h2>
-              <div className="w-16 sm:w-20 md:w-24 h-[2px] bg-[#F1A722] mt-6 mx-auto"></div>
+              <div className="w-20 md:w-28 h-1 bg-[#F1A722] mx-auto mt-2 mb-2 rounded-full"></div>
             </div>
 
+
             <div className="space-y-6">
-              <div className="text-white/80 text-lg leading-relaxed font-light">
-                {content.description.split('\n\n').map((para, idx) => (
-                  <p key={idx} className="mb-6 last:mb-0 relative">
-                    {idx === 0 && (
-                      <span className="text-5xl text-[#F1A722] font-serif float-left mr-3 mt-1 leading-none">
-                        {para.charAt(0)}
-                      </span>
-                    )}
-                    {idx === 0 ? para.slice(1) : para}
-                  </p>
-                ))}
+              {/* Mobile: show truncated description with Read more */}
+              <div className="block lg:hidden">
+                <div className="text-white/80 text-lg leading-relaxed font-light">
+                  {(() => {
+                    const paragraphs = content.description.split('\n\n');
+                    if (showFullDesc || paragraphs.join(' ').length < 180) {
+                      return paragraphs.map((para, idx) => (
+                        <p key={idx} className="mb-6 last:mb-0 relative">
+                          {idx === 0 && (
+                            <span className="text-5xl text-[#F1A722] font-serif float-left mr-3 mt-1 leading-none">{para.charAt(0)}</span>
+                          )}
+                          {idx === 0 ? para.slice(1) : para}
+                        </p>
+                      ));
+                    } else {
+                      // Show only first 180 chars (after first letter)
+                      const firstPara = paragraphs[0];
+                      const firstLetter = firstPara.charAt(0);
+                      const rest = firstPara.slice(1, 180);
+                      return [
+                        <p key="truncated" className="mb-6 last:mb-0 relative">
+                          <span className="text-5xl text-[#F1A722] font-serif float-left mr-3 mt-1 leading-none">{firstLetter}</span>
+                          {rest}...{' '}
+                          <button className="text-[#F1A722] underline ml-1 text-sm font-semibold" onClick={() => setShowFullDesc(true)}>Read more</button>
+                        </p>
+                      ];
+                    }
+                  })()}
+                  {showFullDesc && (
+                    <button className="text-[#F1A722] underline text-sm font-semibold mt-2" onClick={() => setShowFullDesc(false)}>Show less</button>
+                  )}
+                </div>
+              </div>
+              {/* Desktop: always show full description */}
+              <div className="hidden lg:block">
+                <div className="text-white/80 text-lg leading-relaxed font-light">
+                  {content.description.split('\n\n').map((para, idx) => (
+                    <p key={idx} className="mb-6 last:mb-0 relative">
+                      {idx === 0 && (
+                        <span className="text-5xl text-[#F1A722] font-serif float-left mr-3 mt-1 leading-none">{para.charAt(0)}</span>
+                      )}
+                      {idx === 0 ? para.slice(1) : para}
+                    </p>
+                  ))}
+                </div>
               </div>
               
               <button 

@@ -14,16 +14,16 @@ const SpaceManagement = () => {
   // Render component based on role
   switch (role) {
     case 'merchant':
-      return <MerchantSpaceManagement />;
+      return <div className="w-full h-auto p-2 sm:p-4 md:p-6"><MerchantSpaceManagement /></div>;
     case 'manager':
-      return <ManagerSpaceManagement />;
+      return <div className="w-full h-auto p-2 sm:p-4 md:p-6"><ManagerSpaceManagement /></div>;
     case 'supervisor':
-      return <SupervisorSpaceManagement />;
+      return <div className="w-full h-auto p-2 sm:p-4 md:p-6"><SupervisorSpaceManagement /></div>;
     case 'staff':
-      return <StaffSpaceManagement />;
+      return <div className="w-full h-auto p-2 sm:p-4 md:p-6"><StaffSpaceManagement /></div>;
     default:
       return (
-        <div className="p-6">
+        <div className="w-full h-auto p-2 sm:p-4 md:p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">Space Management</h1>
           <p className="text-gray-600">Unauthorized access.</p>
         </div>

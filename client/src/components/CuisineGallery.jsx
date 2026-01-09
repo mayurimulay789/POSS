@@ -28,7 +28,7 @@ const CuisineGallery = () => {
         <div className="container mx-auto px-4 sm:px-6">
           {galleryContent ? (
             <div className="text-center">
-              <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif mb-4 italic text-[#F1A722] drop-shadow-md">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif italic font-medium text-[#F1A722] leading-tight mb-2">
                 {galleryContent.heading}
               </h2>
               <div className="flex justify-center mb-4">
@@ -64,10 +64,7 @@ const CuisineGallery = () => {
               <div className="text-white text-lg animate-pulse">Loading cuisine gallery...</div>
             </div>
           ) : cuisineCards.length > 0 ? (
-            <div className="relative w-full overflow-hidden" style={{
-              maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-            }}>
+            <div className="relative w-full overflow-hidden">
               <div 
                 className="flex gap-4 sm:gap-6 md:gap-8 w-max"
                 style={{
@@ -87,7 +84,6 @@ const CuisineGallery = () => {
                         alt={item.alt || item.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A2F46] via-[#0A2F46]/40 to-transparent opacity-90 transition-opacity duration-300"></div>
                       <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         {item.title && (
                           <h3 className="text-xl sm:text-2xl font-serif font-bold mb-1 text-[#F1A722]">
