@@ -39,6 +39,10 @@ const AboutUs = () => {
 
   useEffect(() => {
     dispatch(fetchAboutUs());
+    // Refetch About Us when window regains focus (in case admin toggled active entry)
+    const onFocus = () => dispatch(fetchAboutUs());
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
   }, [dispatch]);
 
   if (loading) {
@@ -51,10 +55,15 @@ const AboutUs = () => {
     );
   }
 
-  const data = aboutUs?.data || defaultData;
-  const highlights = data.highlights || [];
-  const values = data.values || [];
-  const stats = data.stats || [];
+  // Always show only the active About Us entry if multiple are present
+  let data = aboutUs?.data || defaultData;
+  if (Array.isArray(data)) {
+    // Prefer the first isActive entry, fallback to first entry, fallback to default
+    data = data.find((entry) => entry.isActive) || data[0] || defaultData;
+  }
+  const highlights = Array.isArray(data.highlights) ? data.highlights : [];
+  const values = Array.isArray(data.values) ? data.values : [];
+  const stats = Array.isArray(data.stats) ? data.stats : [];
 
   return (
     <section id="AboutUs" className="relative overflow-hidden bg-[#0A2F46] py-8 sm:py-14 md:py-20 lg:py-24 text-white">

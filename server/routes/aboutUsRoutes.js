@@ -10,7 +10,8 @@ const {
   activateAboutUs,
   addHighlight,
   addValue,
-  addStat
+  addStat,
+  deleteAboutUsField
 } = require('../controllers/aboutUsController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -23,6 +24,8 @@ router.get('/:id', protect, authorize('merchant', 'manager', 'supervisor', 'staf
 router.post('/', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), createAboutUs);
 router.put('/:id', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), updateAboutUs);
 router.delete('/:id', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), deleteAboutUs);
+// Delete a specific field from About Us
+router.delete('/field/:field', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), deleteAboutUsField);
 router.patch('/:id/activate', protect, authorize('merchant', 'manager', 'supervisor', 'staff'), activateAboutUs);
 
 // Add specific items

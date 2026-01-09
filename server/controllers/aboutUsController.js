@@ -1,3 +1,27 @@
+// @desc    Delete a specific field from About Us
+// @route   DELETE /api/about-us/field/:field
+// @access  Private
+const deleteAboutUsField = async (req, res) => {
+  try {
+    const field = req.params.field;
+    const aboutUs = await AboutUs.findOne(); // Adjust if you use multiple docs
+
+    if (!aboutUs) {
+      return res.status(404).json({ success: false, message: 'About Us not found' });
+    }
+
+    if (aboutUs[field] === undefined) {
+      return res.status(400).json({ success: false, message: 'Field not found' });
+    }
+
+    aboutUs[field] = undefined;
+    await aboutUs.save();
+
+    res.status(200).json({ success: true, message: `Field ${field} deleted`, data: aboutUs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error deleting field', error: error.message });
+  }
+};
 const AboutUs = require('../models/AboutUs');
 
 // Validation helper functions
@@ -630,5 +654,6 @@ module.exports = {
   activateAboutUs,
   addHighlight,
   addValue,
-  addStat
+  addStat,
+  deleteAboutUsField
 };

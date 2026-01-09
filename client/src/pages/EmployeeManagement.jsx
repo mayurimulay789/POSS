@@ -2,7 +2,8 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 
 // Import role-specific employee management components
-import Employeemanagement from '../components/EmployeeManagement/EmployeeManagement';
+import Employeemanagement from '../Employeemanagement/Employeepmanagement';
+<Employeemanagement />
 
 const EmployeeManagement = () => {
   const { user } = useSelector(state => state.auth);

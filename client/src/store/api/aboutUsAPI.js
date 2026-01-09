@@ -13,8 +13,20 @@ aboutUsApi.interceptors.request.use((config) => {
 });
 
 const aboutUsAPI = {
+  // Get active about us (public)
   fetchAboutUs: async () => aboutUsApi.get('/'),
-  updateAboutUs: async (data) => aboutUsApi.post('/', data),
+  // Get all about us (protected)
+  fetchAllAboutUs: async () => aboutUsApi.get('/all'),
+  // Get single about us by ID (protected)
+  fetchAboutUsById: async (id) => aboutUsApi.get(`/${id}`),
+  // Create new about us (protected)
+  createAboutUs: async (data) => aboutUsApi.post('/', data),
+  // Update about us (protected)
+  updateAboutUs: async (id, data) => aboutUsApi.put(`/${id}`, data),
+  // Delete about us (protected)
+  deleteAboutUs: async (id) => aboutUsApi.delete(`/${id}`),
+  // Toggle active status (protected)
+  toggleAboutUsStatus: async (id, status) => aboutUsApi.patch(`/${id}/activate`, { status }),
 };
 
 export default aboutUsAPI;
