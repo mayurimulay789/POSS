@@ -6,6 +6,7 @@ export const fetchAllAboutUs = createAsyncThunk(
   'aboutUs/fetchAllAboutUs',
   async (_, { rejectWithValue }) => {
     try {
+      console.log("calling all");
       const response = await aboutUsAPI.fetchAllAboutUs();
       return response.data;
     } catch (error) {
@@ -78,6 +79,7 @@ export const fetchAboutUs = createAsyncThunk(
   'aboutUs/fetchAboutUs',
   async (_, { rejectWithValue }) => {
     try {
+      console.log("calling single about us");
       const response = await aboutUsAPI.fetchAboutUs();
       return response.data;
     } catch (error) {

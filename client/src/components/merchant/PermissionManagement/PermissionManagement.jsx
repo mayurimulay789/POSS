@@ -169,13 +169,10 @@ const PermissionManagement = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-800 ">
             Role Permissions Management
           </h1>
-          <p className="text-gray-600">
-            Configure what each role can access in the restaurant POS system 
-          </p>
         </div>
 
         {/* Success/Error Messages */}
@@ -206,7 +203,7 @@ const PermissionManagement = () => {
         {/* Role Selection */}
         <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Select Role to Configure
+            Select Role to Configure  
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {roles.map(role => (
@@ -278,9 +275,7 @@ const PermissionManagement = () => {
                             {PERMISSION_LABELS[permission]}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500">
-                          Allows {roles.find(r => r.value === selectedRole)?.label?.toLowerCase()} to access {PERMISSION_LABELS[permission].toLowerCase()}
-                        </p>
+                        
                       </div>
                     </label>
                   ))}
