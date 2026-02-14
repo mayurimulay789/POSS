@@ -4,6 +4,7 @@ import { fetchFooter } from '/src/store/slices/footerSlice';
 import { fetchLogo } from '/src/store/slices/logoSlice';
 import { fetchContactUs } from '/src/store/slices/contactUsSlice';
 import { PhoneIcon, EnvelopeIcon, MapPinIcon, ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 export default function Footer() {
   const dispatch = useDispatch();
@@ -11,6 +12,45 @@ export default function Footer() {
   const logoUrl = useSelector(state => state.logo.logoUrl);
   const contact = useSelector(state => state.contactUs.data);
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+
+  const navLinks = [
+    { label: 'Home', to: '/', type: 'route' },
+    { label: 'About Us', anchor: 'AboutUs' },
+    { label: 'Menu', anchor: 'menu' },
+    { label: 'Gallery', anchor: 'gallery' },
+    { label: 'Contact Us', anchor: 'contact' },
+  ];
+
+  const goHome = (e) => {
+    // Prevent default if we're already on home to avoid re-render and just scroll
+    if (location.pathname === '/') {
+      e?.preventDefault?.();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate('/');
+      setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+    }
+  };
+
+  const scrollToSection = (id) => {
+    const scrollNow = () => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(scrollNow, 120);
+    } else {
+      scrollNow();
+    }
+  };
+
 
   useEffect(() => {
     dispatch(fetchFooter());
@@ -24,16 +64,16 @@ export default function Footer() {
     <footer className="w-full bg-[#0A2F46] py-8 lg:py-16 px-4 sm:px-6 lg:px-8 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         <div className="bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-md rounded-[2rem] border border-white/10 p-6 lg:p-14 shadow-2xl">
-          
+
           <div className="grid grid-cols-2 lg:grid-cols-12 gap-y-10 lg:gap-x-8 items-start">
-            
+
             {/* 1. Brand Section: Vertical stack on Desktop, Centered on Mobile */}
             <div className="col-span-2 lg:col-span-4 flex flex-col items-center lg:items-start text-center lg:text-left">
               <div className="mb-4 shrink-0">
                 {logoUrl && (
-                  <img 
-                    src={logoUrl} 
-                    alt="Logo" 
+                  <img
+                    src={logoUrl}
+                    alt="Logo"
                     className="h-12 lg:h-24 w-auto object-contain"
                   />
                 )}
@@ -47,7 +87,7 @@ export default function Footer() {
                 <span className="h-1.5 w-12 bg-[#F1A722] rounded-full"></span>
                 <span className="h-1.5 w-8 bg-[#14AAAB] rounded-full"></span>
               </div>
-              
+
               <p className="text-gray-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0 text-center lg:text-left">
                 {data.shortDescription || "this is a footer data."}
               </p>
@@ -58,13 +98,25 @@ export default function Footer() {
               <h4 className="text-white text-[10px] lg:text-xs font-black uppercase tracking-[0.25em] mb-6">
                 Explore
               </h4>
-              <ul className="space-y-4">
-                {['Home', 'Menu', 'Gallery', 'About Us', 'Contact'].map((link) => (
-                  <li key={link}>
-                    <a href={`#${link.toLowerCase().replace(' ', '')}`} className="text-gray-400 text-xs lg:text-sm flex items-center gap-2 hover:text-[#14AAAB] transition-colors">
-                      <ChevronRightIcon className="w-3 h-3 text-[#F1A722]" />
-                      {link}
-                    </a>
+              <ul className="text space-y-4 flex flex-col items-start gap-4 font-semibold truncate text-gray-400">
+                {navLinks.map((link) => (
+                  <li key={link.label} className="w-full">
+                    {link.type === "route" ? (
+                      <Link
+                        to={link.to}
+                        onClick={goHome}
+                        className="flex justify-start w-full"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => scrollToSection(link.anchor)}
+                        className="flex justify-start w-full text-left"
+                      >
+                        {link.label}
+                      </button>
+                    )}
                   </li>
                 ))}
               </ul>
